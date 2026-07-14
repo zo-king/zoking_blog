@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Hugo Theme Stack upstream
+    url: https://github.com/CaiJimmy/hugo-theme-stack/issues
+    about: Report defects that can be reproduced in the unmodified upstream theme here.

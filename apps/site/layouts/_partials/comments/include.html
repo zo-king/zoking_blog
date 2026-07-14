@@ -1,0 +1,87 @@
+{{- $commentsEnabled := and .Site.Params.comments.enabled (ne .Params.comments false) -}}
+{{- if and $commentsEnabled (eq .Section "post") (eq .Site.Params.comments.provider "public-api") -}}
+    {{- $commentConfig := .Site.Params.comments.public | default dict -}}
+    {{- $apiBase := strings.TrimSpace ($commentConfig.apiBase | default "") -}}
+    {{- $apiBase = getenv "HUGO_COMMENTS_API_BASE" | default $apiBase -}}
+    {{- if and (not hugo.IsProduction) (eq $apiBase "") -}}
+        {{- $apiBase = "http://localhost:18080" -}}
+    {{- else if eq $apiBase "" -}}
+        {{- errorf "comments.public.apiBase is required for production builds when public comments are enabled" -}}
+    {{- end -}}
+    {{- $slug := or .Params.slug .Slug .File.ContentBaseName -}}
+    {{- $style := resources.Get "scss/public-comments.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+    {{- $script := resources.Get "ts/publicComments.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}">
+
+    <section
+        class="public-comments"
+        aria-labelledby="public-comments-title"
+        data-public-comments
+        data-api-base="{{ $apiBase }}"
+        data-post-slug="{{ $slug }}">
+        <div class="public-comments__header">
+            <h2 class="section-title" id="public-comments-title">评论</h2>
+            <p data-comments-count>正在加载评论...</p>
+        </div>
+
+        <div class="public-comments__notice" data-comments-notice role="status" aria-live="polite" aria-atomic="true" hidden></div>
+
+        <div class="public-comments__list" data-comments-list aria-live="polite">
+            <p class="public-comments__empty" data-comments-empty hidden>正在加载评论...</p>
+        </div>
+
+        <form class="public-comments__form" data-comment-form novalidate>
+            <div class="public-comments__form-grid">
+                <label>
+                    <span>昵称</span>
+                    <input type="text" name="author_name" autocomplete="name" maxlength="80" required>
+                </label>
+
+                <label>
+                    <span>邮箱（选填）</span>
+                    <input type="email" name="author_email" autocomplete="email">
+                </label>
+
+                <label class="public-comments__wide">
+                    <span>个人网站（选填）</span>
+                    <input type="url" name="author_website" autocomplete="url" placeholder="https://">
+                </label>
+
+                <label class="public-comments__wide">
+                    <span>评论内容</span>
+                    <textarea name="content" rows="5" maxlength="2000" required></textarea>
+                </label>
+            </div>
+
+            <div class="public-comments__form-footer">
+                <p data-comments-form-status aria-live="polite">评论将在审核通过后公开，邮箱不会展示。</p>
+                <button type="submit">提交评论</button>
+            </div>
+        </form>
+
+        <noscript>
+            <p class="public-comments__empty">请启用 JavaScript 以加载评论。</p>
+        </noscript>
+    </section>
+
+    <script type="text/javascript" src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
+{{- else if and $commentsEnabled (ne .Site.Params.comments.provider "public-api") -}}
+    {{- $needsConsent := and .Site.Params.cookies.enabled .Site.Params.cookies.categories.functional -}}
+    {{- if $needsConsent -}}
+        <div id="comments-consent-placeholder" class="consent-placeholder">
+            <p>{{ T "cookies.commentsDisabled" }}</p>
+            <button class="cookie-btn cookie-btn--primary" data-cookie-action="reopen">
+                {{ T "cookies.managePreferences" }}
+            </button>
+        </div>
+        <div id="comments-container" style="display: none;"></div>
+        <template id="comments-template">
+            {{ partial (printf "comments/provider/%s" .Site.Params.comments.provider) . }}
+        </template>
+        {{- $commentsScript := resources.Get "ts/commentsConsent.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+        <script type="text/javascript" src="{{ $commentsScript.RelPermalink }}" integrity="{{ $commentsScript.Data.Integrity }}" defer></script>
+    {{- else -}}
+        {{ partial (printf "comments/provider/%s" .Site.Params.comments.provider) . }}
+    {{- end -}}
+{{- end -}}

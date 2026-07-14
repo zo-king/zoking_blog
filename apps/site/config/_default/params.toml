@@ -1,0 +1,46 @@
+mainSections   = ["post"]
+rssFullContent = true
+description    = "记录技术实践、产品设计与日常思考的中文个人博客"
+favicon        = "img/favicon-64.png"
+
+[footer]
+    since = 2026
+
+[sidebar]
+    emoji = "✏️"
+    subtitle = "记录技术、设计与日常思考"
+    avatar   = "img/avatar-github.png"
+
+[article]
+    headingAnchor = true
+
+    [article.license]
+        enabled = true
+        default = "本文采用 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可协议"
+
+[widgets]
+    homepage = [
+        { type = "popular-posts", params = { slugs = ["about-zoking", "city-walk", "thoughtful-workspace"] } },
+        { type = "pixiv-ranking", params = { source = "https://pixiv.mokeyjay.com/?limit=10", height = 380 } },
+        { type = "hitokoto", params = { endpoint = "https://v1.hitokoto.cn/?encode=json&charset=utf-8&max_length=48" } },
+    ]
+    page     = [{ type = "toc" }]
+
+[comments]
+    # See complete configuration in config/_default/params.toml
+    enabled = true
+    provider = "public-api"
+
+    [comments.public]
+        # The publisher writes the production API origin from site settings.
+        # Local development falls back to localhost in the comments partial.
+        apiBase = ""
+
+# GDPR Cookie Consent Configuration
+# When enabled, analytics and functional cookies require user consent
+[cookies]
+    enabled = false
+
+    [cookies.categories]
+        analytics  = true
+        functional = true

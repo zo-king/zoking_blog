@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a reproducible problem in Zoking Blog
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a problem. Remove credentials and personal data from logs before submitting.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Reader site (Hugo)
+        - Admin console (React)
+        - API or worker (Go)
+        - Database or migration
+        - Docker or deployment
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: Describe what happened and what you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Start services with ...
+        2. Open ...
+        3. Perform ...
+    validations:
+      required: true
+  - type: input
+    id: revision
+    attributes:
+      label: Commit or branch
+      placeholder: main or a commit SHA
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, browser, Go, Node.js, Hugo, PostgreSQL, and Docker versions that apply.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Redact secrets, tokens, cookies, database URLs, email addresses, and private content.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Submission checks
+      options:
+        - label: I reproduced this on the stated commit or branch.
+          required: true
+        - label: I removed secrets and personal data from this report.
+          required: true

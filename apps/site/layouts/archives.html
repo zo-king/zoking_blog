@@ -1,0 +1,71 @@
+{{ define "body-class" }}template-archives{{ end }}
+
+{{ define "head" }}
+    {{- $style := resources.Get "scss/archive-timeline.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}">
+{{ end }}
+
+{{ define "main" }}
+    {{- $achievementData := hugo.Data.achievements | default dict -}}
+    {{- $achievementVersion := index $achievementData "version" | default 1 -}}
+    {{- $items := index $achievementData "items" | default (slice) -}}
+    {{- $currentYear := now.Year -}}
+    {{- $yearSpan := sub $currentYear 2024 -}}
+
+    <header class="archives-header">
+        <h1 class="section-title page-primary-title">成果时间线</h1>
+        {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    </header>
+
+    <nav class="archives-year-nav" aria-label="按年份浏览成果">
+        <ol class="archives-year-nav__list">
+            {{- range $offset := seq 0 $yearSpan -}}
+                {{- $year := sub $currentYear $offset -}}
+                {{- $id := printf "achievement-year-%d" $year -}}
+                <li class="archives-year-nav__item">
+                    <a class="archives-year-nav__link" href="{{ $.RelPermalink }}#{{ $id }}">{{ $year }}</a>
+                </li>
+            {{- end }}
+        </ol>
+    </nav>
+
+    {{- if not (len $items) }}
+        <p class="archives-empty" role="status">暂无已发布成果。</p>
+    {{- end }}
+
+    <div class="archives-timeline" data-achievement-timeline data-achievements-version="{{ $achievementVersion }}">
+        {{- range $offset := seq 0 $yearSpan -}}
+            {{- $year := sub $currentYear $offset -}}
+            {{- $id := printf "achievement-year-%d" $year -}}
+            {{- $yearCount := 0 -}}
+            {{- range $item := $items -}}
+                {{- $occurredAt := default "" (index $item "occurred_at") -}}
+                {{- if eq (substr $occurredAt 0 4) (printf "%d" $year) -}}
+                    {{- $yearCount = add $yearCount 1 -}}
+                {{- end -}}
+            {{- end -}}
+            <section class="archives-year{{ if not $yearCount }} archives-year--empty{{ end }}" id="{{ $id }}" aria-labelledby="{{ $id }}-title" data-achievement-year>
+                <header class="archives-year__header">
+                    <h2 id="{{ $id }}-title"><a href="{{ $.RelPermalink }}#{{ $id }}">{{ $year }}</a></h2>
+                    <span>{{ $yearCount }} 项</span>
+                </header>
+                {{- if $yearCount -}}
+                    <ol class="archives-year__entries">
+                        {{- range $item := $items -}}
+                            {{- $occurredAt := default "" (index $item "occurred_at") -}}
+                            {{- if eq (substr $occurredAt 0 4) (printf "%d" $year) -}}
+                                {{ partial "achievement-list/item" $item }}
+                            {{- end -}}
+                        {{- end -}}
+                    </ol>
+                {{- else -}}
+                    <p class="archives-year__empty">该年度暂无已发布成果。</p>
+                {{- end }}
+            </section>
+        {{- end }}
+    </div>
+
+    {{- $script := resources.Get "ts/archiveTimeline.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+    <script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
+    {{ partialCached "footer/footer" . }}
+{{ end }}

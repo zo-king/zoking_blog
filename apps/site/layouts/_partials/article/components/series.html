@@ -1,0 +1,90 @@
+{{- $seriesSlug := "" -}}
+{{- $seriesName := "" -}}
+{{- with .Params.series -}}
+    {{- with .slug -}}
+        {{- $seriesSlug = strings.TrimSpace (printf "%v" .) -}}
+    {{- end -}}
+    {{- with .name -}}
+        {{- $seriesName = strings.TrimSpace (printf "%v" .) -}}
+    {{- end -}}
+{{- end -}}
+
+{{- if and (eq .Type "post") $seriesSlug -}}
+    {{- $seriesPages := where .Site.RegularPages "Type" "post" -}}
+    {{- $seriesPages = where $seriesPages "Params.series.slug" $seriesSlug -}}
+    {{- $seriesPages = sort $seriesPages "Title" "asc" -}}
+    {{- $seriesPages = sort $seriesPages "Date" "asc" -}}
+    {{- $seriesPages = sort $seriesPages "Params.series.order" "asc" -}}
+
+    {{- if gt (len $seriesPages) 0 -}}
+        {{- $currentIndex := -1 -}}
+        {{- range $index, $page := $seriesPages -}}
+            {{- if $page.Eq $ -}}
+                {{- $currentIndex = $index -}}
+            {{- end -}}
+        {{- end -}}
+
+        {{- if ge $currentIndex 0 -}}
+            {{- $previousInSeries := false -}}
+            {{- $nextInSeries := false -}}
+            {{- if gt $currentIndex 0 -}}
+                {{- $previousInSeries = index $seriesPages (sub $currentIndex 1) -}}
+            {{- end -}}
+            {{- if lt (add $currentIndex 1) (len $seriesPages) -}}
+                {{- $nextInSeries = index $seriesPages (add $currentIndex 1) -}}
+            {{- end -}}
+            {{- if not $seriesName -}}
+                {{- $seriesName = $seriesSlug -}}
+            {{- end -}}
+
+            <section class="article-series" aria-labelledby="article-series-title">
+                <header class="article-series__header">
+                    <div class="article-series__heading">
+                        <p class="article-series__eyebrow">所属系列</p>
+                        <h2 id="article-series-title">{{ $seriesName }}</h2>
+                    </div>
+                    <p class="article-series__count">共 {{ len $seriesPages }} 篇</p>
+                </header>
+
+                <div class="article-series__catalog" role="region" aria-label="{{ $seriesName }}系列目录" tabindex="0">
+                    <ol class="article-series__list">
+                        {{- range $seriesPages -}}
+                            {{- $isCurrent := .Eq $ -}}
+                            <li class="article-series__entry{{ if $isCurrent }} article-series__entry--current{{ end }}">
+                                {{- if $isCurrent -}}
+                                    <div class="article-series__item" aria-current="page">
+                                        <span class="article-series__order" aria-hidden="true">{{ .Params.series.order }}</span>
+                                        <span class="article-series__title">{{ .Title }}</span>
+                                        <span class="article-series__status">正在阅读</span>
+                                    </div>
+                                {{- else -}}
+                                    <a class="article-series__item" href="{{ .RelPermalink }}">
+                                        <span class="article-series__order" aria-hidden="true">{{ .Params.series.order }}</span>
+                                        <span class="article-series__title">{{ .Title }}</span>
+                                    </a>
+                                {{- end -}}
+                            </li>
+                        {{- end -}}
+                    </ol>
+                </div>
+
+                {{- if or $previousInSeries $nextInSeries -}}
+                    <nav class="article-series__navigation" aria-label="系列文章导航">
+                        {{- with $previousInSeries -}}
+                            <a class="article-series__navigation-item" href="{{ .RelPermalink }}">
+                                <span>系列上一篇</span>
+                                <strong>{{ .Title }}</strong>
+                            </a>
+                        {{- end -}}
+                        {{- with $nextInSeries -}}
+                            <a class="article-series__navigation-item article-series__navigation-item--next" href="{{ .RelPermalink }}">
+                                <span>系列下一篇</span>
+                                <strong>{{ .Title }}</strong>
+                            </a>
+                        {{- end -}}
+                    </nav>
+                {{- end -}}
+            </section>
+        {{- end -}}
+    {{- end -}}
+{{- end -}}

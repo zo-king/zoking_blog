@@ -1,0 +1,23 @@
+{{- $pages := partial "helper/pages.html" .Site.Home -}}
+{{- $result := slice -}}
+
+{{- range $pages -}}
+    {{- $taxonomy := slice -}}
+    {{- $categories := .Params.categories | default slice -}}
+    {{- range .GetTerms "categories" -}}{{- $categories = $categories | append .LinkTitle -}}{{- end -}}
+    {{- with $categories -}}{{- $taxonomy = $taxonomy | append (printf "分类：%s" (delimit . " ")) -}}{{- end -}}
+    {{- $tags := .Params.tags | default slice -}}
+    {{- range .GetTerms "tags" -}}{{- $tags = $tags | append .LinkTitle -}}{{- end -}}
+    {{- with $tags -}}{{- $taxonomy = $taxonomy | append (printf "标签：%s" (delimit . " ")) -}}{{- end -}}
+    {{- $content := printf "%s\n%s" .Plain (delimit $taxonomy "\n") -}}
+    {{- $data := dict "title" .Title "date" .Date "permalink" .RelPermalink "content" $content -}}
+
+    {{- $image := partial "helper/image" (dict "Image" .Params.image "Resources" .Resources "Context" .) -}}
+    {{- if $image -}}
+        {{- $data = merge $data (dict "image" $image.Permalink) -}}
+    {{- end -}}
+
+    {{- $result = $result | append $data -}}
+{{- end -}}
+
+{{ jsonify $result }}

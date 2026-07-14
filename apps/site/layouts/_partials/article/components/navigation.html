@@ -1,0 +1,38 @@
+{{- if eq .Section "post" -}}
+    {{- $previous := .PrevInSection -}}
+    {{- $next := .NextInSection -}}
+    <div class="reading-progress" data-reading-progress role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span data-reading-progress-bar></span>
+    </div>
+    {{ partial "article/components/series" . }}
+    <nav class="article-navigation" aria-label="文章导航">
+        <div class="article-navigation__links">
+            {{ with $previous }}
+            <a class="article-navigation__item" href="{{ .RelPermalink }}" rel="prev">
+                <span>上一篇</span>
+                <strong>{{ .Title }}</strong>
+            </a>
+            {{ end }}
+            {{ with $next }}
+            <a class="article-navigation__item article-navigation__item--next" href="{{ .RelPermalink }}" rel="next">
+                <span>下一篇</span>
+                <strong>{{ .Title }}</strong>
+            </a>
+            {{ end }}
+        </div>
+        <div class="article-share">
+            <button type="button" data-reading-resume hidden>
+                {{ partial "helper/icon" "clock" }}
+                <span data-reading-resume-label>继续阅读</span>
+            </button>
+            <button type="button" data-article-share data-title="{{ .Title }}" data-url="{{ .Permalink }}">
+                {{ partial "helper/icon" "link" }}
+                <span>分享文章</span>
+            </button>
+            <span class="article-share__status" data-article-share-status aria-live="polite"></span>
+        </div>
+    </nav>
+
+    {{- $script := resources.Get "ts/articleActions.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+    <script type="text/javascript" src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
+{{- end -}}

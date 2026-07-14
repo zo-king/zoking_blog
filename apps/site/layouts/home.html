@@ -1,0 +1,17 @@
+{{ define "body-class" }}home-page{{ end }}
+
+{{ define "main" }}
+    {{- $paginator := partial "helper/paginator.html" . -}}
+    <section class="article-list">
+        {{ range $index, $element := $paginator.Pages }}
+            {{- .Scratch.Set "PriorityImage" (eq $index 0) -}}
+            {{ partial "article-list/default" . }}
+        {{ end }}
+    </section>
+    {{- partial "pagination.html" . -}}
+    {{- partial "footer/footer" . -}}
+{{ end }}
+
+{{ define "right-sidebar" }}
+    {{ partial "sidebar/right.html" (dict "Context" . "Scope" "homepage") }}
+{{ end }}

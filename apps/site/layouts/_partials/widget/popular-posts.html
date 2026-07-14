@@ -1,0 +1,30 @@
+{{- $context := .Context -}}
+{{- $pages := slice -}}
+{{- range $slug := .Params.slugs -}}
+    {{- $matches := first 1 (where $context.Site.RegularPages "Params.slug" $slug) -}}
+    {{- if gt (len $matches) 0 -}}
+        {{- $pages = $pages | append (index $matches 0) -}}
+    {{- end -}}
+{{- end -}}
+{{- if gt (len $pages) 0 -}}
+<section class="widget popular-posts-widget">
+    <h2 class="widget-title section-title">大家抢着看</h2>
+    <ol class="popular-posts-widget__list">
+        {{- range $pages }}
+            <li>
+                <a class="popular-posts-widget__item" href="{{ .RelPermalink }}">
+                    {{- with .Params.image }}
+                        <img src="{{ . | relURL }}" alt="" width="88" height="64" loading="lazy" decoding="async">
+                    {{- else }}
+                        <span class="popular-posts-widget__image-placeholder" aria-hidden="true"></span>
+                    {{- end }}
+                    <span class="popular-posts-widget__body">
+                        <span class="popular-posts-widget__title">{{ .Title }}</span>
+                        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
+                    </span>
+                </a>
+            </li>
+        {{- end }}
+    </ol>
+</section>
+{{- end -}}

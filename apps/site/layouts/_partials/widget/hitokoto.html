@@ -1,0 +1,15 @@
+{{- $endpoint := default "https://v1.hitokoto.cn/?encode=json&charset=utf-8&max_length=48" .Params.endpoint -}}
+<section class="widget hitokoto-widget" data-hitokoto data-endpoint="{{ $endpoint | safeURL }}">
+    <header class="hitokoto-widget__header">
+        <h2 class="widget-title section-title">一言</h2>
+        <button type="button" data-hitokoto-refresh aria-label="换一句" title="换一句">
+            {{ partial "helper/icon" "refresh" }}
+        </button>
+    </header>
+    <blockquote>
+        <p data-hitokoto-text>保持好奇，也保持耐心。</p>
+        <footer data-hitokoto-source>本地寄语</footer>
+    </blockquote>
+</section>
+{{- $script := resources.Get "ts/hitokoto.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+<script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>

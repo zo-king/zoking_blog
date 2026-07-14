@@ -1,0 +1,29 @@
+{{ define "main" }}
+    <div class="not-found-card">
+        <h1 class="article-title">{{ T "notFound.title" }}</h1>
+        <p class="article-subtitle">{{ T "notFound.subtitle" }}</p>
+    </div>
+    {{- $query := first 1 (where .Site.Pages "Layout" "==" "search") -}}
+    {{- $searchPage := index $query 0 -}}
+    {{- with $searchPage }}
+        <form action="{{ .RelPermalink }}" class="search-form widget" {{ with .OutputFormats.Get "json" -}}data-json="{{ .RelPermalink }}"{{- end }}>
+            <p>
+                <label for="searchInput">{{ T "search.title" }}</label>
+                <input id="searchInput" name="keyword" required placeholder="{{ T `search.placeholder` }}">
+                <button type="submit" title="{{ T `search.title` }}" aria-label="{{ T `search.title` }}">{{ partial "helper/icon" "search" }}</button>
+            </p>
+        </form>
+        <div class="search-result"><h2 class="search-result--title section-title"></h2><div class="search-result--list article-list--compact"></div></div>
+        <script>window.searchResultTitleTemplate = "{{ T `search.resultTitle` }}";</script>
+        {{- $opts := dict "minify" hugo.IsProduction "JSXFactory" "createElement" -}}
+        {{- $searchScript := resources.Get "ts/search.tsx" | js.Build $opts -}}
+        <script type="text/javascript" src="{{ $searchScript.RelPermalink }}" defer></script>
+        <script>
+            const wrongUrl = new URL(window.location.href);
+            let decodedPath = wrongUrl.pathname;
+            try { decodedPath = decodeURIComponent(wrongUrl.pathname); } catch {}
+            document.getElementById('searchInput').value = decodedPath.split(/[/|-]/).join(' ').trim();
+        </script>
+    {{- end }}
+    {{ partialCached "footer/footer" . }}
+{{ end }}

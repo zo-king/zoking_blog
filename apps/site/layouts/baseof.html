@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.Locale }}" dir="{{ default `ltr` .Language.Direction }}">
+    <head>
+        {{- partial "head/head.html" . -}}
+        {{- block "head" . -}}{{ end }}
+        {{- $splashStyle := resources.Get "scss/splash.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+        <link rel="stylesheet" href="{{ $splashStyle.RelPermalink }}" integrity="{{ $splashStyle.Data.Integrity }}">
+    </head>
+    <body class="{{ block `body-class` . }}{{ end }}">
+        <div class="site-splash" id="site-splash" role="dialog" aria-label="Zoking 博客开屏">
+            <div class="site-splash__content">
+                <span class="site-splash__title">{{ .Site.Title }}</span>
+                <span class="site-splash__loader" role="status" aria-label="正在加载">
+                    <span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span>
+                </span>
+            </div>
+            <button class="site-splash__skip" id="site-splash-skip" type="button" aria-label="跳过开屏动画">跳过</button>
+        </div>
+        {{- partial "head/colorScheme" . -}}
+        <a class="skip-link" href="#main-content">跳到正文</a>
+        <header class="site-topbar">
+            <div class="site-topbar__inner">
+                <a class="site-topbar__brand" href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a>
+                <nav class="site-topbar__actions" aria-label="快捷操作">
+                    {{- with .Site.GetPage "/page/about" }}
+                        <a href="{{ .RelPermalink }}">关于</a>
+                    {{- end }}
+                    <a class="site-topbar__icon" href="https://github.com/zo-king" target="_blank" rel="me noopener" aria-label="GitHub" title="GitHub">
+                        {{ partial "helper/icon" "brand-github" }}
+                    </a>
+                    <a class="site-topbar__icon" href="{{ "index.xml" | relURL }}" aria-label="RSS 订阅" title="RSS 订阅">
+                        {{ partial "helper/icon" "rss" }}
+                    </a>
+                    {{ if .Site.Params.colorScheme.toggle }}
+                        <button class="site-topbar__icon" id="dark-mode-toggle" type="button" aria-label="{{ T `darkMode` }}" title="{{ T `darkMode` }}" aria-pressed="false">
+                            {{ partial "helper/icon" "toggle-left" }}
+                            {{ partial "helper/icon" "toggle-right" }}
+                        </button>
+                    {{ end }}
+                </nav>
+            </div>
+        </header>
+        {{- $hasWidget := false -}}
+        {{- range .Site.Params.widgets -}}
+            {{- if gt (len .) 0 -}}{{- $hasWidget = true -}}{{- end -}}
+        {{- end -}}
+        <div class="container main-container flex on-phone--column {{ if $hasWidget }}extended{{ else }}compact{{ end }}">
+            {{- block "left-sidebar" . -}}{{ partial "sidebar/left.html" . }}{{- end -}}
+            {{- block "right-sidebar" . -}}{{ end }}
+            <main class="main full-width" id="main-content" tabindex="-1">
+                {{- block "main" . }}{{- end }}
+            </main>
+        </div>
+        {{ partial "footer/include.html" . }}
+        {{- $splashScript := resources.Get "ts/splash.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+        <script src="{{ $splashScript.RelPermalink }}" integrity="{{ $splashScript.Data.Integrity }}" defer></script>
+    </body>
+</html>

@@ -1,0 +1,214 @@
+.achievements-page {
+  min-width: 0;
+}
+
+.achievements-list-panel .content-panel-body {
+  padding: 0;
+}
+
+.achievements-toolbar {
+  display: flex;
+  min-height: 58px;
+  padding: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--admin-line);
+}
+
+.achievements-toolbar .arco-select {
+  width: 146px;
+}
+
+.achievements-list-panel .arco-table {
+  margin: 0;
+}
+
+.achievement-title-cell {
+  min-width: 0;
+}
+
+.achievement-title-cell .arco-typography {
+  display: block;
+  margin-top: 2px;
+}
+
+.achievement-title-cell .arco-typography:first-child {
+  margin-top: 0;
+  color: var(--admin-ink);
+}
+
+.achievements-editor-panel .content-panel-body {
+  padding: 20px;
+}
+
+.achievement-editor-main {
+  min-width: 0;
+}
+
+.achievement-editor-sidebar {
+  min-height: 100%;
+  padding-left: 22px;
+  border-left: 1px solid var(--admin-line);
+}
+
+.achievement-section-title {
+  margin: 1px 0 14px;
+  color: #26332e;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.achievement-section-title:not(:first-child) {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--admin-line);
+}
+
+.achievement-media-picker {
+  display: grid;
+  gap: 9px;
+}
+
+.achievement-media-current {
+  display: grid;
+  min-width: 0;
+  padding: 8px;
+  grid-template-columns: 68px minmax(0, 1fr) 24px;
+  gap: 9px;
+  align-items: center;
+  background: #f5f8f6;
+  border: 1px solid var(--admin-line);
+  border-radius: 4px;
+}
+
+.achievement-media-current-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.achievement-media-current-copy .arco-typography {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.achievement-media-empty {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #f8faf9;
+  border: 1px dashed var(--admin-line);
+  border-radius: 4px;
+  color: var(--admin-muted);
+}
+
+.achievement-media-modal .arco-modal-content {
+  padding-top: 8px;
+}
+
+.achievement-media-search {
+  margin-bottom: 14px;
+}
+
+.achievement-media-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.achievement-media-option {
+  display: grid;
+  min-width: 0;
+  padding: 5px;
+  grid-template-rows: 92px auto auto;
+  gap: 5px;
+  overflow: hidden;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid var(--admin-line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.achievement-media-option:hover,
+.achievement-media-option.is-selected {
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 1px var(--admin-primary);
+}
+
+.achievement-media-option > span {
+  overflow: hidden;
+  color: var(--admin-ink);
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.achievement-media-pagination {
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+@media (min-width: 1200px) {
+  .achievements-editor-panel {
+    min-height: 540px;
+    margin-bottom: 0;
+  }
+
+  .achievements-editor-panel .content-panel-body,
+  .achievements-editor-panel .arco-form,
+  .achievements-editor-panel .arco-row,
+  .achievements-editor-panel .arco-col {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .achievements-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .achievements-toolbar .arco-select {
+    width: 100%;
+  }
+
+  .achievements-editor-panel .content-panel-body {
+    padding: 14px 12px;
+  }
+
+  .achievement-editor-sidebar {
+    padding-top: 18px;
+    padding-left: 0;
+    border-top: 1px solid var(--admin-line);
+    border-left: 0;
+  }
+
+  .achievement-media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 390px) {
+  .achievement-media-modal .arco-modal-content {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .achievement-media-grid {
+    gap: 7px;
+  }
+
+  .achievement-media-option {
+    grid-template-rows: 76px auto auto;
+  }
+
+  .achievement-media-option .arco-image-img {
+    height: 76px !important;
+  }
+}

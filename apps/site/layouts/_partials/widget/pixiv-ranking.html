@@ -1,0 +1,19 @@
+{{- $source := default "https://pixiv.mokeyjay.com/?limit=10" .Params.source -}}
+{{- $height := default 380 .Params.height -}}
+<section class="widget pixiv-ranking-widget">
+    <h2 class="widget-title section-title">
+        <a href="https://mok.moe/p/pixiv-daily-ranking" target="_blank" rel="noopener noreferrer">Pixiv 每日排行</a>
+    </h2>
+    <div class="pixiv-ranking-widget__frame" style="--pixiv-widget-height: {{ $height }}px">
+        <iframe
+            src="{{ $source | safeURL }}"
+            title="Pixiv 每日排行榜"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox">
+        </iframe>
+    </div>
+    <a class="pixiv-ranking-widget__source" href="https://github.com/mokeyjay/Pixiv-daily-ranking-widget" target="_blank" rel="noopener noreferrer">
+        查看组件来源
+    </a>
+</section>

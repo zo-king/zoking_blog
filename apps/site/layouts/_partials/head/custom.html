@@ -1,0 +1,48 @@
+<meta property="og:locale" content="zh_CN">
+
+{{- if or (eq .Kind "404") (eq .Params.robots "noindex") }}
+<meta name="robots" content="noindex, nofollow">
+{{- else if .IsHome }}
+    {{- $website := dict
+        "@context" "https://schema.org"
+        "@type" "WebSite"
+        "name" .Site.Title
+        "description" .Site.Params.description
+        "url" .Site.BaseURL
+        "inLanguage" "zh-CN"
+        "potentialAction" (dict
+            "@type" "SearchAction"
+            "target" (printf "%ssearch/?keyword={search_term_string}" .Site.BaseURL)
+            "query-input" "required name=search_term_string"
+        )
+    -}}
+<script type="application/ld+json">{{ $website | jsonify | safeJS }}</script>
+{{- else if and .IsPage (eq .Section "post") }}
+    {{- $description := partial "data/description" . -}}
+    {{- $posting := dict
+        "@context" "https://schema.org"
+        "@type" "BlogPosting"
+        "headline" .Title
+        "description" $description
+        "url" .Permalink
+        "mainEntityOfPage" .Permalink
+        "datePublished" (.Date.Format "2006-01-02T15:04:05-07:00")
+        "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00")
+        "inLanguage" "zh-CN"
+        "author" (dict "@type" "Person" "name" .Site.Title)
+        "publisher" (dict "@type" "Person" "name" .Site.Title)
+    -}}
+    {{- $image := partial "helper/image" (dict "Image" .Params.image "Resources" .Resources "Context" .) -}}
+    {{- if $image }}{{ $posting = merge $posting (dict "image" (absURL $image.Permalink)) }}{{ end -}}
+<script type="application/ld+json">{{ $posting | jsonify | safeJS }}</script>
+{{- else if .IsNode }}
+    {{- $collection := dict
+        "@context" "https://schema.org"
+        "@type" "CollectionPage"
+        "name" .Title
+        "description" (partial "data/description" .)
+        "url" .Permalink
+        "inLanguage" "zh-CN"
+    -}}
+<script type="application/ld+json">{{ $collection | jsonify | safeJS }}</script>
+{{- end }}

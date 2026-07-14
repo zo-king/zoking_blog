@@ -1,0 +1,12 @@
+.git
+.env
+.tools
+dist
+storage
+
+**/node_modules
+**/dist
+**/.vite
+
+*.log
+*.tmp

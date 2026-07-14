@@ -1,0 +1,44 @@
+{{- $occurredAt := time (default "" (index . "occurred_at")) -}}
+{{- $endedAt := default "" (index . "ended_at") -}}
+{{- $externalURL := default "" (index . "external_url") -}}
+{{- $title := default "未命名成果" (index . "title") -}}
+{{- $organization := default "" (index . "organization") -}}
+{{- $kind := default "" (index . "kind") -}}
+{{- $kindLabels := dict "award" "奖项" "certificate" "认证" "project" "项目" -}}
+{{- $kindLabel := default $kind (index $kindLabels $kind) -}}
+{{- $summary := default "" (index . "summary") -}}
+{{- $credentialID := default "" (index . "credential_id") -}}
+{{- $imageURL := default "" (index . "image_url") -}}
+{{- $imageAlt := default $title (index . "image_alt") -}}
+<li class="archives-entry achievement-item">
+    <article class="achievement-item__article">
+        <div class="achievement-item__date">
+            <time datetime="{{ $occurredAt.Format "2006-01-02" }}">{{ $occurredAt.Format "2006年01月02日" }}</time>
+            {{ with $endedAt }}
+                {{- $ended := time . -}}
+                <span aria-hidden="true">至</span>
+                <time datetime="{{ $ended.Format "2006-01-02" }}">{{ $ended.Format "2006年01月02日" }}</time>
+            {{ end }}
+        </div>
+        <div class="achievement-item__content">
+            <div class="achievement-item__meta">
+                {{ with $kindLabel }}<span>{{ . }}</span>{{ end }}
+                {{ with $organization }}<span>{{ . }}</span>{{ end }}
+            </div>
+            <h3 class="achievement-item__title">
+                {{ if $externalURL }}
+                    <a href="{{ $externalURL | safeURL }}" target="_blank" rel="noopener noreferrer">{{ $title }}</a>
+                {{ else }}
+                    {{ $title }}
+                {{ end }}
+            </h3>
+            {{ with $summary }}<p class="achievement-item__summary">{{ . }}</p>{{ end }}
+            {{ with $credentialID }}<p class="achievement-item__credential">证书编号：{{ . }}</p>{{ end }}
+        </div>
+        {{ with $imageURL }}
+            <div class="achievement-item__image">
+                <img src="{{ . | safeURL }}" alt="{{ $imageAlt }}" loading="lazy">
+            </div>
+        {{ end }}
+    </article>
+</li>

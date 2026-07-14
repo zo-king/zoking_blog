@@ -1,0 +1,22 @@
+* text=auto
+
+apps/** text eol=lf
+db/** text eol=lf
+docs/** text eol=lf
+infra/** text eol=lf
+scripts/** text eol=lf
+.github/** text eol=lf
+assets/icons/refresh.svg text eol=lf
+assets/ts/search.tsx text eol=lf
+
+apps/**/*.gif binary
+apps/**/*.ico binary
+apps/**/*.jpeg binary
+apps/**/*.jpg binary
+apps/**/*.png binary
+apps/**/*.webp binary
+docs/**/*.gif binary
+docs/**/*.jpeg binary
+docs/**/*.jpg binary
+docs/**/*.png binary
+docs/**/*.webp binary

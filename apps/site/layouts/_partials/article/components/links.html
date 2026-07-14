@@ -1,0 +1,33 @@
+<section class="links-directory" aria-labelledby="links-directory-title">
+    <h2 class="section-title" id="links-directory-title">常读站点</h2>
+    <div class="links-directory__grid">
+        {{- range $link := .Params.links -}}
+            {{- $parsed := urls.Parse $link.website -}}
+            {{- $favicon := "" -}}
+            {{- $faviconFallback := "" -}}
+            {{- with $parsed -}}
+                {{- if and .Scheme .Host -}}
+                    {{- $favicon = printf "%s://%s/favicon.ico" .Scheme .Host -}}
+                    {{- $faviconFallback = printf "https://icons.duckduckgo.com/ip3/%s.ico" .Host -}}
+                {{- end -}}
+            {{- end -}}
+            {{- $fallback := substr $link.title 0 1 -}}
+            <article class="links-card">
+                <a class="links-card__link" href="{{ $link.website }}" target="_blank" rel="noopener noreferrer">
+                    <span class="links-card__avatar" data-link-avatar data-fallback="{{ $fallback }}" aria-hidden="true">
+                        <span class="links-card__fallback">{{ $fallback }}</span>
+                        {{- if $favicon -}}<img src="{{ $favicon }}" alt="" loading="eager" referrerpolicy="no-referrer" data-fallback-src="{{ $faviconFallback }}">{{- end -}}
+                    </span>
+                    <span class="links-card__body">
+                        <strong class="links-card__title">{{ $link.title }}</strong>
+                        <span class="links-card__description">
+                            {{ with $link.description }}{{ . }}{{ else }}{{ $link.website }}{{ end }}
+                        </span>
+                        {{ with $parsed.Host }}<span class="links-card__host">{{ . }}</span>{{ end }}
+                    </span>
+                    <span class="links-card__arrow" aria-hidden="true">↗</span>
+                </a>
+            </article>
+        {{- end -}}
+    </div>
+</section>

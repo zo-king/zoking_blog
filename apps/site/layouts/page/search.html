@@ -1,0 +1,30 @@
+{{ define "body-class" }}template-search{{ end }}
+{{ define "main" }}
+{{- $searchVersion := now.Unix -}}
+<h1 class="section-title page-primary-title">{{ .Title }}</h1>
+<form action="{{ .RelPermalink }}" class="search-form"{{ with .OutputFormats.Get "json" -}} data-json="{{ .RelPermalink }}?v={{ $searchVersion }}"{{- end }}>
+    <p>
+        <label for="page-search-input">{{ T "search.title" }}</label>
+        <input id="page-search-input" name="keyword" placeholder="{{ T `search.placeholder` }}" />
+    </p>
+
+    <button type="submit" title="{{ T `search.title` }}" aria-label="{{ T `search.title` }}">
+        {{ partial "helper/icon" "search" }}
+    </button>
+</form>
+
+<div class="search-result hidden">
+    <h2 class="search-result--title section-title" aria-live="polite" aria-atomic="true"></h2>
+    <div class="search-result--list article-list--compact"></div>
+</div>
+
+<script>
+    window.searchResultTitleTemplate = "{{ T `search.resultTitle` }}"
+</script>
+
+{{- $opts := dict "minify" hugo.IsProduction "JSXFactory" "createElement" -}}
+{{- $searchScript := resources.Get "ts/search.tsx" | js.Build $opts -}}
+<script type="text/javascript" src="{{ $searchScript.RelPermalink }}" defer></script>
+
+{{ partialCached "footer/footer" . }}
+{{ end }}

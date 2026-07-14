@@ -1,0 +1,33 @@
+{{- $IsList := .IsList -}}
+{{- $Page := .Page -}}
+<header class="article-header">
+    {{- $image := partial "helper/image" (dict "Image" $Page.Params.image "Resources" $Page.Resources "Context" $Page) -}}
+    {{ if $image }}
+    <div class="article-image">
+            {{- $priorityImage := or (not $IsList) ($Page.Scratch.Get "PriorityImage") -}}
+            {{- $attributes := dict
+                "src" $image.Permalink
+                "width" $image.Width
+                "height" $image.Height
+                "alt" (printf "%s的封面图" $Page.Title)
+                "loading" (cond $priorityImage "eager" "lazy")
+                "sizes" "(max-width: 767px) calc(100vw - 30px), (max-width: 1023px) 700px, (max-width: 1279px) 950px, 1232px"
+            -}}
+            {{- if $priorityImage -}}
+                {{- $attributes = merge $attributes (dict "fetchpriority" "high") -}}
+            {{- end -}}
+            {{- $responsiveImage := partial "helper/responsive-image" (dict
+                "Resource" $image.Resource
+                "Widths" (cond $Page.Site.Params.ImageProcessing.Content.Enabled $Page.Site.Params.ImageProcessing.Content.Widths nil)
+                "Attributes" $attributes
+            ) -}}
+            {{- if $IsList -}}
+                <a href="{{ $Page.RelPermalink }}">{{ $responsiveImage }}</a>
+            {{- else -}}
+                {{ $responsiveImage }}
+            {{- end -}}
+    </div>
+    {{ end }}
+
+    {{ partial "article/components/details" (dict "Page" $Page "IsList" $IsList) }}
+</header>

@@ -1,0 +1,53 @@
+{{ define "body-class" }}template-projects{{ end }}
+
+{{ define "head" }}
+    {{- $style := resources.Get "scss/github-projects.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}" integrity="{{ $style.Data.Integrity }}">
+{{ end }}
+
+{{ define "main" }}
+    {{- $github := .Params.github | default dict -}}
+    {{- $username := $github.username | default "zo-king" -}}
+    {{- $maxRepos := $github.maxRepos | default 6 -}}
+    {{- $profileURL := printf "https://github.com/%s" $username -}}
+
+    <section
+        class="github-projects"
+        aria-labelledby="github-projects-title"
+        data-github-projects
+        data-username="{{ $username }}"
+        data-max-repos="{{ $maxRepos }}">
+        <header class="github-projects__header">
+            <div>
+                <h1 class="section-title page-primary-title" id="github-projects-title">{{ .Title }}</h1>
+                <p>{{ .Description }}</p>
+            </div>
+            <a class="github-projects__profile" href="{{ $profileURL }}" target="_blank" rel="noopener noreferrer" aria-label="查看 {{ $username }} 的 GitHub 主页（新窗口）">
+                {{ partial "helper/icon" "brand-github" }}
+                <span>查看 {{ $username }}</span>
+            </a>
+        </header>
+
+        <p class="github-projects__status" role="status" aria-live="polite" aria-atomic="true" data-projects-status>
+            正在读取 GitHub 仓库...
+        </p>
+
+        <ul class="github-projects__grid" aria-busy="true" data-projects-list>
+            <li class="github-projects__loading" data-projects-loading aria-hidden="true">
+                <span></span><span></span><span></span>
+            </li>
+        </ul>
+
+        <noscript>
+            <p class="github-projects__fallback">
+                当前浏览器未启用 JavaScript，请前往
+                <a href="{{ $profileURL }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $username }} 的 GitHub 主页（新窗口）">{{ $username }} 的 GitHub 主页</a>
+                查看全部项目。
+            </p>
+        </noscript>
+    </section>
+
+    {{- $script := resources.Get "ts/githubProjects.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
+    <script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
+    {{ partialCached "footer/footer" . }}
+{{ end }}

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: zoking-blog-postgres
+    environment:
+      POSTGRES_DB: zoking_blog
+      POSTGRES_USER: zoking
+      POSTGRES_PASSWORD: zoking_dev_password
+      TZ: Asia/Shanghai
+    ports:
+      - "127.0.0.1:15432:5432"
+    volumes:
+      - zoking_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zoking -d zoking_blog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  zoking_pg_data:

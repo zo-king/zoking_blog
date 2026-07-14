@@ -1,0 +1,201 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zoking_blog}
+      POSTGRES_USER: ${POSTGRES_USER:-zoking}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      TZ: ${TZ:-Asia/Shanghai}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-zoking} -d ${POSTGRES_DB:-zoking_blog}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  site-init:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    user: "0:0"
+    restart: "no"
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        case "$${POSTGRES_PASSWORD}" in __REQUIRED_*|*change-me*) echo "POSTGRES_PASSWORD is still a placeholder" >&2; exit 1;; esac
+        case "$${JWT_SECRET}" in __REQUIRED_*|*change-me*) echo "JWT_SECRET is still a placeholder" >&2; exit 1;; esac
+        [ "$${#JWT_SECRET}" -ge 32 ] || { echo "JWT_SECRET must contain at least 32 characters" >&2; exit 1; }
+        cp -a /workspace/apps/site-template/. /workspace/apps/site/
+        chown -R 10001:10001 /workspace/apps/site /data
+    volumes:
+      - ../../apps/site:/workspace/apps/site-template:ro
+      - publisher_site:/workspace/apps/site
+      - media_data:/data/media
+      - site_releases:/data
+
+  api:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      site-init:
+        condition: service_completed_successfully
+    environment:
+      APP_ENV: production
+      APP_PORT: 18080
+      DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://zoking.tech}
+      ADMIN_ALLOWED_ORIGINS: ${ADMIN_ALLOWED_ORIGINS:-https://admin.zoking.tech}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1}
+      COMMENT_RATE_LIMIT_PER_MINUTE: ${COMMENT_RATE_LIMIT_PER_MINUTE:-10}
+      COMMENT_RATE_LIMIT_BURST: ${COMMENT_RATE_LIMIT_BURST:-5}
+      REQUEST_MAX_BYTES: ${REQUEST_MAX_BYTES:-16777216}
+      MEDIA_STORAGE_DRIVER: local
+      MEDIA_UPLOAD_MAX_CONCURRENCY: ${MEDIA_UPLOAD_MAX_CONCURRENCY:-4}
+      MEDIA_LOCAL_DIR: /data/media
+      MEDIA_PUBLIC_BASE_URL: /media-files
+      MEDIA_ORPHAN_GRACE_PERIOD: ${MEDIA_ORPHAN_GRACE_PERIOD:-168h}
+      MEDIA_CLEANUP_BATCH_SIZE: ${MEDIA_CLEANUP_BATCH_SIZE:-100}
+      HUGO_SITE_DIR: /workspace/apps/site
+      HUGO_PUBLIC_DIR: /data/current
+      HUGO_BIN: /usr/local/bin/hugo
+      MIGRATIONS_DIR: /workspace/db/migrations
+      PUBLISH_RELEASE_ROOT: ${PUBLISH_RELEASE_ROOT:-/data/releases}
+      PUBLISH_CURRENT_DIR: ${PUBLISH_CURRENT_DIR:-/data/current}
+      PUBLISH_PREVIEW_ROOT: ${PUBLISH_PREVIEW_ROOT:-/data/previews}
+      PUBLISH_PREVIEW_PUBLIC_BASE_URL: ${PUBLISH_PREVIEW_PUBLIC_BASE_URL:-https://preview.zoking.tech/preview-files}
+      PUBLISH_PREVIEW_TTL: ${PUBLISH_PREVIEW_TTL:-24h}
+      PUBLISH_PREVIEW_CLEANUP_INTERVAL: ${PUBLISH_PREVIEW_CLEANUP_INTERVAL:-1h}
+      PUBLISH_PREVIEW_CLEANUP_BATCH_SIZE: ${PUBLISH_PREVIEW_CLEANUP_BATCH_SIZE:-100}
+      PUBLISH_RELEASE_KEEP_LATEST: ${PUBLISH_RELEASE_KEEP_LATEST:-20}
+      PUBLISH_RELEASE_KEEP_DAYS: ${PUBLISH_RELEASE_KEEP_DAYS:-30}
+      PUBLISH_JOB_TIMEOUT: ${PUBLISH_JOB_TIMEOUT:-2m}
+      PUBLISH_MAX_RETRIES: ${PUBLISH_MAX_RETRIES:-3}
+      PUBLISH_WORKER_ENABLED: "false"
+      # Derived from PUBLIC_API_BASE_URL; do not introduce a second API URL.
+      HUGO_COMMENTS_API_BASE: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+    ports:
+      - "${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-18080}:18080"
+    volumes:
+      - ../../apps/site:/workspace/apps/site-template:ro
+      - publisher_site:/workspace/apps/site
+      - ../../db/migrations:/workspace/db/migrations:ro
+      - media_data:/data/media
+      - site_releases:/data
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      site-init:
+        condition: service_completed_successfully
+    command: ["/app/worker"]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
+      PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      # Derived from PUBLIC_API_BASE_URL; do not introduce a second API URL.
+      HUGO_COMMENTS_API_BASE: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      MEDIA_STORAGE_DRIVER: local
+      MEDIA_LOCAL_DIR: /data/media
+      MEDIA_PUBLIC_BASE_URL: /media-files
+      MEDIA_ORPHAN_GRACE_PERIOD: ${MEDIA_ORPHAN_GRACE_PERIOD:-168h}
+      MEDIA_CLEANUP_BATCH_SIZE: ${MEDIA_CLEANUP_BATCH_SIZE:-100}
+      HUGO_SITE_DIR: /workspace/apps/site
+      HUGO_PUBLIC_DIR: /data/current
+      HUGO_BIN: /usr/local/bin/hugo
+      MIGRATIONS_DIR: /workspace/db/migrations
+      PUBLISH_RELEASE_ROOT: ${PUBLISH_RELEASE_ROOT:-/data/releases}
+      PUBLISH_CURRENT_DIR: ${PUBLISH_CURRENT_DIR:-/data/current}
+      PUBLISH_PREVIEW_ROOT: ${PUBLISH_PREVIEW_ROOT:-/data/previews}
+      PUBLISH_PREVIEW_PUBLIC_BASE_URL: ${PUBLISH_PREVIEW_PUBLIC_BASE_URL:-https://preview.zoking.tech/preview-files}
+      PUBLISH_PREVIEW_TTL: ${PUBLISH_PREVIEW_TTL:-24h}
+      PUBLISH_PREVIEW_CLEANUP_INTERVAL: ${PUBLISH_PREVIEW_CLEANUP_INTERVAL:-1h}
+      PUBLISH_PREVIEW_CLEANUP_BATCH_SIZE: ${PUBLISH_PREVIEW_CLEANUP_BATCH_SIZE:-100}
+      PUBLISH_WORKER_POLL_INTERVAL: ${PUBLISH_WORKER_POLL_INTERVAL:-2s}
+      PUBLISH_JOB_TIMEOUT: ${PUBLISH_JOB_TIMEOUT:-2m}
+      PUBLISH_MAX_RETRIES: ${PUBLISH_MAX_RETRIES:-3}
+      PUBLISH_RELEASE_KEEP_LATEST: ${PUBLISH_RELEASE_KEEP_LATEST:-20}
+      PUBLISH_RELEASE_KEEP_DAYS: ${PUBLISH_RELEASE_KEEP_DAYS:-30}
+    volumes:
+      - ../../apps/site:/workspace/apps/site-template:ro
+      - publisher_site:/workspace/apps/site
+      - ../../db/migrations:/workspace/db/migrations:ro
+      - media_data:/data/media
+      - site_releases:/data
+
+  admin:
+    build:
+      context: ../..
+      dockerfile: apps/admin/Dockerfile
+    restart: unless-stopped
+    environment:
+      # Admin runtime config is derived from the same public URLs as API/Hugo.
+      ADMIN_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      ADMIN_SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
+    ports:
+      - "${ADMIN_BIND_ADDRESS:-127.0.0.1}:${ADMIN_PORT:-8081}:80"
+
+  seed:
+    profiles: ["tools"]
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:?SEED_ADMIN_EMAIL is required}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?SEED_ADMIN_PASSWORD is required}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        case "$${SEED_ADMIN_PASSWORD}" in __REQUIRED_*|*change-me*) echo "SEED_ADMIN_PASSWORD is still a placeholder" >&2; exit 1;; esac
+        [ "$${#SEED_ADMIN_PASSWORD}" -ge 16 ] || { echo "SEED_ADMIN_PASSWORD must contain at least 16 characters" >&2; exit 1; }
+        exec /app/seed
+
+  site:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+      worker:
+        condition: service_started
+    volumes:
+      - site_releases:/data:ro
+      - media_data:/data/media:ro
+      - ../../infra/docker/site.nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "${SITE_BIND_ADDRESS:-127.0.0.1}:${SITE_PORT:-1313}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+volumes:
+  postgres_data:
+  media_data:
+  site_releases:
+  publisher_site:

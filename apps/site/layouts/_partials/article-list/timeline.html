@@ -1,0 +1,32 @@
+<li class="archives-entry">
+    <time class="archives-entry__date" datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+        {{ .Date.Format "01月02日" }}
+    </time>
+    <article class="archives-entry__article">
+        <a class="archives-entry__link" href="{{ .RelPermalink }}">
+            <div class="archives-entry__content">
+                <h3 class="archives-entry__title">{{ .Title }}</h3>
+                {{ with .Params.description }}<p class="archives-entry__summary">{{ . }}</p>{{ end }}
+            </div>
+            {{- $image := partial "helper/image" (dict "Image" .Params.image "Resources" .Resources "Context" .) -}}
+            {{- with $image -}}
+                <div class="archives-entry__image">
+                    {{ partial "helper/thumbnail-image" (dict
+                        "Resource" .Resource
+                        "Width" 112
+                        "Height" 112
+                        "Resize" $.Site.Params.ImageProcessing.Thumbnail.Enabled
+                        "Attributes" (dict
+                            "src" .Permalink
+                            "alt" $.Title
+                            "aria-hidden" "true"
+                            "loading" "lazy"
+                            "width" .Width
+                            "height" .Height
+                        )
+                    ) }}
+                </div>
+            {{- end -}}
+        </a>
+    </article>
+</li>

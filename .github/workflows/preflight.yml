@@ -1,0 +1,121 @@
+name: Preflight
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  race:
+    name: Go race detector
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: zoking_blog_test
+          POSTGRES_USER: zoking
+          POSTGRES_PASSWORD: zoking_dev_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U zoking -d zoking_blog_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      APP_ENV: test
+      CGO_ENABLED: "1"
+      DATABASE_URL: postgres://zoking:zoking_dev_password@localhost:5432/zoking_blog_test?sslmode=disable
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Run focused Go race tests
+        working-directory: apps/api
+        shell: bash
+        run: |
+          go test -race -count=1 \
+            ./internal/httpapi \
+            ./internal/publisher \
+            ./internal/maintenance
+
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: zoking_blog_test
+          POSTGRES_USER: zoking
+          POSTGRES_PASSWORD: zoking_dev_password
+        ports:
+          - 15432:5432
+        options: >-
+          --health-cmd "pg_isready -U zoking -d zoking_blog_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+
+    env:
+      APP_ENV: test
+      APP_PORT: "18080"
+      DATABASE_URL: postgres://zoking:zoking_dev_password@localhost:15432/zoking_blog_test?sslmode=disable
+      JWT_SECRET: ci-only-change-me-with-long-random-string
+      ADMIN_ALLOWED_ORIGINS: http://localhost:5173
+      SEED_ADMIN_EMAIL: admin@zoking.local
+      SEED_ADMIN_PASSWORD: "ChangeMe123!"
+      PUBLISH_WORKER_ENABLED: "true"
+      PUBLISH_JOB_TIMEOUT: 3m
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.160.1"
+          extended: true
+
+      - name: Export Hugo binary path
+        shell: bash
+        run: echo "HUGO_BIN=$(command -v hugo)" >> "$GITHUB_ENV"
+
+      - name: Run deployment preflight
+        shell: pwsh
+        run: >
+          ./scripts/qa/preflight.ps1
+          -Install
+          -StartApi
+          -BootstrapTestData
+          -StopStartedApi
+          -AdminEmail $env:SEED_ADMIN_EMAIL
+          -AdminPassword $env:SEED_ADMIN_PASSWORD
+          -PublishTimeoutSeconds 240

@@ -1,0 +1,16 @@
+{{- $related := (.Site.RegularPages.Related .) | first 5 -}}
+{{- if eq (len $related) 0 -}}
+    {{- $candidates := where .Site.RegularPages "Section" .Section -}}
+    {{- $candidates = where $candidates "RelPermalink" "ne" .RelPermalink -}}
+    {{- $related = $candidates | first 3 -}}
+{{- end -}}
+{{ with $related }}
+<aside aria-labelledby="related-content-title">
+    <h2 class="section-title" id="related-content-title">{{ T "article.relatedContent" }}</h2>
+    <div class="subsection-list">
+        <div class="article-list--tile">
+            {{ range . }}{{ partial "article-list/tile" . }}{{ end }}
+        </div>
+    </div>
+</aside>
+{{ end }}

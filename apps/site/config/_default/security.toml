@@ -1,0 +1,3 @@
+[security]
+    [security.funcs]
+        getenv = ['^HUGO_COMMENTS_API_BASE$']

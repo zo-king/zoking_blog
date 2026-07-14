@@ -1,0 +1,74 @@
+<aside class="sidebar left-sidebar sticky {{ if .Site.Params.sidebar.compact }}compact{{ end }}" aria-label="站点导航">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="{{ T `toggleMenu` }}" aria-controls="main-menu" aria-expanded="false">
+        <span class="hamburger-box"><span class="hamburger-inner"></span></span>
+    </button>
+
+    <header>
+        {{ with .Site.Params.sidebar.avatar }}
+            {{- $avatar := partial "helper/image" (dict "Image" . "Resources" resources "Context" $) -}}
+            <figure class="site-avatar">
+                <a href="{{ $.Site.Home.RelPermalink }}" aria-label="返回首页">
+                    <img src="{{ $avatar.Permalink }}" width="{{ $avatar.Width }}" height="{{ $avatar.Height }}" class="site-logo" alt="Zoking 博客头像">
+                </a>
+                {{ with $.Site.Params.sidebar.emoji }}<span class="emoji" aria-hidden="true">{{ . }}</span>{{ end }}
+            </figure>
+        {{ end }}
+
+        <div class="site-meta">
+            {{ if .IsHome }}
+                <h1 class="site-name"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a></h1>
+            {{ else }}
+                <p class="site-name"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a></p>
+            {{ end }}
+            <p class="site-description">{{ .Site.Params.sidebar.subtitle }}</p>
+        </div>
+    </header>
+
+    {{- $posts := where .Site.RegularPages "Section" "post" -}}
+    {{- $totalWords := 0 -}}
+    {{- range $posts -}}{{- $totalWords = add $totalWords .WordCount -}}{{- end -}}
+    <dl class="profile-stats" aria-label="站点统计">
+        <div><dt>{{ len $posts }}</dt><dd>文章</dd></div>
+        <div><dt>{{ len .Site.Taxonomies.categories }}</dt><dd>分类</dd></div>
+        <div><dt>{{ div $totalWords 1000 }}k</dt><dd>字数</dd></div>
+    </dl>
+
+    {{- with .Site.Menus.social }}
+        <ol class="menu-social">
+            {{ range . }}
+                <li><a href='{{ .URL }}' {{ if .Params.newTab }}target="_blank"{{ end }} {{ with .Name }}title="{{ . }}" aria-label="{{ . }}"{{ end }} rel="me">
+                    {{ partial "helper/icon" (default "link" .Params.Icon) }}
+                </a></li>
+            {{ end }}
+        </ol>
+    {{- end }}
+
+    <ol class="menu" id="main-menu">
+        {{ $currentPage := . }}
+        {{ range .Site.Menus.main }}
+            {{ $active := or (eq $currentPage.RelPermalink .URL) (or ($currentPage.HasMenuCurrent "main" .) ($currentPage.IsMenuCurrent "main" .)) }}
+            <li {{ if $active }}class="current"{{ end }}>
+                <a href='{{ .URL }}' {{ if .Params.newTab }}target="_blank"{{ end }} {{ if $active }}aria-current="page"{{ end }}>
+                    {{ with .Params.Icon }}{{ partial "helper/icon" . }}{{ end }}<span>{{ .Name }}</span>
+                </a>
+            </li>
+        {{ end }}
+        {{ if hugo.IsMultilingual }}
+            <li class="menu-bottom-section">
+                <ol class="menu">
+                    {{- $currentLanguageCode := .Language.Name -}}
+                    <li id="i18n-switch">
+                        {{ partial "helper/icon" "language" }}
+                        <select name="language" aria-label="选择语言" onchange="window.location.href = this.selectedOptions[0].value">
+                            {{ range .Site.Home.AllTranslations }}
+                                {{ $target := . }}
+                                {{ range $.AllTranslations }}{{ if eq .Language.Name $target.Language.Name }}{{ $target = . }}{{ end }}{{ end }}
+                                <option value="{{ $target.RelPermalink }}" {{ if eq $target.Language.Name $currentLanguageCode }}selected{{ end }}>{{ .Language.Label }}</option>
+                            {{ end }}
+                        </select>
+                    </li>
+                </ol>
+            </li>
+        {{ end }}
+    </ol>
+</aside>
