@@ -1392,3 +1392,13 @@
 - 模块路径：API、Site 与工程文档中的 Go module/import 路径统一为 `github.com/zo-king/zoking_blog/...`，避免新仓库地址与包标识长期不一致。
 - 历史策略：以当前已验证工作树生成单一干净根提交并推送为 `main`，不携带已删除仓库的合并历史；Theme Stack 远程继续保留为 `upstream`。
 - 发布基线：新仓库 `main` 是后续提交、CI、部署和新窗口接力的唯一代码基线。
+
+## 2026-07-15 - CENTER - SITE-DISCOVERY-P29-001 BLOG DISCOVERY AND COMMAND PALETTE
+
+- 调研：在线检查 `lvyovo-wiki.tech/bloggers` 的 Next.js/Motion/Canvas 实现，并对照 Anthony Fu、Innei、Josh Comeau、Rauno 与 Cassie Evans；采用局部反馈与互动内容，拒绝全站持续 Canvas、自定义鼠标、整卡 1.05 放大和玻璃卡堆叠。
+- 友链：从 3 项扩充为 9 项常读站点，增加显式分类、名称/简介/域名搜索、结果计数和仅在当前可见结果内随机拜访；头像继续使用站点 favicon、DuckDuckGo、首字母三级回退，改为 lazy/async 加载。
+- 快捷面板：顶部增加图标入口，全站支持 `Ctrl/Cmd+K`；面板由现有主导航、搜索页、随机文章和主题切换动态组成，支持输入过滤、上下键、Enter、Escape、焦点恢复和焦点循环，无 JavaScript 时不影响原导航。
+- 动效：使用浏览器 Web Animations API 为首页文章和友链卡片提供一次性 `opacity + translateY(8px)`、220ms 入场；等待开屏退出后启动，`prefers-reduced-motion` 下完全跳过，不引入第三方动画运行时。
+- QA：新增 `scripts/qa/site-discovery-p29.mjs`，覆盖 9 项渲染、搜索、分类、随机范围、快捷导航、主题命令、1280/390、横向溢出与 reduced-motion；同步更新 P21 友链数量/元数据回归。专项 P29 与 P21 均通过，零 page/console error。
+- 证据：`docs/process/evidence/site-discovery-links-p29-1280x900.png`、`site-command-palette-p29-1280x900.png`、`site-command-palette-p29-390x844.png`。
+- 状态：`SITE-DISCOVERY-P29-001` Done，`LOCK-SITE-DISCOVERY-P29` 已释放。

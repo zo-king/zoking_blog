@@ -1,0 +1,164 @@
+.command-palette[hidden] {
+    display: none;
+}
+
+.command-palette {
+    inset: 0;
+    opacity: 0;
+    position: fixed;
+    transition: opacity 160ms ease;
+    z-index: 1200;
+}
+
+.command-palette.is-open {
+    opacity: 1;
+}
+
+.command-palette-open {
+    overflow: hidden;
+}
+
+.command-palette__backdrop {
+    background: rgba(15, 23, 42, 0.42);
+    inset: 0;
+    position: absolute;
+}
+
+.command-palette__dialog {
+    background: var(--card-background);
+    border: 1px solid var(--card-separator-color);
+    border-radius: 8px;
+    box-shadow: var(--shadow-l2);
+    display: flex;
+    flex-direction: column;
+    left: 50%;
+    max-height: 70vh;
+    max-width: 620px;
+    overflow: hidden;
+    position: absolute;
+    top: 11vh;
+    transform: translate(-50%, -8px);
+    transition: transform 160ms ease;
+    width: calc(100% - 32px);
+}
+
+.command-palette.is-open .command-palette__dialog {
+    transform: translate(-50%, 0);
+}
+
+.command-palette__header {
+    align-items: center;
+    border-bottom: 1px solid var(--card-separator-color);
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 22px minmax(0, 1fr) 36px;
+    min-height: 58px;
+    padding: 0 12px 0 16px;
+}
+
+.command-palette__header > svg {
+    color: var(--card-text-color-tertiary);
+    height: 20px;
+    width: 20px;
+}
+
+.command-palette__header label {
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+}
+
+.command-palette__header input {
+    background: transparent;
+    border: 0;
+    color: var(--card-text-color-main);
+    font: inherit;
+    font-size: 1.5rem;
+    min-width: 0;
+    outline: 0;
+    padding: 16px 0;
+}
+
+.command-palette__header input::placeholder {
+    color: var(--card-text-color-tertiary);
+}
+
+.command-palette__close {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--card-text-color-secondary);
+    cursor: pointer;
+    display: flex;
+    font-size: 2.4rem;
+    height: 36px;
+    justify-content: center;
+    padding: 0;
+    width: 36px;
+}
+
+.command-palette__list {
+    display: grid;
+    gap: 2px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.command-palette__list > a,
+.command-palette__list > button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 5px;
+    color: var(--card-text-color-main);
+    cursor: pointer;
+    display: grid;
+    font: inherit;
+    font-size: 1.4rem;
+    gap: 12px;
+    grid-template-columns: 22px minmax(0, 1fr);
+    min-height: 48px;
+    padding: 9px 12px;
+    text-align: left;
+    text-decoration: none;
+    width: 100%;
+}
+
+.command-palette__list > [hidden] {
+    display: none;
+}
+
+.command-palette__list > :is(a, button):hover,
+.command-palette__list > :is(a, button):focus-visible,
+.command-palette__list > .is-active {
+    background: var(--card-background-selected);
+    color: var(--accent-color);
+    outline: 0;
+}
+
+.command-palette__list svg {
+    height: 19px;
+    width: 19px;
+}
+
+.command-palette__empty {
+    color: var(--card-text-color-secondary);
+    margin: 0;
+    padding: 28px 20px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .command-palette__dialog {
+        max-height: calc(100vh - 32px);
+        top: 16px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .command-palette,
+    .command-palette__dialog {
+        transition: none;
+    }
+}

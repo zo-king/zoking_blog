@@ -1,8 +1,31 @@
-<section class="links-directory" aria-labelledby="links-directory-title">
+{{- $categories := slice -}}
+{{- range $link := .Params.links -}}
+    {{- $category := default "其他" $link.category -}}
+    {{- if not (in $categories $category) -}}{{- $categories = $categories | append $category -}}{{- end -}}
+{{- end -}}
+<section class="links-directory" aria-labelledby="links-directory-title" data-links-directory>
     <h2 class="section-title" id="links-directory-title">常读站点</h2>
+    <div class="links-directory__toolbar">
+        <div class="links-directory__search">
+            {{ partial "helper/icon" "search" }}
+            <input type="search" inputmode="search" placeholder="搜索名称、简介或域名" aria-label="搜索常读站点" data-links-search>
+        </div>
+        <button class="links-directory__random" type="button" data-links-random>
+            {{ partial "helper/icon" "infinity" }}
+            <span>随机拜访</span>
+        </button>
+    </div>
+    <div class="links-directory__filters" role="group" aria-label="站点分类">
+        <button type="button" class="is-active" data-links-filter="all" aria-pressed="true">全部</button>
+        {{- range $categories }}
+            <button type="button" data-links-filter="{{ . }}" aria-pressed="false">{{ . }}</button>
+        {{- end }}
+    </div>
+    <p class="links-directory__status" data-links-status aria-live="polite">共 {{ len .Params.links }} 个站点</p>
     <div class="links-directory__grid">
         {{- range $link := .Params.links -}}
             {{- $parsed := urls.Parse $link.website -}}
+            {{- $category := default "其他" $link.category -}}
             {{- $favicon := "" -}}
             {{- $faviconFallback := "" -}}
             {{- with $parsed -}}
@@ -12,22 +35,25 @@
                 {{- end -}}
             {{- end -}}
             {{- $fallback := substr $link.title 0 1 -}}
-            <article class="links-card">
+            {{- $host := "" -}}{{- with $parsed.Host -}}{{- $host = . -}}{{- end -}}
+            {{- $searchText := printf "%s %s %s %s" $link.title (default "" $link.description) $host $category -}}
+            <article class="links-card" data-link-card data-link-category="{{ $category }}" data-link-search="{{ $searchText | plainify }}" data-reveal>
                 <a class="links-card__link" href="{{ $link.website }}" target="_blank" rel="noopener noreferrer">
                     <span class="links-card__avatar" data-link-avatar data-fallback="{{ $fallback }}" aria-hidden="true">
                         <span class="links-card__fallback">{{ $fallback }}</span>
-                        {{- if $favicon -}}<img src="{{ $favicon }}" alt="" loading="eager" referrerpolicy="no-referrer" data-fallback-src="{{ $faviconFallback }}">{{- end -}}
+                        {{- if $favicon -}}<img src="{{ $favicon }}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-fallback-src="{{ $faviconFallback }}">{{- end -}}
                     </span>
                     <span class="links-card__body">
                         <strong class="links-card__title">{{ $link.title }}</strong>
                         <span class="links-card__description">
                             {{ with $link.description }}{{ . }}{{ else }}{{ $link.website }}{{ end }}
                         </span>
-                        {{ with $parsed.Host }}<span class="links-card__host">{{ . }}</span>{{ end }}
+                        <span class="links-card__meta"><span>{{ $category }}</span>{{ with $parsed.Host }}<span>{{ . }}</span>{{ end }}</span>
                     </span>
                     <span class="links-card__arrow" aria-hidden="true">↗</span>
                 </a>
             </article>
         {{- end -}}
     </div>
+    <p class="links-directory__empty" data-links-empty hidden>没有找到匹配的站点。</p>
 </section>

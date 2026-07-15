@@ -5,6 +5,8 @@
         {{- block "head" . -}}{{ end }}
         {{- $splashStyle := resources.Get "scss/splash.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
         <link rel="stylesheet" href="{{ $splashStyle.RelPermalink }}" integrity="{{ $splashStyle.Data.Integrity }}">
+        {{- $commandStyle := resources.Get "scss/command-palette.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+        <link rel="stylesheet" href="{{ $commandStyle.RelPermalink }}" integrity="{{ $commandStyle.Data.Integrity }}">
     </head>
     <body class="{{ block `body-class` . }}{{ end }}">
         <div class="site-splash" id="site-splash" role="dialog" aria-label="Zoking 博客开屏">
@@ -26,6 +28,9 @@
                     {{- with .Site.GetPage "/page/about" }}
                         <a href="{{ .RelPermalink }}">关于</a>
                     {{- end }}
+                    <button class="site-topbar__icon" type="button" data-command-open aria-label="打开快捷面板" title="快捷面板" aria-haspopup="dialog" aria-controls="site-command-palette">
+                        {{ partial "helper/icon" "search" }}
+                    </button>
                     <a class="site-topbar__icon" href="https://github.com/zo-king" target="_blank" rel="me noopener" aria-label="GitHub" title="GitHub">
                         {{ partial "helper/icon" "brand-github" }}
                     </a>
@@ -41,6 +46,42 @@
                 </nav>
             </div>
         </header>
+        {{- $postURLs := slice -}}
+        {{- range where .Site.RegularPages "Section" "post" -}}{{- $postURLs = $postURLs | append .RelPermalink -}}{{- end -}}
+        <div class="command-palette" id="site-command-palette" data-command-palette hidden>
+            <div class="command-palette__backdrop" data-command-close></div>
+            <section class="command-palette__dialog" role="dialog" aria-modal="true" aria-labelledby="command-palette-title">
+                <header class="command-palette__header">
+                    {{ partial "helper/icon" "search" }}
+                    <label id="command-palette-title" for="command-palette-input">快捷面板</label>
+                    <input id="command-palette-input" type="search" autocomplete="off" placeholder="搜索页面和操作" data-command-input role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="command-palette-list">
+                    <button type="button" class="command-palette__close" data-command-close aria-label="关闭快捷面板"><span aria-hidden="true">×</span></button>
+                </header>
+                <div class="command-palette__list" id="command-palette-list" role="listbox" data-command-list>
+                    {{- range .Site.Menus.main }}
+                        <a id="command-item-{{ .Identifier | default (.Name | urlize) }}" role="option" aria-selected="false" tabindex="-1" href="{{ .URL }}" data-command-item data-command-search="{{ .Name }} 页面 导航">
+                            {{ partial "helper/icon" (default "link" .Params.Icon) }}
+                            <span>{{ .Name }}</span>
+                        </a>
+                    {{- end }}
+                    {{- with .Site.GetPage "/page/search" }}
+                        <a id="command-item-search" role="option" aria-selected="false" tabindex="-1" href="{{ .RelPermalink }}" data-command-item data-command-search="搜索 文章 内容">
+                            {{ partial "helper/icon" "search" }}
+                            <span>搜索文章</span>
+                        </a>
+                    {{- end }}
+                    <button id="command-item-random" role="option" aria-selected="false" tabindex="-1" type="button" data-command-item data-command-random data-command-posts="{{ $postURLs | jsonify }}" data-command-search="随机文章 随便看看">
+                        {{ partial "helper/icon" "infinity" }}
+                        <span>随机文章</span>
+                    </button>
+                    <button id="command-item-theme" role="option" aria-selected="false" tabindex="-1" type="button" data-command-item data-command-theme data-command-search="主题 深色 浅色 外观">
+                        {{ partial "helper/icon" "toggle-left" }}
+                        <span>切换明暗主题</span>
+                    </button>
+                </div>
+                <p class="command-palette__empty" data-command-empty hidden>没有匹配的页面或操作。</p>
+            </section>
+        </div>
         {{- $hasWidget := false -}}
         {{- range .Site.Params.widgets -}}
             {{- if gt (len .) 0 -}}{{- $hasWidget = true -}}{{- end -}}

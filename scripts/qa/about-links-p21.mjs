@@ -79,9 +79,9 @@ try {
     assert((await page.locator("main h1").count()) === 1, "links page must have one H1");
     assert((await page.locator(".related-content, #related-content-title").count()) === 0, "links page still contains related content");
     const cards = page.locator(".links-card");
-    assert((await cards.count()) === 3, `expected 3 link cards, got ${await cards.count()}`);
-    assert((await page.locator(".links-card__host").count()) === 3, "link hosts are missing");
-    assert((await page.locator(".links-card__arrow").count()) === 3, "external link indicators are missing");
+    assert((await cards.count()) === 9, `expected 9 link cards, got ${await cards.count()}`);
+    assert((await page.locator(".links-card__meta").count()) === 9, "link metadata is missing");
+    assert((await page.locator(".links-card__arrow").count()) === 9, "external link indicators are missing");
     const avatarScript = await page.locator('script[src*="linksAvatars"]').getAttribute("src");
     assert(avatarScript, "links avatar script is missing");
     await page.waitForTimeout(250);
@@ -90,7 +90,7 @@ try {
       hasImage: Boolean(element.querySelector("img")),
     })));
     const initialErrors = [...errors];
-    assert(avatarState.length === 3, `avatar containers are missing: ${JSON.stringify(avatarState)}`);
+    assert(avatarState.length === 9, `avatar containers are missing: ${JSON.stringify(avatarState)}`);
     const fixtureAvatar = page.locator(".links-card__avatar").last();
     await fixtureAvatar.evaluate((avatar) => {
       avatar.querySelector("img")?.remove();

@@ -1,6 +1,6 @@
 # 项目上下文交接
 
-本文件是新窗口接手时的当前事实源，不是历史工作日志。更新时间：2026-07-14。
+本文件是新窗口接手时的当前事实源，不是历史工作日志。更新时间：2026-07-15。
 
 ## 当前结论
 
@@ -34,6 +34,7 @@
 - P26 已将首页分页调整为每页 6 篇，并新增置顶个人介绍文章 `/p/about-zoking/`，使用现有 `/img/showcase/architecture.jpg` 封面；基础模板已加入一次会话开屏动画，支持跳过、Escape、sessionStorage 和 reduced-motion，详情见 `docs/qa/site-home-splash-p26.md`。
 - P27 已用 MIT SpinKit `circle-fade` 思路替换 P26 原开屏视觉，只保留站名和八点淡入环并缩短为 1.4 秒；首页右栏新增 Pixiv 每日排行 iframe widget，限制前 10 项、380px 高、lazy/no-referrer/sandbox，明暗主题及 1280/1024/390 已验收，详情见 `docs/qa/site-visual-widget-p27.md`。
 - P28 已把首页右栏固定为“大家抢着看 → Pixiv 每日排行 → 一言”：热门文章按本地 slug 白名单稳定解析，一言具备可视区懒加载、5 秒超时、30 分钟会话缓存、刷新和本地寄语降级；production/minify 61 pages 与 1280/1024/390 Edge headless 矩阵通过，详情及上传清单见 `docs/qa/site-sidebar-widgets-p28.md`。
+- P29 已把友链升级为 9 项博客发现目录，支持站内搜索、分类筛选、仅在当前结果中随机拜访；全站新增 `Ctrl/Cmd+K` 快捷面板，可导航、搜索文章、随机文章和切换主题。首页文章与友链卡片只执行一次 220ms 原生入场动画，reduced-motion 完全关闭，未引入 Motion/Canvas 等依赖。
 
 ## 全栈能力
 
@@ -135,7 +136,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 
 ## 当前边界与下一步
 
-当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27 与 P28 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，但都不应阻塞本站正文阅读。
+当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28 与 P29 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，但都不应阻塞本站正文阅读。
 
 当前 Go 位于 `E:\Editor\go`，版本 `go1.25.4`，Windows 本机 `CGO_ENABLED=0`；Linux race 已通过 `golang:1.25-bookworm` 容器并连接 `zoking_blog_test` 执行，CI 也已配置 PostgreSQL race job。seed 双进程首次初始化、Preview finish/fail 终态竞争和发布失败不变式均已完成隔离数据库验证。
 
