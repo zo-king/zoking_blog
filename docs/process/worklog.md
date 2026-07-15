@@ -1411,3 +1411,12 @@
 - 当前数据：真实同步得到 4 个 `zo-king` 公开非 Fork/归档仓库，页面明确显示快照日期；桌面双列、390/320 单列布局保持稳定。
 - QA：同步 fixture 黑盒覆盖鉴权、过滤、排序、字段白名单、不安全 URL 和失败不覆盖；Playwright 覆盖静态卡片顺序、零 GitHub API 请求、旧脚本缺失、1280/390/320 与零运行时错误。
 - 证据：`github-p30-projects-static-1280x800.png`、`github-p30-projects-static-390x844.png`；状态 Done，文件锁已释放。
+
+## 2026-07-15 - CENTER - SITE-NAVIGATION-NOW-P31-001 BLOG MOTION AND NOW PAGE
+
+- 调研：并行检查 20 余个中日与西方个人技术博客，重点复核页面过渡、活动目录、阅读设置、脚注、链接预览和 `/now`；实际浏览器检查确认 `shud.in`、Maggie Appleton、Paco Coursey 等使用 View Transition 或等价连续性处理。
+- 去重：本站已有阅读进度、30 天断点续读、TOC scrollspy、标题锚点、代码复制、分享、上一篇/下一篇和命令面板，因此撤回未提交的返回顶部方案，不增加第二套阅读侧轨或文章快捷键。
+- 动效：`custom.scss` 启用原生跨文档 View Transition，只使用 140ms 淡出、180ms 淡入与 4px 位移；不拦截链接、不引入运行时依赖，reduced-motion 下动画为 none。
+- 内容：新增 `/now/` 近况页，包含“正在开发、正在学习、最近关注”，进入主菜单并由现有快捷面板自动索引；它与关于、成果时间线分工明确，后续直接替换已结束事项。
+- QA：新增 P31 Playwright，覆盖真实 `pageswap/pagereveal.viewTransition`、CSS 动画名、reduced-motion、主菜单、命令面板、浏览器前进后退、canonical、唯一 H1、1280/390、横向溢出和零运行时错误。
+- 状态：`SITE-NAVIGATION-NOW-P31-001` Done，文件锁已释放；下一候选为轻量阅读设置，不包含重型字体/SVG 资源。

@@ -35,6 +35,7 @@
 - P27 已用 MIT SpinKit `circle-fade` 思路替换 P26 原开屏视觉，只保留站名和八点淡入环并缩短为 1.4 秒；首页右栏新增 Pixiv 每日排行 iframe widget，限制前 10 项、380px 高、lazy/no-referrer/sandbox，明暗主题及 1280/1024/390 已验收，详情见 `docs/qa/site-visual-widget-p27.md`。
 - P28 已把首页右栏固定为“大家抢着看 → Pixiv 每日排行 → 一言”：热门文章按本地 slug 白名单稳定解析，一言具备可视区懒加载、5 秒超时、30 分钟会话缓存、刷新和本地寄语降级；production/minify 61 pages 与 1280/1024/390 Edge headless 矩阵通过，详情及上传清单见 `docs/qa/site-sidebar-widgets-p28.md`。
 - P29 已把友链升级为 9 项博客发现目录，支持站内搜索、分类筛选、仅在当前结果中随机拜访；全站新增 `Ctrl/Cmd+K` 快捷面板，可导航、搜索文章、随机文章和切换主题。首页文章与友链卡片只执行一次 220ms 原生入场动画，reduced-motion 完全关闭，未引入 Motion/Canvas 等依赖。
+- P31 已加入原生跨文档 View Transition，同源页面使用 140/180ms 淡出淡入和 4px 小位移，reduced-motion 下关闭；新增 `/now/` 近况页，进入主菜单和快捷面板，记录当前开发、学习与关注事项。
 
 ## 全栈能力
 
@@ -130,13 +131,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 - P17 Admin 证据：`docs/process/evidence/content-quality-p17-desktop-1280x720.png`、`docs/process/evidence/content-quality-p17-mobile-390x844.png`；QA 记录为 `docs/qa/content-quality-p17.md`。
 - P18 证据：`docs/process/evidence/series-p18-site-desktop-1280x800.png`、`docs/process/evidence/series-p18-site-mobile-390x844.png`、`docs/process/evidence/series-p18-admin-live-1280x720.png`；QA 记录为 `docs/qa/structured-series-p18.md`。
 - P30 项目快照证据：`docs/process/evidence/github-p30-projects-static-1280x800.png`、`docs/process/evidence/github-p30-projects-static-390x844.png`；QA 记录为 `docs/qa/github-projects-p19.md` 与 `docs/qa/github-project-sync-p30.md`。
+- P31 导航与近况证据：`docs/process/evidence/site-p31-now-desktop-1280x900.png`、`docs/process/evidence/site-p31-now-mobile-390x844.png`；QA 记录为 `docs/qa/site-navigation-now-p31.md`。
 - P20 证据：`docs/process/evidence/archive-p20-desktop-1280x800.png`、`docs/process/evidence/archive-p20-dark-1280x800.png`、`docs/process/evidence/archive-p20-mobile-390x844.png`、`docs/process/evidence/archive-p20-mobile-320x568.png`；QA 记录为 `docs/qa/archive-timeline-p20.md`。
 - P21 证据：`docs/process/evidence/about-p21-1280x800.png`、`docs/process/evidence/about-p21-390x844.png`、`docs/process/evidence/links-p21-1280x800.png`、`docs/process/evidence/links-p21-390x844.png`；QA 记录为 `docs/qa/about-links-p21.md`。
 - Admin 最近确认的依赖版本以 `apps/admin/package-lock.json` 为准；不要根据旧工作日志恢复 React 19 或 Ant Design。
 
 ## 当前边界与下一步
 
-当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29 与 P30 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
+当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29、P30 与 P31 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
 
 当前 Go 位于 `E:\Editor\go`，版本 `go1.25.4`，Windows 本机 `CGO_ENABLED=0`；Linux race 已通过 `golang:1.25-bookworm` 容器并连接 `zoking_blog_test` 执行，CI 也已配置 PostgreSQL race job。seed 双进程首次初始化、Preview finish/fail 终态竞争和发布失败不变式均已完成隔离数据库验证。
 
