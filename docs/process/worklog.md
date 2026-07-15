@@ -1478,3 +1478,11 @@
 - QA：P36 专项覆盖语义、排序、hash、动画、同源请求、无 JS 和 1280/390/320；P22 成果时间线、P29 发现、P34 打印/Feed 回归通过。P20 旧脚本依赖运行中 API 的固定三条 fixture，本轮使用其后继 P22 覆盖无 API 预览边界。
 - Preflight：`preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 与 Hugo production build 63 pages。
 - 证据：`site-p36-post-archive-desktop-1280x900.png`、`site-p36-post-archive-mobile-390x844.png`；状态 Done，`LOCK-SITE-POST-ARCHIVE-P36` 已释放。
+
+## 2026-07-15 - CENTER - SITE-POST-ARCHIVE-P36-001 USER REJECTION
+
+- 用户视觉审核结论：按年份分组的 `/post/` 文章年表“好丑”，要求删除。
+- 撤销：删除 P36 post list 覆盖模板、独立 SCSS、专项 Playwright、前端/QA 文档和截图证据，`apps/site/content/post/_index.md` 恢复原描述。
+- 保留：调研记录改为“未采用”，任务状态改为 Superseded，交接文档明确禁止后续窗口恢复同一视觉方案。
+- 页面结果：`/post/` 恢复 Theme Stack 默认文章列表；P35 及其他站点能力不受影响。
+- 验证：清理 Hugo 生成缓存并重启 1313 预览，`/post/` 返回 200、`post-archive-list` 不存在、`article-list--compact` 恢复；production build 63 pages 与 `preflight.ps1 -SkipE2E` 的 Go/Admin/Hugo 全部通过。
