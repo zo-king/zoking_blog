@@ -19,6 +19,17 @@
         {{ with $Page.Params.description }}
         <p class="article-subtitle">{{ . }}</p>
         {{ end }}
+        {{- if not $IsList -}}
+            {{- $authorName := $Page.Site.Title -}}
+            {{- with $Page.Site.Params.author -}}
+                {{- if reflect.IsMap . -}}
+                    {{- with .name -}}{{- $authorName = . -}}{{- end -}}
+                {{- else -}}
+                    {{- $authorName = . -}}
+                {{- end -}}
+            {{- end -}}
+            <p class="article-print-byline" hidden>作者：{{ $authorName }}</p>
+        {{- end -}}
     </div>
 
     {{ $showReadingTime := $Page.Params.readingTime | default ($Page.Site.Params.article.readingTime) }}

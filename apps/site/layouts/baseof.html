@@ -11,6 +11,8 @@
         {{- if $isArticle }}
         {{- $readingSettingsStyle := resources.Get "scss/reading-settings.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
         <link rel="stylesheet" href="{{ $readingSettingsStyle.RelPermalink }}" integrity="{{ $readingSettingsStyle.Data.Integrity }}">
+        {{- $printStyle := resources.Get "scss/print.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+        <link rel="stylesheet" href="{{ $printStyle.RelPermalink }}" integrity="{{ $printStyle.Data.Integrity }}" media="print">
         <script>
             try {
                 const preferences = JSON.parse(localStorage.getItem("zoking:reading-preferences:v1") || "null");

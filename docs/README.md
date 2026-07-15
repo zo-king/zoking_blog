@@ -29,6 +29,7 @@
 - [数据库工程规划](database/database-plan.md)
 - [C 端 Stack 集成规范](frontend/site-stack-integration.md)
 - [P33 文章轻量工具](frontend/article-utilities-p33.md)
+- [P34 打印与订阅发现](frontend/print-discovery-p34.md)
 - [B 端后台技术决策](frontend/admin-tech-decision.md)
 - [前后台前端规划](frontend/frontend-plan.md)
 - [运维与部署规划](operations/README.md)
@@ -46,6 +47,7 @@
 - [测试与验收策略](qa/test-strategy.md)
 - [部署前检查脚本](qa/preflight.md)
 - [P33 文章工具验收](qa/site-article-utilities-p33.md)
+- [P34 打印与订阅发现验收](qa/site-print-discovery-p34.md)
 - [参考资料](references/sources.md)
 
 ## 新窗口接手顺序

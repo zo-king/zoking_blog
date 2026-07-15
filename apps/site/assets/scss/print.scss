@@ -1,0 +1,210 @@
+@page {
+    margin: 16mm 15mm 18mm;
+    size: A4;
+}
+
+@media print {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    html,
+    body {
+        background: #fff !important;
+        background-color: #fff !important;
+        color: #111 !important;
+        color-scheme: light !important;
+        font-size: 10pt;
+        print-color-adjust: economy;
+    }
+
+    html {
+        --body-background: #fff !important;
+        --card-background: #fff !important;
+        --card-background-selected: #fff !important;
+    }
+
+    .site-splash,
+    .site-topbar,
+    .skip-link,
+    .left-sidebar,
+    .right-sidebar,
+    .command-palette,
+    .reading-settings,
+    .reading-progress,
+    .article-toc,
+    .article-navigation,
+    .article-series,
+    .public-comments,
+    .site-footer,
+    .subsection-list,
+    .code-block-toolbar,
+    .header-anchor {
+        display: none !important;
+    }
+
+    .main-container,
+    .main-container.extended,
+    main.main {
+        display: block !important;
+        margin: 0 !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    .main-article {
+        background: #fff !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        color: #111 !important;
+        overflow: visible !important;
+    }
+
+    .article-header,
+    .article-details,
+    .article-content,
+    .article-footer {
+        background: transparent !important;
+        color: #111 !important;
+        padding-inline: 0 !important;
+    }
+
+    .article-details {
+        border-bottom: 1px solid #bbb;
+        padding-bottom: 10pt !important;
+    }
+
+    .article-title {
+        color: #000 !important;
+        font-size: 22pt !important;
+        line-height: 1.25 !important;
+    }
+
+    .article-subtitle {
+        color: #333 !important;
+        font-size: 11pt !important;
+    }
+
+    .article-category a {
+        background: transparent !important;
+        color: #333 !important;
+        padding: 0 !important;
+    }
+
+    .article-print-byline {
+        color: #333 !important;
+        display: block !important;
+        font-size: 9.5pt;
+        margin: 7pt 0 0;
+    }
+
+    .article-meta,
+    .article-meta time,
+    .article-meta span,
+    .article-meta a {
+        color: #333 !important;
+    }
+
+    .article-meta svg,
+    .article-footer .article-tags {
+        display: none !important;
+    }
+
+    .article-content {
+        font-size: 11pt !important;
+        line-height: 1.65 !important;
+    }
+
+    .article-content h1,
+    .article-content h2,
+    .article-content h3,
+    .article-content h4,
+    .article-content h5,
+    .article-content h6 {
+        border-inline-start: 2px solid #555 !important;
+        break-after: avoid-page;
+        color: #000 !important;
+        margin-inline: 0 !important;
+        page-break-after: avoid;
+        padding-inline-start: 8pt !important;
+    }
+
+    .article-content p,
+    .article-content li {
+        orphans: 3;
+        widows: 3;
+    }
+
+    .article-content a {
+        color: #111 !important;
+        text-decoration: underline !important;
+    }
+
+    .article-content img,
+    .article-content figure,
+    .article-content blockquote,
+    .article-content table,
+    .article-content .highlight {
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+    }
+
+    .article-content img {
+        height: auto !important;
+        max-width: 100% !important;
+    }
+
+    .article-content blockquote {
+        border-color: #888 !important;
+        color: #222 !important;
+    }
+
+    .article-content .highlight {
+        background: #f7f7f7 !important;
+        border: 1px solid #ccc;
+        box-shadow: none !important;
+        color: #111 !important;
+        margin-inline: 0 !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+        padding: 9pt !important;
+        width: auto !important;
+    }
+
+    .article-content .chroma,
+    .article-content .lntable {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .article-content .highlight pre,
+    .article-content .highlight code {
+        background: transparent !important;
+        color: #111 !important;
+        overflow: visible !important;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap !important;
+        word-break: break-word;
+    }
+
+    .article-content .table-wrapper {
+        overflow: visible !important;
+        padding-inline: 0 !important;
+    }
+
+    .article-content table {
+        font-size: 9pt;
+        width: 100% !important;
+    }
+
+    .article-footer {
+        border-top: 1px solid #bbb;
+        margin-top: 18pt;
+        padding-top: 10pt !important;
+    }
+}

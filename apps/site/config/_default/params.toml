@@ -3,6 +3,10 @@ rssFullContent = true
 description    = "记录技术实践、产品设计与日常思考的中文个人博客"
 favicon        = "img/favicon-64.png"
 
+[author]
+    name = "Zoking"
+    url  = "https://github.com/zo-king"
+
 [footer]
     since = 2026
 

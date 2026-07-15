@@ -1442,3 +1442,15 @@
 - QA：P33 Playwright 覆盖完整中文章节 URL、成功/失败、无 JS、代码行号排除、reduced-motion、键盘、触屏和 1280/390/320；P16 7 项、P31、P32 回归全部通过，production Hugo build 62 pages 通过。
 - Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build。
 - 证据：`site-p33-article-tools-desktop-1280x900.png`、`site-p33-article-tools-mobile-390x844.png`；状态 Done，`LOCK-SITE-ARTICLE-UTILITIES-P33` 已释放。
+
+## 2026-07-15 - CENTER - SITE-PRINT-DISCOVERY-P34-001 PRINT AND FEED DISCOVERY
+
+- 调研：实测 Simon Willison、Julia Evans、Jeremy Keith、Lea Verou、Josh Comeau、Dave Rupert、Tom MacWright、Dan Abramov、Chris Coyier 与 Max Böck 的订阅发现、更新时间、打印、纠错、PWA 和 Markdown/收藏行为。
+- 决策：10 个样本均未提供站内本地收藏或整篇 Markdown 复制，当前 12 篇文章已有 30 天断点续读，因此暂缓收藏和 Markdown 输出；PWA 涉及缓存失效、发布回滚与 API 网络策略，继续后置。打印清理在真实站点中重复出现，且本站打印前确会带入约 13 个导航/交互区域，确定立即实施。
+- 打印：新增文章专用 `print.scss`，只通过 `media=print` 加载；保留标题、作者、发布日期、条件更新时间、正文、图片、代码和许可，隐藏开屏、顶栏、侧栏、目录、系列、翻页、分享、评论、相关文章和站点页脚。
+- 版式：A4 使用 16/15/18mm 页边距，白底深字、无阴影/圆角/动画；标题避免孤立，段落设置 widow/orphan，代码 pre-wrap，清除标题与高亮块负边距，不用 overflow hidden 裁切内容。
+- 发现：文章页增加且仅增加一个站点主 RSS discovery；首页和 taxonomy 继续使用 Hugo 自动生成的各自 feed。配置公开作者 `Zoking` 与 GitHub URL，BlogPosting author/publisher 使用真实 Person，不填写虚假邮箱。
+- 缺陷闭环：专项测试依次发现开屏已移除时等待、标题 locator 不唯一、主题背景过渡造成近白底、标题与代码负边距造成 10px A4 溢出；均修复后通过。
+- QA：P34 覆盖屏幕/打印隔离、A4 794x1123、390x844、深色主题、无 JavaScript、代码换行、RSS 去重与 JSON-LD 作者/日期；P16 7 项及 P31/P32/P33 回归全部通过。
+- Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build 62 pages。
+- 证据：`site-p34-print-a4-794x1123.png`、`site-p34-print-narrow-390x844.png`；状态 Done，`LOCK-SITE-PRINT-DISCOVERY-P34` 已释放。
