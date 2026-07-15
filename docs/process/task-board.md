@@ -98,6 +98,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | SITE-READING-SETTINGS-P32-001 | Done | Center | Center | 已释放 | 无 | 文章页字号/行距/链接设置、预绘制恢复、本地持久化、重置和桌面/移动验收已完成 |
 | SITE-ARTICLE-UTILITIES-P33-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 章节链接真实复制、代码语言工具栏、失败恢复、reduced-motion 与桌面/移动验收已完成 |
 | SITE-PRINT-DISCOVERY-P34-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 文章打印版式、RSS 自动发现、作者结构化语义与 A4/深色/无 JS 验收已完成 |
+| SITE-BLOGROLL-FEEDBACK-P35-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 友链独立数据、同源 OPML、文章纠错、分享反馈与桌面/移动验收已完成 |
 
 ## 3. 文件锁登记
 
@@ -156,6 +157,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | LOCK-SITE-READING-SETTINGS-P32 | SITE-READING-SETTINGS-P32-001 | Center | `apps/site/layouts/baseof.html`, `apps/site/assets/{ts/articleActions.ts,scss/reading-settings.scss}`, `scripts/qa/{site-reading-settings-p32,site-reader-ui}.mjs`, P32 前端/QA/过程文档与证据 | API/Admin、数据库 schema、上游 Theme Stack 核心、任意字体下载、账号同步、统计跟踪 | 2026-07-15 | 已释放：三档字号、二项开关、预绘制恢复、重置、P16 回归、1280/390/320 与 production build 通过 |
 | LOCK-SITE-ARTICLE-UTILITIES-P33 | SITE-ARTICLE-UTILITIES-P33-001 | Center | `apps/site/layouts/_markup/render-heading.html`, `apps/site/assets/{ts/clipboard.ts,ts/code-copy.ts,ts/headingLinks.ts,ts/smoothAnchors.ts,ts/custom.ts,scss/custom.scss}`, `scripts/qa/site-article-utilities-p33.mjs`, P33 研究/QA/过程文档与证据 | API/Admin、数据库 schema、文章内容批量改写、第三方运行器、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P33 专项、P16/P31/P32 回归、1280/390/320、production build 与 preflight 通过 |
 | LOCK-SITE-PRINT-DISCOVERY-P34 | SITE-PRINT-DISCOVERY-P34-001 | Center | `apps/site/layouts/baseof.html`, `apps/site/layouts/_partials/{head/custom.html,article/components/details.html}`, `apps/site/assets/scss/print.scss`, `apps/site/config/_default/params.toml`, `scripts/qa/site-print-discovery-p34.mjs`, P34 研究/前端/QA/过程文档与证据 | API/Admin、数据库 schema、Hugo 输出格式、Service Worker/PWA、本地收藏、Markdown 导出、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P34 专项、P16/P31/P32/P33 回归、A4/390、深色/无 JS、production build 与 preflight 通过 |
+| LOCK-SITE-BLOGROLL-FEEDBACK-P35 | SITE-BLOGROLL-FEEDBACK-P35-001 | Center | `apps/site/{data/blogroll.json,content/page/links/index.md,config/_default/hugo.toml,layouts/home.opml.opml,layouts/single.html,layouts/_partials/article/components/{links,navigation}.html,assets/{ts/articleActions.ts,scss/custom.scss}}`, `.github/ISSUE_TEMPLATE/content_correction.yml`, `scripts/qa/site-blogroll-feedback-p35.mjs`, P35 研究/前端/QA/过程文档与证据 | API/Admin、数据库 schema、访客侧 Feed 抓取、Service Worker、Webring、远程文章快照、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P35 专项、P21/P29/P33/P34/P16 回归、无 JS、1280/390/320、63 pages 与 preflight 通过 |
 
 规则：
 

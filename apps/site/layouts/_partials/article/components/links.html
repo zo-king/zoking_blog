@@ -1,5 +1,7 @@
+{{- $blogroll := hugo.Data.blogroll | default dict -}}
+{{- $links := $blogroll.links | default slice -}}
 {{- $categories := slice -}}
-{{- range $link := .Params.links -}}
+{{- range $link := $links -}}
     {{- $category := default "其他" $link.category -}}
     {{- if not (in $categories $category) -}}{{- $categories = $categories | append $category -}}{{- end -}}
 {{- end -}}
@@ -10,10 +12,18 @@
             {{ partial "helper/icon" "search" }}
             <input type="search" inputmode="search" placeholder="搜索名称、简介或域名" aria-label="搜索常读站点" data-links-search>
         </div>
-        <button class="links-directory__random" type="button" data-links-random>
-            {{ partial "helper/icon" "infinity" }}
-            <span>随机拜访</span>
-        </button>
+        <div class="links-directory__actions">
+            {{- with site.Home.OutputFormats.Get "OPML" }}
+                <a class="links-directory__opml" href="{{ .RelPermalink }}" download="zoking-blogroll.opml" aria-label="下载常读站点 OPML 订阅列表">
+                    {{ partial "helper/icon" "rss" }}
+                    <span>OPML</span>
+                </a>
+            {{- end }}
+            <button class="links-directory__random" type="button" data-links-random>
+                {{ partial "helper/icon" "infinity" }}
+                <span>随机拜访</span>
+            </button>
+        </div>
     </div>
     <div class="links-directory__filters" role="group" aria-label="站点分类">
         <button type="button" class="is-active" data-links-filter="all" aria-pressed="true">全部</button>
@@ -21,9 +31,9 @@
             <button type="button" data-links-filter="{{ . }}" aria-pressed="false">{{ . }}</button>
         {{- end }}
     </div>
-    <p class="links-directory__status" data-links-status aria-live="polite">共 {{ len .Params.links }} 个站点</p>
+    <p class="links-directory__status" data-links-status aria-live="polite">共 {{ len $links }} 个站点</p>
     <div class="links-directory__grid">
-        {{- range $link := .Params.links -}}
+        {{- range $link := $links -}}
             {{- $parsed := urls.Parse $link.website -}}
             {{- $category := default "其他" $link.category -}}
             {{- $favicon := "" -}}

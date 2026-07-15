@@ -805,7 +805,8 @@
     min-height: 36px;
 }
 
-.article-share button {
+.article-share button,
+.article-share > a {
     align-items: center;
     background: transparent;
     border: 0;
@@ -814,7 +815,9 @@
     display: inline-flex;
     font: inherit;
     gap: 6px;
-    padding: 6px 0;
+    min-height: 44px;
+    padding: 8px 0;
+    text-decoration: none;
 }
 
 .article-share button[hidden] {
@@ -822,11 +825,14 @@
 }
 
 .article-share button:hover,
-.article-share button:focus-visible {
+.article-share button:focus-visible,
+.article-share > a:hover,
+.article-share > a:focus-visible {
     color: var(--accent-color);
 }
 
-.article-share button:focus-visible {
+.article-share button:focus-visible,
+.article-share > a:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 3px;
 }
@@ -1033,6 +1039,11 @@ a.article-series__item:focus-visible {
     grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.links-directory__actions {
+    display: flex;
+    gap: 8px;
+}
+
 .links-directory__search {
     align-items: center;
     background: var(--card-background);
@@ -1067,6 +1078,7 @@ a.article-series__item:focus-visible {
     padding: 11px 0;
 }
 
+.links-directory__opml,
 .links-directory__random {
     align-items: center;
     background: var(--card-background);
@@ -1080,14 +1092,18 @@ a.article-series__item:focus-visible {
     gap: 7px;
     min-height: 44px;
     padding: 0 14px;
+    text-decoration: none;
 }
 
+.links-directory__opml:hover,
+.links-directory__opml:focus-visible,
 .links-directory__random:hover,
 .links-directory__random:focus-visible {
     border-color: var(--accent-color);
     color: var(--accent-color);
 }
 
+.links-directory__opml:focus-visible,
 .links-directory__random:focus-visible,
 .links-directory__filters button:focus-visible {
     outline: 2px solid var(--accent-color);
@@ -1099,6 +1115,7 @@ a.article-series__item:focus-visible {
     opacity: 0.5;
 }
 
+.links-directory__opml svg,
 .links-directory__random svg {
     height: 17px;
     width: 17px;
@@ -1262,9 +1279,14 @@ a.article-series__item:focus-visible {
         grid-template-columns: 1fr;
     }
 
-    .links-directory__random {
-        justify-content: center;
+    .links-directory__actions {
         width: 100%;
+    }
+
+    .links-directory__opml,
+    .links-directory__random {
+        flex: 1;
+        justify-content: center;
     }
 
     .links-directory__grid {

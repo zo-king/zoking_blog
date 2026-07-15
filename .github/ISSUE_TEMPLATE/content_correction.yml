@@ -1,0 +1,38 @@
+name: 内容纠错
+description: 报告文章中的事实、代码、链接或表述问题
+title: "[内容纠错] "
+body:
+  - type: markdown
+    attributes:
+      value: 请只提交公开文章中的内容问题，不要附带账号、邮箱、Cookie、Token 或其他个人信息。
+  - type: input
+    id: article_url
+    attributes:
+      label: 文章地址
+      placeholder: https://zoking.tech/p/example/
+    validations:
+      required: true
+  - type: input
+    id: section
+    attributes:
+      label: 章节
+      description: 可填写章节标题或复制章节链接。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题描述
+      description: 说明事实错误、过期内容、失效链接、代码问题或难以理解的表述。
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 建议修改
+      description: 可选。请提供可核验的资料来源或修改建议。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交检查
+      options:
+        - label: 我已确认问题来自公开文章，并已移除个人信息和密钥。
+          required: true

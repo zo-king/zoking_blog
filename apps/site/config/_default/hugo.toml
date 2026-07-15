@@ -10,6 +10,18 @@ hasCJKLanguage         = true
 enableRobotsTXT        = true
 disableLanguages       = ["en", "zh-hant-tw", "ja"]
 
+[mediaTypes."text/x-opml"]
+    suffixes = ["opml"]
+
+[outputFormats.OPML]
+    baseName       = "blogroll"
+    isPlainText    = true
+    mediaType      = "text/x-opml"
+    notAlternative = true
+
+[outputs]
+    home = ["HTML", "RSS", "OPML"]
+
 [[module.imports]]
     path = "github.com/CaiJimmy/hugo-theme-stack/v4"
 

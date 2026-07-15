@@ -12,15 +12,16 @@
 {{ end }}
 
 {{ define "main" }}
+    {{- $isLinksPage := and (eq .Section "page") (eq .Slug "links") -}}
     {{ partial "article/article.html" . }}
-    {{ if .Params.links }}{{ partial "article/components/links" . }}{{ end }}
+    {{ if $isLinksPage }}{{ partial "article/components/links" . }}{{ end }}
     {{ partial "article/components/navigation" . }}
     {{ if eq .Section "post" }}{{ partial "article/components/related-content" . }}{{ end }}
     {{ if not (eq .Params.comments false) }}{{ partial "comments/include" . }}{{ end }}
     {{ partialCached "footer/footer" . }}
     {{ partialCached "article/components/photoswipe" . }}
     {{ partial "article/components/mermaid" . }}
-    {{ if .Params.links }}
+    {{ if $isLinksPage }}
         {{- $script := resources.Get "ts/linksAvatars.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
         <script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
     {{ end }}

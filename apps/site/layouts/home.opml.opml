@@ -1,0 +1,27 @@
+{{- $blogroll := hugo.Data.blogroll | default dict -}}
+{{- $links := $blogroll.links | default slice -}}
+{{- $authorName := site.Title -}}
+{{- with site.Params.author -}}
+    {{- if reflect.IsMap . -}}
+        {{- with .name -}}{{- $authorName = . -}}{{- end -}}
+    {{- else -}}
+        {{- $authorName = . -}}
+    {{- end -}}
+{{- end -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | safeHTML }}
+<opml version="2.0">
+    <head>
+        <title>{{ printf "%s 常读站点" site.Title | transform.XMLEscape | safeHTML }}</title>
+        <ownerName>{{ $authorName | transform.XMLEscape | safeHTML }}</ownerName>
+        {{- with $blogroll.updated_at }}
+        <dateModified>{{ (time.AsTime .).Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</dateModified>
+        {{- end }}
+    </head>
+    <body>
+        {{- range $link := $links }}
+            {{- with $link.feed_url }}
+        <outline text="{{ $link.title | transform.XMLEscape }}" title="{{ $link.title | transform.XMLEscape }}" type="rss" htmlUrl="{{ $link.website | transform.XMLEscape }}" xmlUrl="{{ . | transform.XMLEscape }}" category="{{ $link.category | transform.XMLEscape }}" />
+            {{- end }}
+        {{- end }}
+    </body>
+</opml>

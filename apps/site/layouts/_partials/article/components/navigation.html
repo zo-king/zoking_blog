@@ -1,6 +1,9 @@
 {{- if eq .Section "post" -}}
     {{- $previous := .PrevInSection -}}
     {{- $next := .NextInSection -}}
+    {{- $feedbackTitle := printf "[内容纠错] %s" .Title -}}
+    {{- $feedbackBody := printf "文章：%s\n页面更新时间：%s\n\n章节（可选）：\n\n问题描述：\n\n建议修改：\n" .Permalink (.Lastmod.Format "2006-01-02") -}}
+    {{- $feedbackURL := printf "https://github.com/zo-king/zoking_blog/issues/new?%s" (querify "title" $feedbackTitle "body" $feedbackBody) -}}
     <div class="reading-progress" data-reading-progress role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <span data-reading-progress-bar></span>
     </div>
@@ -25,6 +28,10 @@
                 {{ partial "helper/icon" "clock" }}
                 <span data-reading-resume-label>继续阅读</span>
             </button>
+            <a href="{{ $feedbackURL }}" target="_blank" rel="noopener noreferrer" data-article-feedback aria-label="报告《{{ .Title }}》的内容问题（新窗口）">
+                {{ partial "helper/icon" "messages" }}
+                <span>内容纠错</span>
+            </a>
             <button type="button" data-article-share data-title="{{ .Title }}" data-url="{{ .Permalink }}">
                 {{ partial "helper/icon" "link" }}
                 <span>分享文章</span>

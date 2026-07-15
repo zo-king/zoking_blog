@@ -1454,3 +1454,16 @@
 - QA：P34 覆盖屏幕/打印隔离、A4 794x1123、390x844、深色主题、无 JavaScript、代码换行、RSS 去重与 JSON-LD 作者/日期；P16 7 项及 P31/P32/P33 回归全部通过。
 - Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build 62 pages。
 - 证据：`site-p34-print-a4-794x1123.png`、`site-p34-print-narrow-390x844.png`；状态 Done，`LOCK-SITE-PRINT-DISCOVERY-P34` 已释放。
+
+## 2026-07-15 - CENTER - SITE-BLOGROLL-FEEDBACK-P35-001 OPML AND CONTENT CORRECTION
+
+- 调研：实测 Chris Burnell、Kev Quirk、Manuel Moreale、Jamie Tanna、Chris Aldrich、Lea Verou、Max Böck、Jeremy Keith 与 Simon Willison 的 Blogroll、OPML、Webring、Feed、Webmention 和内容纠错入口。
+- 采用率：Blogroll 5/9、OPML 1/9、Webring 2/9、GitHub 编辑/纠错 3/9、友链最近文章 0/9；所有样本主要内容均支持无 JavaScript 阅读。
+- 数据修复：发现友链原存于页面自定义 front matter，而后台 `buildPageMarkdown` 重发 `/links/` 时会删除未知 `links:` 字段；迁移为 `apps/site/data/blogroll.json`，页面模板和 OPML 共用单一数据源，页面正文继续可由 Admin 管理。
+- OPML：Hugo 首页增加 `text/x-opml` 输出并生成 `/blogroll.opml`，只导出人工验证的 lvy-neko、Anthony Fu、Innei、Josh W. Comeau 四个 HTTPS Feed；使用固定数据更新时间和 XML escaping，构建产物从 62 增至 63 pages。
+- 友链 UI：OPML 与随机拜访并列为原生命令，桌面和移动触控高度 44px；访客浏览器不请求任何 Feed，现有搜索、分类、随机和 favicon 三级回退保持不变。
+- 纠错：文章底部增加预填 GitHub Issue 链接，只带标题、文章 permalink、Lastmod 和问题骨架；点击前没有 GitHub 请求，不传正文、评论、邮箱、Cookie、Token 或浏览器信息；新增 Issue chooser 内容纠错表单。
+- 分享：原生 Web Share 成功文案修正为“分享操作已完成”，剪贴板路径复用 P33 `copyPlainText` 的现代 API 与 textarea fallback。
+- QA：P35 覆盖 JSON/URL 白名单、OPML DOMParser、Content-Type、零 Feed 请求、纠错 query/隐私、Web Share/Clipboard、打印隔离、无 JS 和 1280/390/320；P21/P29/P33/P34/P16 回归全部通过。
+- Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build 63 pages。
+- 证据：`site-p35-blogroll-opml-desktop-1280x900.png`、`site-p35-article-feedback-desktop-1280x900.png`、`site-p35-article-feedback-mobile-390x844.png`；状态 Done，`LOCK-SITE-BLOGROLL-FEEDBACK-P35` 已释放。

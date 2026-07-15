@@ -1,3 +1,5 @@
+import { copyPlainText } from './clipboard';
+
 const shareButton = document.querySelector<HTMLButtonElement>('[data-article-share]');
 const shareStatus = document.querySelector<HTMLElement>('[data-article-share-status]');
 const readingProgress = document.querySelector<HTMLElement>('[data-reading-progress]');
@@ -203,10 +205,10 @@ shareButton?.addEventListener('click', async () => {
     try {
         if (navigator.share) {
             await navigator.share({ title, url });
-            if (shareStatus) shareStatus.textContent = '分享面板已打开';
+            if (shareStatus) shareStatus.textContent = '分享操作已完成';
             return;
         }
-        await navigator.clipboard.writeText(url);
+        await copyPlainText(url);
         if (shareStatus) shareStatus.textContent = '文章链接已复制';
     } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
