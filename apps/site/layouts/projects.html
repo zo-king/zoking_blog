@@ -7,16 +7,14 @@
 
 {{ define "main" }}
     {{- $github := .Params.github | default dict -}}
-    {{- $username := $github.username | default "zo-king" -}}
+    {{- $snapshot := hugo.Data.github_projects | default dict -}}
+    {{- $username := $snapshot.username | default ($github.username | default "zo-king") -}}
     {{- $maxRepos := $github.maxRepos | default 6 -}}
-    {{- $profileURL := printf "https://github.com/%s" $username -}}
+    {{- $profileURL := $snapshot.profile_url | default (printf "https://github.com/%s" $username) -}}
+    {{- $repositories := first $maxRepos ($snapshot.repositories | default slice) -}}
+    {{- $languageColors := dict "C" "#555555" "C++" "#f34b7d" "CSS" "#563d7c" "Go" "#00add8" "HTML" "#e34c26" "Java" "#b07219" "JavaScript" "#c7a500" "Kotlin" "#a97bff" "Python" "#3572a5" "Rust" "#8b5a2b" "Shell" "#3f8f3f" "TypeScript" "#3178c6" "Vue" "#2c8c6c" -}}
 
-    <section
-        class="github-projects"
-        aria-labelledby="github-projects-title"
-        data-github-projects
-        data-username="{{ $username }}"
-        data-max-repos="{{ $maxRepos }}">
+    <section class="github-projects" aria-labelledby="github-projects-title" data-github-projects>
         <header class="github-projects__header">
             <div>
                 <h1 class="section-title page-primary-title" id="github-projects-title">{{ .Title }}</h1>
@@ -28,26 +26,45 @@
             </a>
         </header>
 
-        <p class="github-projects__status" role="status" aria-live="polite" aria-atomic="true" data-projects-status>
-            正在读取 GitHub 仓库...
-        </p>
-
-        <ul class="github-projects__grid" aria-busy="true" data-projects-list>
-            <li class="github-projects__loading" data-projects-loading aria-hidden="true">
-                <span></span><span></span><span></span>
-            </li>
-        </ul>
-
-        <noscript>
-            <p class="github-projects__fallback">
-                当前浏览器未启用 JavaScript，请前往
-                <a href="{{ $profileURL }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $username }} 的 GitHub 主页（新窗口）">{{ $username }} 的 GitHub 主页</a>
-                查看全部项目。
+        {{- if $snapshot.generated_at }}
+            <p class="github-projects__status" data-projects-status>
+                展示最近更新的 {{ len $repositories }} 个公开仓库，数据更新于 {{ time.Format "2006年1月2日" $snapshot.generated_at }}。
             </p>
-        </noscript>
+        {{- end }}
+
+        <ul class="github-projects__grid" data-projects-list>
+            {{- range $repository := $repositories }}
+                {{- $activityDate := $repository.pushed_at | default $repository.updated_at -}}
+                <li class="github-projects__item">
+                    <article class="github-project">
+                        <h2 class="github-project__title">
+                            <a href="{{ $repository.html_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $repository.name }}（在新窗口打开 GitHub 仓库）">{{ $repository.name }}</a>
+                        </h2>
+                        <p class="github-project__description">
+                            {{ $repository.description | default "暂无项目简介，可前往 GitHub 查看 README 和最新进展。" }}
+                        </p>
+                        <div class="github-project__metadata">
+                            {{- with $repository.language }}
+                                <span class="github-project__language">
+                                    <span class="github-project__language-swatch" style="--language-color: {{ index $languageColors . | default "#64748b" }}" aria-hidden="true"></span>
+                                    {{ . }}
+                                </span>
+                            {{- end }}
+                            <span class="github-project__metric" aria-label="Star {{ $repository.stargazers_count }}"><span class="github-project__metric-icon" aria-hidden="true">★</span>{{ $repository.stargazers_count }}</span>
+                            <span class="github-project__metric" aria-label="Fork {{ $repository.forks_count }}"><span class="github-project__metric-icon" aria-hidden="true">⑂</span>{{ $repository.forks_count }}</span>
+                            <time class="github-project__updated" datetime="{{ $activityDate }}">推送于 {{ time.Format "2006年1月2日" $activityDate }}</time>
+                        </div>
+                    </article>
+                </li>
+            {{- else }}
+                <li class="github-projects__fallback">
+                    <strong>项目数据正在准备中</strong>
+                    <p>定时同步尚未生成仓库快照，可先前往 GitHub 查看全部公开项目。</p>
+                    <a href="{{ $profileURL }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $username }} 的 GitHub 主页（新窗口）">前往 {{ $username }} 的 GitHub 主页</a>
+                </li>
+            {{- end }}
+        </ul>
     </section>
 
-    {{- $script := resources.Get "ts/githubProjects.ts" | js.Build (dict "minify" hugo.IsProduction) | fingerprint -}}
-    <script src="{{ $script.RelPermalink }}" integrity="{{ $script.Data.Integrity }}" defer></script>
     {{ partialCached "footer/footer" . }}
 {{ end }}

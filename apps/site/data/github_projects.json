@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "username": "zo-king",
+  "profile_url": "https://github.com/zo-king",
+  "generated_at": "2026-07-15T07:07:04.105Z",
+  "repositories": [
+    {
+      "name": "zoking_blog",
+      "description": "我的博客",
+      "language": "Go",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "updated_at": "2026-07-15T06:59:49Z",
+      "pushed_at": "2026-07-15T06:59:36Z",
+      "html_url": "https://github.com/zo-king/zoking_blog"
+    },
+    {
+      "name": "zo-king",
+      "description": "Welcome to my channel",
+      "language": null,
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "updated_at": "2026-07-13T14:16:31Z",
+      "pushed_at": "2026-07-13T14:12:30Z",
+      "html_url": "https://github.com/zo-king/zo-king"
+    },
+    {
+      "name": "zo-king.github.io",
+      "description": null,
+      "language": null,
+      "stargazers_count": 1,
+      "forks_count": 0,
+      "updated_at": "2026-07-13T14:14:44Z",
+      "pushed_at": "2026-07-13T14:11:22Z",
+      "html_url": "https://github.com/zo-king/zo-king.github.io"
+    },
+    {
+      "name": "aic-multimodal-grounding",
+      "description": null,
+      "language": "Python",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "updated_at": "2026-05-22T18:37:51Z",
+      "pushed_at": "2026-05-22T18:37:47Z",
+      "html_url": "https://github.com/zo-king/aic-multimodal-grounding"
+    }
+  ]
+}

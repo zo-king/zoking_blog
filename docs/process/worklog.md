@@ -1402,3 +1402,12 @@
 - QA：新增 `scripts/qa/site-discovery-p29.mjs`，覆盖 9 项渲染、搜索、分类、随机范围、快捷导航、主题命令、1280/390、横向溢出与 reduced-motion；同步更新 P21 友链数量/元数据回归。专项 P29 与 P21 均通过，零 page/console error。
 - 证据：`docs/process/evidence/site-discovery-links-p29-1280x900.png`、`site-command-palette-p29-1280x900.png`、`site-command-palette-p29-390x844.png`。
 - 状态：`SITE-DISCOVERY-P29-001` Done，`LOCK-SITE-DISCOVERY-P29` 已释放。
+
+## 2026-07-15 - CENTER - SITE-GITHUB-SNAPSHOT-P30-001 SCHEDULED PROJECT SNAPSHOT
+
+- 决策：移除项目页访客侧 GitHub REST 请求、5 分钟 sessionStorage 缓存、加载骨架、403 提示和重试按钮；项目列表改为 Hugo 构建期读取已提交 JSON，访问页面不再消耗 GitHub API 配额。
+- 同步：新增 `scripts/sync-github-projects.mjs`，对白名单字段执行验证、Fork/archived 过滤、推送时间排序和 GitHub URL 主机校验，通过临时文件原子替换 `apps/site/data/github_projects.json`；失败在写入前退出，保留最后成功快照。
+- 调度：新增 `Sync GitHub projects` Actions 工作流，每月 1 日、16 日 UTC 02:00（北京时间 10:00）运行，并支持手动触发；使用仓库 `GITHUB_TOKEN`，同步后执行 Hugo production build，由 `github-actions[bot]` 只提交快照文件。
+- 当前数据：真实同步得到 4 个 `zo-king` 公开非 Fork/归档仓库，页面明确显示快照日期；桌面双列、390/320 单列布局保持稳定。
+- QA：同步 fixture 黑盒覆盖鉴权、过滤、排序、字段白名单、不安全 URL 和失败不覆盖；Playwright 覆盖静态卡片顺序、零 GitHub API 请求、旧脚本缺失、1280/390/320 与零运行时错误。
+- 证据：`github-p30-projects-static-1280x800.png`、`github-p30-projects-static-390x844.png`；状态 Done，文件锁已释放。

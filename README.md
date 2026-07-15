@@ -51,6 +51,14 @@ Run Hugo site:
 .\.tools\hugo\hugo.exe server --source apps/site
 ```
 
+Refresh the reader site's GitHub project snapshot manually:
+
+```powershell
+node .\scripts\sync-github-projects.mjs --username zo-king
+```
+
+GitHub Actions also refreshes `apps/site/data/github_projects.json` on the 1st and 16th of every month. The public project page reads this committed snapshot and never calls the GitHub API from a visitor's browser.
+
 Local services:
 
 - Reader site: `http://localhost:1313`

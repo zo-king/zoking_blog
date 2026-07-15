@@ -1,0 +1,58 @@
+name: Sync GitHub projects
+
+on:
+  schedule:
+    - cron: "0 2 1,16 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-github-projects
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.160.1"
+          extended: true
+
+      - name: Refresh repository snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/sync-github-projects.mjs --username zo-king
+
+      - name: Verify Hugo build
+        env:
+          HUGO_COMMENTS_API_BASE: https://api.zoking.tech
+        run: hugo --source apps/site --minify --environment production --destination ../../dist/github-project-sync
+
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          if git diff --quiet -- apps/site/data/github_projects.json; then
+            echo "Repository snapshot is unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/site/data/github_projects.json
+          git commit -m "chore: refresh GitHub project snapshot"
+          git push origin HEAD:main

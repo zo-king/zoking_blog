@@ -59,7 +59,6 @@
 
 .github-projects__status {
     font-size: 1.4rem;
-    min-height: 24px;
 }
 
 .github-projects__grid {
@@ -148,30 +147,6 @@
     white-space: nowrap;
 }
 
-.github-projects__loading {
-    display: grid;
-    gap: 16px;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    list-style: none;
-}
-
-.github-projects__loading span {
-    animation: github-project-pulse 1.4s ease-in-out infinite;
-    background: var(--card-background);
-    border-radius: 8px;
-    box-shadow: var(--shadow-l1);
-    height: 190px;
-}
-
-.github-projects__loading span:nth-child(2) {
-    animation-delay: 120ms;
-}
-
-.github-projects__loading span:nth-child(3) {
-    animation-delay: 240ms;
-}
-
 .github-projects__fallback {
     background: var(--card-background);
     border-radius: 8px;
@@ -198,22 +173,6 @@
     font-weight: 600;
 }
 
-.github-projects__retry {
-    background: var(--accent-color);
-    border: 0;
-    border-radius: 6px;
-    color: var(--accent-color-text);
-    cursor: pointer;
-    font: inherit;
-    margin-inline-end: 16px;
-    padding: 8px 12px;
-}
-
-@keyframes github-project-pulse {
-    0%, 100% { opacity: 0.55; }
-    50% { opacity: 1; }
-}
-
 @media (max-width: 700px) {
     .github-projects__header {
         align-items: flex-start;
@@ -221,8 +180,7 @@
         gap: 8px;
     }
 
-    .github-projects__grid,
-    .github-projects__loading {
+    .github-projects__grid {
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -244,11 +202,5 @@
     .github-project,
     .github-projects__fallback {
         padding: 16px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .github-projects__loading span {
-        animation: none;
     }
 }

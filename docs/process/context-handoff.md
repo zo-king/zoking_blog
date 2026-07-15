@@ -28,7 +28,7 @@
 - P16 功能调研：`docs/references/personal-site-feature-research.md`；QA：`docs/qa/site-audit-p16.md`；生产 Nginx 已返回真实 404 并启用 gzip。
 - P17 已实现 Goldmark AST + HTML DOM 内容质量报告、文章/页面事务发布门禁、普通 CRUD published 绕过防护、active job 编辑锁，以及 Worker/Retry/全站发布复检。Admin 使用 380px/移动全宽 Drawer，发布顺序固定为检查、保存、publish。
 - P18 已实现 PostgreSQL 独立系列模型、文章单系列正整数排序、Gin/GORM 系列 CRUD 与 RBAC、发布 front matter/质量门禁、Admin 系列管理及文章字段、Hugo 系列目录与系列内导航；开发库 migration 已执行且未写测试 fixture。
-- P19 已把分类/标签从一级菜单降级到统一归档探索页，并新增 `/projects/`：运行时展示 `zo-king` 最近推送的 6 个公开非 fork/归档仓库，具备短期白名单缓存、隐私请求参数、网络回退和 1280/390/320 响应式验收。
+- P19/P30 的 `/projects/` 已改为静态仓库快照：`.github/workflows/sync-github-projects.yml` 每月 1 日、16 日北京时间 10:00 抓取 `zo-king` 公开非 Fork/归档仓库并提交 `apps/site/data/github_projects.json`；同步失败保留旧快照，访客侧不再请求 GitHub API。
 - P20 已从一级导航和首页右栏移除显式搜索，保留 `/search/`、JSON 索引与 404 恢复能力；归档升级为语义化单列时间线，按发布日期倒序显示年份、数量、月日、摘要和可选小图，专项 Playwright 与视觉复核已通过。
 - P21 已让关于页和友链页不再渲染相关文章；友链改为两列/移动单列卡片，头像按站点 favicon、DuckDuckGo favicon 服务、首字母三级回退；博客插件调研建议见 `docs/references/blog-plugin-research-p21.md`。
 - P26 已将首页分页调整为每页 6 篇，并新增置顶个人介绍文章 `/p/about-zoking/`，使用现有 `/img/showcase/architecture.jpg` 封面；基础模板已加入一次会话开屏动画，支持跳过、Escape、sessionStorage 和 reduced-motion，详情见 `docs/qa/site-home-splash-p26.md`。
@@ -129,14 +129,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 - P16 C 端证据：`docs/process/evidence/site-p16-reading-progress-desktop.png`、`docs/process/evidence/site-p16-mobile-home-390x844.png`。
 - P17 Admin 证据：`docs/process/evidence/content-quality-p17-desktop-1280x720.png`、`docs/process/evidence/content-quality-p17-mobile-390x844.png`；QA 记录为 `docs/qa/content-quality-p17.md`。
 - P18 证据：`docs/process/evidence/series-p18-site-desktop-1280x800.png`、`docs/process/evidence/series-p18-site-mobile-390x844.png`、`docs/process/evidence/series-p18-admin-live-1280x720.png`；QA 记录为 `docs/qa/structured-series-p18.md`。
-- P19 证据：`docs/process/evidence/github-p19-projects-live-1280x800.png`、`docs/process/evidence/github-p19-projects-mobile-390x844.png`、`docs/process/evidence/github-p19-archives-desktop-1280x800.png`；QA 记录为 `docs/qa/github-projects-p19.md`。
+- P30 项目快照证据：`docs/process/evidence/github-p30-projects-static-1280x800.png`、`docs/process/evidence/github-p30-projects-static-390x844.png`；QA 记录为 `docs/qa/github-projects-p19.md` 与 `docs/qa/github-project-sync-p30.md`。
 - P20 证据：`docs/process/evidence/archive-p20-desktop-1280x800.png`、`docs/process/evidence/archive-p20-dark-1280x800.png`、`docs/process/evidence/archive-p20-mobile-390x844.png`、`docs/process/evidence/archive-p20-mobile-320x568.png`；QA 记录为 `docs/qa/archive-timeline-p20.md`。
 - P21 证据：`docs/process/evidence/about-p21-1280x800.png`、`docs/process/evidence/about-p21-390x844.png`、`docs/process/evidence/links-p21-1280x800.png`、`docs/process/evidence/links-p21-390x844.png`；QA 记录为 `docs/qa/about-links-p21.md`。
 - Admin 最近确认的依赖版本以 `apps/admin/package-lock.json` 为准；不要根据旧工作日志恢复 React 19 或 Ant Design。
 
 ## 当前边界与下一步
 
-当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28 与 P29 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，但都不应阻塞本站正文阅读。
+当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29 与 P30 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
 
 当前 Go 位于 `E:\Editor\go`，版本 `go1.25.4`，Windows 本机 `CGO_ENABLED=0`；Linux race 已通过 `golang:1.25-bookworm` 容器并连接 `zoking_blog_test` 执行，CI 也已配置 PostgreSQL race job。seed 双进程首次初始化、Preview finish/fail 终态竞争和发布失败不变式均已完成隔离数据库验证。
 
