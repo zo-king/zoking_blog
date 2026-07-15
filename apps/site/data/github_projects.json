@@ -2,7 +2,7 @@
   "schema_version": 1,
   "username": "zo-king",
   "profile_url": "https://github.com/zo-king",
-  "generated_at": "2026-07-15T07:07:04.105Z",
+  "generated_at": "2026-07-15T07:15:51.569Z",
   "repositories": [
     {
       "name": "zoking_blog",
@@ -10,8 +10,8 @@
       "language": "Go",
       "stargazers_count": 0,
       "forks_count": 0,
-      "updated_at": "2026-07-15T06:59:49Z",
-      "pushed_at": "2026-07-15T06:59:36Z",
+      "updated_at": "2026-07-15T07:15:23Z",
+      "pushed_at": "2026-07-15T07:15:20Z",
       "html_url": "https://github.com/zo-king/zoking_blog"
     },
     {
