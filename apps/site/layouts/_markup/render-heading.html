@@ -1,6 +1,7 @@
 <h{{ .Level }} id="{{ .Anchor }}">
     {{- if site.Params.Article.HeadingAnchor -}}
-        <a href="#{{ .Anchor }}" class="header-anchor" aria-label="复制“{{ .Text | plainify }}”章节链接"></a>
+        {{- $headingTitle := .Text | plainify -}}
+        <a href="#{{ .Anchor }}" class="header-anchor" data-heading-link data-heading-title="{{ $headingTitle }}" aria-label="定位并复制“{{ $headingTitle }}”章节链接" title="复制章节链接"></a>
     {{- end -}}
     {{ .Text | safeHTML }}
 </h{{ .Level }}>

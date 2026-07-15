@@ -134,13 +134,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 - P30 项目快照证据：`docs/process/evidence/github-p30-projects-static-1280x800.png`、`docs/process/evidence/github-p30-projects-static-390x844.png`；QA 记录为 `docs/qa/github-projects-p19.md` 与 `docs/qa/github-project-sync-p30.md`。
 - P31 导航与近况证据：`docs/process/evidence/site-p31-now-desktop-1280x900.png`、`docs/process/evidence/site-p31-now-mobile-390x844.png`；QA 记录为 `docs/qa/site-navigation-now-p31.md`。
 - P32 阅读设置证据：`docs/process/evidence/site-p32-reading-settings-desktop-1280x900.png`、`docs/process/evidence/site-p32-reading-settings-mobile-390x844.png`；设计与 QA 为 `docs/frontend/reading-settings-p32.md`、`docs/qa/site-reading-settings-p32.md`。
+- P33 文章工具证据：`docs/process/evidence/site-p33-article-tools-desktop-1280x900.png`、`docs/process/evidence/site-p33-article-tools-mobile-390x844.png`；调研、设计与 QA 为 `docs/references/blog-article-utilities-research-p33.md`、`docs/frontend/article-utilities-p33.md`、`docs/qa/site-article-utilities-p33.md`。
 - P20 证据：`docs/process/evidence/archive-p20-desktop-1280x800.png`、`docs/process/evidence/archive-p20-dark-1280x800.png`、`docs/process/evidence/archive-p20-mobile-390x844.png`、`docs/process/evidence/archive-p20-mobile-320x568.png`；QA 记录为 `docs/qa/archive-timeline-p20.md`。
 - P21 证据：`docs/process/evidence/about-p21-1280x800.png`、`docs/process/evidence/about-p21-390x844.png`、`docs/process/evidence/links-p21-1280x800.png`、`docs/process/evidence/links-p21-390x844.png`；QA 记录为 `docs/qa/about-links-p21.md`。
 - Admin 最近确认的依赖版本以 `apps/admin/package-lock.json` 为准；不要根据旧工作日志恢复 React 19 或 Ant Design。
 
 ## 当前边界与下一步
 
-当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29、P30、P31 与 P32 已完成，新窗口不要重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
+当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29、P30、P31、P32 与 P33 不应在新窗口重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
 
 当前 Go 位于 `E:\Editor\go`，版本 `go1.25.4`，Windows 本机 `CGO_ENABLED=0`；Linux race 已通过 `golang:1.25-bookworm` 容器并连接 `zoking_blog_test` 执行，CI 也已配置 PostgreSQL race job。seed 双进程首次初始化、Preview finish/fail 终态竞争和发布失败不变式均已完成隔离数据库验证。
 

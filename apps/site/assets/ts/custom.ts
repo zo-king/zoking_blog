@@ -1,3 +1,7 @@
+import { setupHeadingLinks } from './headingLinks';
+
+setupHeadingLinks();
+
 const palette = document.querySelector<HTMLElement>("[data-command-palette]");
 
 if (palette) {

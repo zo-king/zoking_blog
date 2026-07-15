@@ -96,6 +96,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | SITE-GITHUB-SNAPSHOT-P30-001 | Done | Center | Center | 已释放 | 无 | GitHub 项目改为每月 1/16 日静态快照、失败保留旧数据、零访客 API 请求与桌面/移动验收已完成 |
 | SITE-NAVIGATION-NOW-P31-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 博客组件调研、原生跨页过渡、近况页、reduced-motion 与桌面/移动验收已完成 |
 | SITE-READING-SETTINGS-P32-001 | Done | Center | Center | 已释放 | 无 | 文章页字号/行距/链接设置、预绘制恢复、本地持久化、重置和桌面/移动验收已完成 |
+| SITE-ARTICLE-UTILITIES-P33-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 章节链接真实复制、代码语言工具栏、失败恢复、reduced-motion 与桌面/移动验收已完成 |
 
 ## 3. 文件锁登记
 
@@ -152,6 +153,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | LOCK-SITE-GITHUB-SNAPSHOT-P30 | SITE-GITHUB-SNAPSHOT-P30-001 | Center | `apps/site/{data/github_projects.json,layouts/projects.html,assets/scss/github-projects.scss}`, `scripts/{sync-github-projects.mjs,qa/*github*}`, `.github/workflows/sync-github-projects.yml`, P19/P30 文档与证据 | API/Admin、数据库 schema、文章正文、上游 Theme Stack 核心、个人 PAT、私有仓库数据 | 2026-07-15 | 已释放：同步脚本、静态 Hugo 渲染、失败保留、零浏览器 API 请求、1280/390/320 与 production build 通过 |
 | LOCK-SITE-NAVIGATION-NOW-P31 | SITE-NAVIGATION-NOW-P31-001 | Center | `apps/site/assets/scss/custom.scss`, `apps/site/content/page/now/index.md`, `scripts/qa/site-navigation-now-p31.mjs`, P31 调研/QA/过程文档与证据 | API/Admin、数据库 schema、上游 Theme Stack 核心、持续动画依赖、重复阅读侧轨、远程链接抓取 | 2026-07-15 | 已释放：真实 ViewTransition 事件、reduced-motion、主菜单/快捷面板、前进后退、1280/390 与 production build 通过 |
 | LOCK-SITE-READING-SETTINGS-P32 | SITE-READING-SETTINGS-P32-001 | Center | `apps/site/layouts/baseof.html`, `apps/site/assets/{ts/articleActions.ts,scss/reading-settings.scss}`, `scripts/qa/{site-reading-settings-p32,site-reader-ui}.mjs`, P32 前端/QA/过程文档与证据 | API/Admin、数据库 schema、上游 Theme Stack 核心、任意字体下载、账号同步、统计跟踪 | 2026-07-15 | 已释放：三档字号、二项开关、预绘制恢复、重置、P16 回归、1280/390/320 与 production build 通过 |
+| LOCK-SITE-ARTICLE-UTILITIES-P33 | SITE-ARTICLE-UTILITIES-P33-001 | Center | `apps/site/layouts/_markup/render-heading.html`, `apps/site/assets/{ts/clipboard.ts,ts/code-copy.ts,ts/headingLinks.ts,ts/smoothAnchors.ts,ts/custom.ts,scss/custom.scss}`, `scripts/qa/site-article-utilities-p33.mjs`, P33 研究/QA/过程文档与证据 | API/Admin、数据库 schema、文章内容批量改写、第三方运行器、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P33 专项、P16/P31/P32 回归、1280/390/320、production build 与 preflight 通过 |
 
 规则：
 

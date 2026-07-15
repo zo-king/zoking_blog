@@ -1430,3 +1430,15 @@
 - QA：P32 Playwright 覆盖实际 font-size/line-height、链接 text-decoration、存储白名单、DOMContentLoaded 前恢复、刷新控件同步、重置、Escape、焦点返回、非文章隔离、1280/390/320 和零运行时错误。
 - 回归：P16 读者测试的评论 GET 原先依赖本地 API；本轮改为空列表 fixture，仍保留 POST 主动断网测试，最终阅读进度、搜索、暗色对比、移动菜单和评论错误本地化共 7 项通过。
 - 状态：`SITE-READING-SETTINGS-P32-001` Done，文件锁已释放。
+
+## 2026-07-15 - CENTER - SITE-ARTICLE-UTILITIES-P33-001 ARTICLE COPY AND CODE METADATA
+
+- 调研：实测 Josh W. Comeau、Lea Verou、Piccalilli、CSS Wizardry、Gwern、Ahmad Shadeed、Maggie Appleton、Anthony Fu、Max Böck 与 Simon Willison 的章节永久链接、代码复制、语言元数据和渐进折叠；采用低依赖复制反馈与语言标签，折叠附录留到正文出现真实场景。
+- 审计：确认旧标题锚点辅助名称声称“复制”但只做 hash 跳转，键盘/触屏可发现性不足；旧代码复制失败会 alert 原始 Error，缺少语言标签和专项测试；8/12 篇文章已使用代码块，功能有真实内容覆盖。
+- 实现：在 `apps/site` 同路径覆盖 `code-copy.ts` 与 `smoothAnchors.ts`，新增共用 clipboard fallback 和 headingLinks；普通点击复制完整章节 URL 且继续执行原生锚点导航，无 JavaScript 保留 `href="#id"`，修饰点击不触发增强。
+- 代码块：Hugo `data-lang` 映射为 Go/C++/SQL/Shell 等标签，与唯一复制按钮组成普通流工具栏；复制严格取 code text 排除行号，失败显示中文恢复提示，不再弹出原始错误。
+- 可访问性：标题锚点 focus-visible 显示 outline，触屏为 44x44px 并常显；章节与代码复制均有 polite live region；过渡为 160ms opacity，reduced-motion 下关闭并将锚点滚动改为 auto。
+- 缺陷闭环：专项测试先后暴露 300ms 上游淡入、移动端宽度被高特异性规则压回 20px、动态 aria-label 导致测试 locator 失配，均已按真实交互修正而非放宽功能标准。
+- QA：P33 Playwright 覆盖完整中文章节 URL、成功/失败、无 JS、代码行号排除、reduced-motion、键盘、触屏和 1280/390/320；P16 7 项、P31、P32 回归全部通过，production Hugo build 62 pages 通过。
+- Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build。
+- 证据：`site-p33-article-tools-desktop-1280x900.png`、`site-p33-article-tools-mobile-390x844.png`；状态 Done，`LOCK-SITE-ARTICLE-UTILITIES-P33` 已释放。

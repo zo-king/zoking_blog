@@ -6,7 +6,7 @@
 
 - 阶段：全栈博客系统已进入 Phase 5 增强实施
 - 中心窗口职责：总控、调度子 agent、整合结论、维护文档和工作日志
-- 当前边界：C 端中文 Stack 风格站点、Gin/GORM/PostgreSQL API、React Admin、发布 worker、release/current、评论、媒体保护与清理、页面/设置、隔离预览、操作审计、数据库实时 RBAC 和部署前 preflight 已落地；下一步推进用户/角色管理、预览过期清理和对象存储 adapter。
+- 当前边界：C 端中文 Stack 风格站点、文章章节复制/代码工具栏/阅读设置、Gin/GORM/PostgreSQL API、React Admin、发布 worker、release/current、评论、媒体保护与清理、页面/设置、隔离预览、操作审计、数据库实时 RBAC 和部署前 preflight 已落地；下一项高优先级工程工作是媒体故障恢复与生产对象存储 adapter。
 
 ## 文档索引
 
@@ -28,6 +28,7 @@
 - [数据库迁移与 Seed 策略](database/01-migration-and-seed-strategy.md)
 - [数据库工程规划](database/database-plan.md)
 - [C 端 Stack 集成规范](frontend/site-stack-integration.md)
+- [P33 文章轻量工具](frontend/article-utilities-p33.md)
 - [B 端后台技术决策](frontend/admin-tech-decision.md)
 - [前后台前端规划](frontend/frontend-plan.md)
 - [运维与部署规划](operations/README.md)
@@ -44,6 +45,7 @@
 - [安全基线](security/security-baseline.md)
 - [测试与验收策略](qa/test-strategy.md)
 - [部署前检查脚本](qa/preflight.md)
+- [P33 文章工具验收](qa/site-article-utilities-p33.md)
 - [参考资料](references/sources.md)
 
 ## 新窗口接手顺序

@@ -651,6 +651,75 @@
     opacity: 1;
 }
 
+.article-content .code-block-toolbar {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    min-height: 32px;
+}
+
+.article-content .code-block-language {
+    color: var(--card-text-color-secondary);
+    font-family: var(--code-font-family);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.article-content .code-block-toolbar .copyCodeButton {
+    border: 1px solid var(--card-separator-color);
+    border-radius: 6px;
+    box-shadow: none;
+    min-height: 32px;
+    opacity: 0.72;
+    padding: 5px 10px;
+    position: static;
+    transition: opacity 160ms ease;
+}
+
+.article-content .code-block-toolbar .copyCodeButton:hover,
+.article-content .code-block-toolbar .copyCodeButton:focus-visible,
+.article-content .code-block-toolbar .copyCodeButton.is-copied {
+    opacity: 1;
+}
+
+.article-utility-status {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: fixed;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.article-content a.header-anchor {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1;
+    transition: opacity 160ms ease;
+}
+
+.article-content a.header-anchor:focus-visible,
+.article-content a.header-anchor.is-copied {
+    opacity: 1;
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.article-content a.header-anchor.is-copied::before {
+    content: "✓";
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .article-content a.header-anchor,
+    .article-content .code-block-toolbar .copyCodeButton {
+        transition: none;
+    }
+}
+
 .article-content .copyCodeButton:focus-visible {
     outline: 2px solid var(--accent-color);
     outline-offset: 2px;
@@ -659,6 +728,30 @@
 @media (hover: none) {
     .article-content .copyCodeButton {
         opacity: 1;
+    }
+
+    .article-content h1,
+    .article-content h2,
+    .article-content h3,
+    .article-content h4,
+    .article-content h5,
+    .article-content h6 {
+        min-height: 44px;
+        padding-inline-start: 44px;
+    }
+
+    .article-content h1 a.header-anchor,
+    .article-content h2 a.header-anchor,
+    .article-content h3 a.header-anchor,
+    .article-content h4 a.header-anchor,
+    .article-content h5 a.header-anchor,
+    .article-content h6 a.header-anchor {
+        align-items: center;
+        display: flex;
+        height: 44px;
+        justify-content: center;
+        opacity: 0.65;
+        width: 44px;
     }
 }
 
