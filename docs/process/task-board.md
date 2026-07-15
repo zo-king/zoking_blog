@@ -99,6 +99,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | SITE-ARTICLE-UTILITIES-P33-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 章节链接真实复制、代码语言工具栏、失败恢复、reduced-motion 与桌面/移动验收已完成 |
 | SITE-PRINT-DISCOVERY-P34-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 文章打印版式、RSS 自动发现、作者结构化语义与 A4/深色/无 JS 验收已完成 |
 | SITE-BLOGROLL-FEEDBACK-P35-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 友链独立数据、同源 OPML、文章纠错、分享反馈与桌面/移动验收已完成 |
+| SITE-POST-ARCHIVE-P36-001 | Done | Center | Center + Research agents | 已释放 | 无 | `/post/` 年份归档、同源静态渲染、无 JS/响应式/回归/preflight 均已完成 |
 
 ## 3. 文件锁登记
 
@@ -158,6 +159,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | LOCK-SITE-ARTICLE-UTILITIES-P33 | SITE-ARTICLE-UTILITIES-P33-001 | Center | `apps/site/layouts/_markup/render-heading.html`, `apps/site/assets/{ts/clipboard.ts,ts/code-copy.ts,ts/headingLinks.ts,ts/smoothAnchors.ts,ts/custom.ts,scss/custom.scss}`, `scripts/qa/site-article-utilities-p33.mjs`, P33 研究/QA/过程文档与证据 | API/Admin、数据库 schema、文章内容批量改写、第三方运行器、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P33 专项、P16/P31/P32 回归、1280/390/320、production build 与 preflight 通过 |
 | LOCK-SITE-PRINT-DISCOVERY-P34 | SITE-PRINT-DISCOVERY-P34-001 | Center | `apps/site/layouts/baseof.html`, `apps/site/layouts/_partials/{head/custom.html,article/components/details.html}`, `apps/site/assets/scss/print.scss`, `apps/site/config/_default/params.toml`, `scripts/qa/site-print-discovery-p34.mjs`, P34 研究/前端/QA/过程文档与证据 | API/Admin、数据库 schema、Hugo 输出格式、Service Worker/PWA、本地收藏、Markdown 导出、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P34 专项、P16/P31/P32/P33 回归、A4/390、深色/无 JS、production build 与 preflight 通过 |
 | LOCK-SITE-BLOGROLL-FEEDBACK-P35 | SITE-BLOGROLL-FEEDBACK-P35-001 | Center | `apps/site/{data/blogroll.json,content/page/links/index.md,config/_default/hugo.toml,layouts/home.opml.opml,layouts/single.html,layouts/_partials/article/components/{links,navigation}.html,assets/{ts/articleActions.ts,scss/custom.scss}}`, `.github/ISSUE_TEMPLATE/content_correction.yml`, `scripts/qa/site-blogroll-feedback-p35.mjs`, P35 研究/前端/QA/过程文档与证据 | API/Admin、数据库 schema、访客侧 Feed 抓取、Service Worker、Webring、远程文章快照、上游 Theme Stack 核心直接修改 | 2026-07-15 | 已释放：P35 专项、P21/P29/P33/P34/P16 回归、无 JS、1280/390/320、63 pages 与 preflight 通过 |
+| LOCK-SITE-POST-ARCHIVE-P36 | SITE-POST-ARCHIVE-P36-001 | Center | `apps/site/{layouts/post/list.html,assets/scss/post-archive.scss,content/post/_index.md}`, `scripts/qa/site-post-archive-p36.mjs`, P36 研究/前端/QA/过程文档与证据 | API/Admin、数据库 schema、文章正文批量改写、成果 `/archives/` 时间线、上游 Theme Stack 核心直接修改、第三方请求与统计 | 2026-07-15 | 已释放：P36 专项、P22/P29/P34 回归、无 JS、1280/390/320、63 pages 与 preflight 通过 |
 
 规则：
 
@@ -235,6 +237,8 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | Turing-P21 | Research | SITE-ABOUT-PLUGIN-P21-001 真实博客特色能力调研 | Done | 调研 7 个以上成熟个人博客，建议 Now/Uses/精选项目优先，高成本互动能力后置 |
 | Shannon-P20 | Explorer | SITE-TIMELINE-P20-001 模板与搜索边界审阅 | Done | 建议保留搜索路由与 404 恢复入口、撤下显式入口，并使用语义化年份时间线 |
 | Norman-P20 | Explorer | SITE-TIMELINE-P20-001 响应式/a11y/QA 审阅 | Done | 给出无卡片时间线、移动端细线、标题层级与 Playwright 验收矩阵 |
+| Goodall-P36 | Research | SITE-POST-ARCHIVE-P36-001 东亚博客组件调研 | Done | 核验 9 个中日博客的归档、折叠内容、第三方加载与无 JS 边界，推荐文章年份归档 |
+| Hume-P36 | Research | SITE-POST-ARCHIVE-P36-001 欧美博客渐进增强调研 | Done | 核验 9 个独立博客的边注、随机发现、系列、IndieWeb 与隐私边界，脚注边注列为下一候选 |
 
 ## 5. 阻塞与待决策
 

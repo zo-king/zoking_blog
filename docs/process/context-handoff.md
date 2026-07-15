@@ -137,13 +137,14 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 - P33 文章工具证据：`docs/process/evidence/site-p33-article-tools-desktop-1280x900.png`、`docs/process/evidence/site-p33-article-tools-mobile-390x844.png`；调研、设计与 QA 为 `docs/references/blog-article-utilities-research-p33.md`、`docs/frontend/article-utilities-p33.md`、`docs/qa/site-article-utilities-p33.md`。
 - P34 打印证据：`docs/process/evidence/site-p34-print-a4-794x1123.png`、`docs/process/evidence/site-p34-print-narrow-390x844.png`；调研、设计与 QA 为 `docs/references/blog-reading-lifecycle-research-p34.md`、`docs/frontend/print-discovery-p34.md`、`docs/qa/site-print-discovery-p34.md`。
 - P35 Blogroll/纠错证据：`docs/process/evidence/site-p35-blogroll-opml-desktop-1280x900.png`、`docs/process/evidence/site-p35-article-feedback-desktop-1280x900.png`、`docs/process/evidence/site-p35-article-feedback-mobile-390x844.png`；调研、设计与 QA 为 `docs/references/blogroll-feedback-research-p35.md`、`docs/frontend/blogroll-feedback-p35.md`、`docs/qa/site-blogroll-feedback-p35.md`。
+- P36 文章归档证据：`docs/process/evidence/site-p36-post-archive-desktop-1280x900.png`、`docs/process/evidence/site-p36-post-archive-mobile-390x844.png`；调研、设计与 QA 为 `docs/references/blog-components-research-p36.md`、`docs/frontend/post-archive-p36.md`、`docs/qa/site-post-archive-p36.md`。
 - P20 证据：`docs/process/evidence/archive-p20-desktop-1280x800.png`、`docs/process/evidence/archive-p20-dark-1280x800.png`、`docs/process/evidence/archive-p20-mobile-390x844.png`、`docs/process/evidence/archive-p20-mobile-320x568.png`；QA 记录为 `docs/qa/archive-timeline-p20.md`。
 - P21 证据：`docs/process/evidence/about-p21-1280x800.png`、`docs/process/evidence/about-p21-390x844.png`、`docs/process/evidence/links-p21-1280x800.png`、`docs/process/evidence/links-p21-390x844.png`；QA 记录为 `docs/qa/about-links-p21.md`。
 - Admin 最近确认的依赖版本以 `apps/admin/package-lock.json` 为准；不要根据旧工作日志恢复 React 19 或 Ant Design。
 
 ## 当前边界与下一步
 
-当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29、P30、P31、P32、P33、P34 与 P35 不应在新窗口重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
+当前没有已登记的 In Progress 任务。正式域名为 C 端 `https://zoking.tech/`、API `https://api.zoking.tech`、Admin `https://admin.zoking.tech`、Preview `https://preview.zoking.tech`。P24、P26、P27、P28、P29、P30、P31、P32、P33、P34、P35 与 P36 不应在新窗口重复实现。代码基线为新仓库 `https://github.com/zo-king/zoking_blog` 的 `main` 分支；旧 `zoking-blog` 仓库及 Draft PR 已删除，不再作为接力依据。第三方端点不可用时一言保留本地寄语、Pixiv iframe 自身失败，GitHub 项目保留最后一次成功快照，都不应阻塞本站正文阅读。
 
 当前 Go 位于 `E:\Editor\go`，版本 `go1.25.4`，Windows 本机 `CGO_ENABLED=0`；Linux race 已通过 `golang:1.25-bookworm` 容器并连接 `zoking_blog_test` 执行，CI 也已配置 PostgreSQL race job。seed 双进程首次初始化、Preview finish/fail 终态竞争和发布失败不变式均已完成隔离数据库验证。
 
@@ -152,6 +153,7 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\http-blackbox.ps1
 1. 优先实施已登记的 `MEDIA-RECOVERY-P25-001`：持久化 media operation/manifest、pending upload 与 quarantine 启动 reconciliation、COMMIT ACK 丢失确认、Toxiproxy 和进程终止测试。
 2. 进入真实生产部署前，按 runbook 配置四个域名的 DNS/TLS、替换 secret、迁移/seed、更新已有数据库站点设置，并完成公网 Preview Host 隔离、备份恢复和回滚演练。
 3. 实现生产对象存储/CDN storage adapter、迁移任务和回源配置；当前 local volume 是已验证的开发与单机生产基线。
+4. 下一轮 C 端候选为标准 Markdown 脚注的宽屏边注渐进增强；必须先在真实技术文章中使用脚注，移动端、无 JS 和打印继续保留原生尾注。
 
 以上是后续增强，不是当前 Admin 迁移的阻塞项。开始新任务前，必须先在 `docs/process/task-board.md` 登记任务与文件锁，并在 `docs/process/worklog.md` 记录实施结果。
 

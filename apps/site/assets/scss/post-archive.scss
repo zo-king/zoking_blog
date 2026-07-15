@@ -1,0 +1,230 @@
+.post-archive-header {
+    margin-bottom: 24px;
+}
+
+.post-archive-header .page-primary-title {
+    margin-bottom: 8px;
+}
+
+.post-archive-header p,
+.post-archive-empty {
+    color: var(--card-text-color-secondary);
+    margin: 0;
+}
+
+.post-archive-years {
+    border-block: 1px solid var(--card-separator-color);
+    margin-bottom: 36px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.post-archive-years ol {
+    display: flex;
+    gap: 18px;
+    list-style: none;
+    margin: 0;
+    min-width: max-content;
+    padding: 10px 0;
+}
+
+.post-archive-years a {
+    align-items: baseline;
+    color: var(--card-text-color-secondary);
+    display: flex;
+    gap: 6px;
+    min-height: 44px;
+    padding-block: 11px;
+    text-decoration: none;
+}
+
+.post-archive-years a:hover,
+.post-archive-years a:focus-visible {
+    color: var(--accent-color);
+}
+
+.post-archive-years a:focus-visible,
+.post-archive-year__header a:focus-visible,
+.post-archive-entry a:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+.post-archive-years span {
+    color: var(--card-text-color-tertiary);
+    font-size: 1.2rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.post-archive-list {
+    display: grid;
+    gap: 40px;
+    min-width: 0;
+}
+
+.post-archive-year {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: 92px minmax(0, 1fr);
+    min-width: 0;
+    scroll-margin-top: 24px;
+}
+
+.post-archive-year__header {
+    align-self: start;
+    padding-top: 14px;
+}
+
+.post-archive-year__header h2 {
+    font-size: 2.35rem;
+    line-height: 1;
+    margin: 0 0 8px;
+}
+
+.post-archive-year__header h2 a {
+    color: var(--card-text-color-main);
+    text-decoration: none;
+}
+
+.post-archive-year__header h2 a:hover,
+.post-archive-year__header h2 a:focus-visible {
+    color: var(--accent-color);
+}
+
+.post-archive-year__header > span {
+    color: var(--card-text-color-tertiary);
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.post-archive-entries {
+    list-style: none;
+    margin: 0;
+    min-width: 0;
+    padding: 0;
+}
+
+.post-archive-entries > li + li {
+    border-top: 1px solid var(--card-separator-color);
+}
+
+.post-archive-entry {
+    align-items: baseline;
+    display: grid;
+    gap: 10px 18px;
+    grid-template-columns: 78px minmax(0, 1fr) auto;
+    min-height: 54px;
+    min-width: 0;
+    padding: 14px 0;
+}
+
+.post-archive-entry time {
+    color: var(--card-text-color-tertiary);
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.post-archive-entry h3 {
+    font-size: 1.55rem;
+    line-height: 1.45;
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.post-archive-entry h3 a {
+    align-items: center;
+    color: var(--card-text-color-main);
+    display: inline-flex;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.post-archive-entry h3 a:hover,
+.post-archive-entry h3 a:focus-visible {
+    color: var(--accent-color);
+}
+
+.post-archive-entry__meta {
+    align-items: center;
+    color: var(--card-text-color-tertiary);
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 1.2rem;
+    gap: 5px 12px;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.post-archive-entry__meta a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.post-archive-entry__meta a:hover,
+.post-archive-entry__meta a:focus-visible {
+    color: var(--accent-color);
+}
+
+@media (max-width: 700px) {
+    .post-archive-years {
+        margin-bottom: 30px;
+    }
+
+    .post-archive-year {
+        gap: 8px;
+        grid-template-columns: 1fr;
+    }
+
+    .post-archive-year__header {
+        align-items: baseline;
+        display: flex;
+        gap: 10px;
+        padding-top: 0;
+    }
+
+    .post-archive-year__header h2 {
+        font-size: 2.1rem;
+        margin: 0;
+    }
+
+    .post-archive-entry {
+        gap: 5px 12px;
+        grid-template-columns: 70px minmax(0, 1fr);
+        padding-block: 13px;
+    }
+
+    .post-archive-entry__meta {
+        grid-column: 2;
+        justify-content: flex-start;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 360px) {
+    .post-archive-entry {
+        gap: 4px;
+        grid-template-columns: 1fr;
+    }
+
+    .post-archive-entry__meta {
+        grid-column: 1;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .post-archive-year:target {
+        animation: post-archive-focus 900ms ease-out;
+    }
+}
+
+@keyframes post-archive-focus {
+    from {
+        box-shadow: inset 3px 0 var(--accent-color);
+    }
+
+    to {
+        box-shadow: inset 0 0 transparent;
+    }
+}

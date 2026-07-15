@@ -1467,3 +1467,14 @@
 - QA：P35 覆盖 JSON/URL 白名单、OPML DOMParser、Content-Type、零 Feed 请求、纠错 query/隐私、Web Share/Clipboard、打印隔离、无 JS 和 1280/390/320；P21/P29/P33/P34/P16 回归全部通过。
 - Preflight：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\qa\preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 和 Hugo production build 63 pages。
 - 证据：`site-p35-blogroll-opml-desktop-1280x900.png`、`site-p35-article-feedback-desktop-1280x900.png`、`site-p35-article-feedback-mobile-390x844.png`；状态 Done，`LOCK-SITE-BLOGROLL-FEEDBACK-P35` 已释放。
+
+## 2026-07-15 - CENTER - SITE-POST-ARCHIVE-P36-001 YEAR-GROUPED POST ARCHIVE
+
+- 调研：两路 agent 共核验 18 个中日与欧美独立博客，复核文章归档、原生折叠内容、边注、随机发现、系列导航、IndieWeb、无 JS 和第三方请求；年份归档被确定为当前真实缺口，标准脚注宽屏边注列为下一候选。
+- 去重：本站 `/archives/` 保持后台可管理的 2024 至今成果时间线，`/post/` 专用于公开文章目录；不重复阅读进度、TOC、系列、随机文章、快捷面板或页面过渡。
+- 实现：新增 post section 覆盖模板和独立 SCSS，12 篇文章按年份与发布日期倒序输出；年份导航、篇数、日期、标题、首个分类和阅读时长均由 Hugo 静态生成，不增加 API 或运行时 JavaScript。
+- 体验：桌面为日期/标题/元信息三列，700px 以下折为两列，360px 以下单列；标题触控目标至少 44px，年份锚点仅在允许动态时执行 900ms 定位高亮，reduced-motion 下关闭。
+- 隐私：P36 页面初始请求全部同源，不使用 Cookie、localStorage、统计、远程头像或虚假热度；无 JavaScript 仍保留完整年表。
+- QA：P36 专项覆盖语义、排序、hash、动画、同源请求、无 JS 和 1280/390/320；P22 成果时间线、P29 发现、P34 打印/Feed 回归通过。P20 旧脚本依赖运行中 API 的固定三条 fixture，本轮使用其后继 P22 覆盖无 API 预览边界。
+- Preflight：`preflight.ps1 -SkipE2E` 通过 Go tests、Admin production build 与 Hugo production build 63 pages。
+- 证据：`site-p36-post-archive-desktop-1280x900.png`、`site-p36-post-archive-mobile-390x844.png`；状态 Done，`LOCK-SITE-POST-ARCHIVE-P36` 已释放。
