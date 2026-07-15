@@ -54,6 +54,13 @@ try {
     locale: "zh-CN",
     reducedMotion: "reduce",
   });
+  await context.route(/\/api\/v1\/public\/posts\/[^/]+\/comments$/, async (route) => {
+    if (route.request().method() === "GET") {
+      await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ data: [] }) });
+      return;
+    }
+    await route.continue();
+  });
   const page = await context.newPage();
   const runtimeErrors = [];
   page.on("pageerror", (error) => runtimeErrors.push(`pageerror: ${error.message}`));

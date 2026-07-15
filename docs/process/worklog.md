@@ -1420,3 +1420,13 @@
 - 内容：新增 `/now/` 近况页，包含“正在开发、正在学习、最近关注”，进入主菜单并由现有快捷面板自动索引；它与关于、成果时间线分工明确，后续直接替换已结束事项。
 - QA：新增 P31 Playwright，覆盖真实 `pageswap/pagereveal.viewTransition`、CSS 动画名、reduced-motion、主菜单、命令面板、浏览器前进后退、canonical、唯一 H1、1280/390、横向溢出和零运行时错误。
 - 状态：`SITE-NAVIGATION-NOW-P31-001` Done，文件锁已释放；下一候选为轻量阅读设置，不包含重型字体/SVG 资源。
+
+## 2026-07-15 - CENTER - SITE-READING-SETTINGS-P32-001 LOCAL READING PREFERENCES
+
+- 入口：只在文章页顶部操作区增加 `Aa` 图标，不在首页、近况、项目或友链展示；原生 dialog 使用字号分段控件、宽松行距和正文链接下划线复选框，避免新增常驻侧栏。
+- 样式：复用 `--article-font-size`、`--article-line-height` 和 `.article-content` 范围，桌面较大/特大为 1.85/2rem，移动端为 1.75/1.9rem；不放大导航、评论或代码工具。
+- 持久化：单一本地键 `zoking:reading-preferences:v1` 只允许三档字号和两个布尔字段；文章 head 在绘制前恢复数据属性，避免刷新闪动；全部默认时删除存储键。
+- 缺陷修复：刷新恢复后，宽泛 `[data-reading-spacing]` 选择器会先匹配 `<html>` 属性而非 checkbox；测试暴露后收紧为 `input[data-reading-spacing]` 与 `input[data-reading-links]`。
+- QA：P32 Playwright 覆盖实际 font-size/line-height、链接 text-decoration、存储白名单、DOMContentLoaded 前恢复、刷新控件同步、重置、Escape、焦点返回、非文章隔离、1280/390/320 和零运行时错误。
+- 回归：P16 读者测试的评论 GET 原先依赖本地 API；本轮改为空列表 fixture，仍保留 POST 主动断网测试，最终阅读进度、搜索、暗色对比、移动菜单和评论错误本地化共 7 项通过。
+- 状态：`SITE-READING-SETTINGS-P32-001` Done，文件锁已释放。

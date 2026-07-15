@@ -1,3 +1,4 @@
+{{- $isArticle := and .IsPage (eq .Section "post") -}}
 <!DOCTYPE html>
 <html lang="{{ .Site.Language.Locale }}" dir="{{ default `ltr` .Language.Direction }}">
     <head>
@@ -7,6 +8,20 @@
         <link rel="stylesheet" href="{{ $splashStyle.RelPermalink }}" integrity="{{ $splashStyle.Data.Integrity }}">
         {{- $commandStyle := resources.Get "scss/command-palette.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
         <link rel="stylesheet" href="{{ $commandStyle.RelPermalink }}" integrity="{{ $commandStyle.Data.Integrity }}">
+        {{- if $isArticle }}
+        {{- $readingSettingsStyle := resources.Get "scss/reading-settings.scss" | toCSS (dict "outputStyle" "compressed") | fingerprint -}}
+        <link rel="stylesheet" href="{{ $readingSettingsStyle.RelPermalink }}" integrity="{{ $readingSettingsStyle.Data.Integrity }}">
+        <script>
+            try {
+                const preferences = JSON.parse(localStorage.getItem("zoking:reading-preferences:v1") || "null");
+                if (preferences && typeof preferences === "object") {
+                    if (["large", "xlarge"].includes(preferences.font)) document.documentElement.dataset.readingFont = preferences.font;
+                    if (preferences.relaxedSpacing === true) document.documentElement.dataset.readingSpacing = "relaxed";
+                    if (preferences.underlineLinks === true) document.documentElement.dataset.readingLinks = "underlined";
+                }
+            } catch {}
+        </script>
+        {{- end }}
     </head>
     <body class="{{ block `body-class` . }}{{ end }}">
         <div class="site-splash" id="site-splash" role="dialog" aria-label="Zoking 博客开屏">
@@ -27,6 +42,11 @@
                 <nav class="site-topbar__actions" aria-label="快捷操作">
                     {{- with .Site.GetPage "/page/about" }}
                         <a href="{{ .RelPermalink }}">关于</a>
+                    {{- end }}
+                    {{- if $isArticle }}
+                        <button class="site-topbar__icon site-topbar__text-icon" type="button" data-reading-settings-open aria-label="打开阅读设置" title="阅读设置" aria-haspopup="dialog" aria-controls="reading-settings-dialog">
+                            <span aria-hidden="true">Aa</span>
+                        </button>
                     {{- end }}
                     <button class="site-topbar__icon" type="button" data-command-open aria-label="打开快捷面板" title="快捷面板" aria-haspopup="dialog" aria-controls="site-command-palette">
                         {{ partial "helper/icon" "search" }}
@@ -82,6 +102,38 @@
                 <p class="command-palette__empty" data-command-empty hidden>没有匹配的页面或操作。</p>
             </section>
         </div>
+        {{- if $isArticle }}
+        <dialog class="reading-settings" id="reading-settings-dialog" data-reading-settings-dialog aria-labelledby="reading-settings-title">
+            <form method="dialog">
+                <header class="reading-settings__header">
+                    <h2 id="reading-settings-title">阅读设置</h2>
+                    <button class="reading-settings__close" type="submit" aria-label="关闭阅读设置"><span aria-hidden="true">×</span></button>
+                </header>
+                <div class="reading-settings__body">
+                    <fieldset class="reading-settings__fieldset">
+                        <legend>正文字号</legend>
+                        <div class="reading-settings__segments" role="group" aria-label="正文字号">
+                            <button type="button" data-reading-font="default" aria-pressed="true">标准</button>
+                            <button type="button" data-reading-font="large" aria-pressed="false">较大</button>
+                            <button type="button" data-reading-font="xlarge" aria-pressed="false">特大</button>
+                        </div>
+                    </fieldset>
+                    <label class="reading-settings__toggle">
+                        <span>宽松行距</span>
+                        <input type="checkbox" data-reading-spacing>
+                    </label>
+                    <label class="reading-settings__toggle">
+                        <span>正文链接下划线</span>
+                        <input type="checkbox" data-reading-links>
+                    </label>
+                </div>
+                <footer class="reading-settings__footer">
+                    <button type="button" data-reading-reset>恢复默认</button>
+                    <button type="submit" class="reading-settings__done">完成</button>
+                </footer>
+            </form>
+        </dialog>
+        {{- end }}
         {{- $hasWidget := false -}}
         {{- range .Site.Params.widgets -}}
             {{- if gt (len .) 0 -}}{{- $hasWidget = true -}}{{- end -}}

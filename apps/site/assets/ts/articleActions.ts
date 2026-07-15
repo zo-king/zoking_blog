@@ -4,6 +4,12 @@ const readingProgress = document.querySelector<HTMLElement>('[data-reading-progr
 const readingProgressBar = document.querySelector<HTMLElement>('[data-reading-progress-bar]');
 const resumeButton = document.querySelector<HTMLButtonElement>('[data-reading-resume]');
 const articleContent = document.querySelector<HTMLElement>('.article-content');
+const settingsButton = document.querySelector<HTMLButtonElement>('[data-reading-settings-open]');
+const settingsDialog = document.querySelector<HTMLDialogElement>('[data-reading-settings-dialog]');
+const fontButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-reading-font]'));
+const spacingToggle = document.querySelector<HTMLInputElement>('input[data-reading-spacing]');
+const linksToggle = document.querySelector<HTMLInputElement>('input[data-reading-links]');
+const resetSettingsButton = document.querySelector<HTMLButtonElement>('[data-reading-reset]');
 
 type ReadingState = {
     progress: number;
@@ -12,6 +18,103 @@ type ReadingState = {
 
 const storageKey = `zoking:reading-progress:v1:${window.location.pathname}`;
 const stateMaxAge = 30 * 24 * 60 * 60 * 1000;
+const preferencesKey = 'zoking:reading-preferences:v1';
+
+type ReadingFont = 'default' | 'large' | 'xlarge';
+
+type ReadingPreferences = {
+    font: ReadingFont;
+    relaxedSpacing: boolean;
+    underlineLinks: boolean;
+};
+
+const defaultPreferences: ReadingPreferences = {
+    font: 'default',
+    relaxedSpacing: false,
+    underlineLinks: false,
+};
+
+const readPreferences = (): ReadingPreferences => {
+    try {
+        const parsed = JSON.parse(window.localStorage.getItem(preferencesKey) || 'null') as Partial<ReadingPreferences> | null;
+        if (!parsed || typeof parsed !== 'object') return { ...defaultPreferences };
+        return {
+            font: parsed.font === 'large' || parsed.font === 'xlarge' ? parsed.font : 'default',
+            relaxedSpacing: parsed.relaxedSpacing === true,
+            underlineLinks: parsed.underlineLinks === true,
+        };
+    } catch {
+        return { ...defaultPreferences };
+    }
+};
+
+let readingPreferences = readPreferences();
+
+const applyPreferences = (preferences: ReadingPreferences): void => {
+    const root = document.documentElement;
+    if (preferences.font === 'default') delete root.dataset.readingFont;
+    else root.dataset.readingFont = preferences.font;
+    if (preferences.relaxedSpacing) root.dataset.readingSpacing = 'relaxed';
+    else delete root.dataset.readingSpacing;
+    if (preferences.underlineLinks) root.dataset.readingLinks = 'underlined';
+    else delete root.dataset.readingLinks;
+
+    fontButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.readingFont === preferences.font)));
+    if (spacingToggle) spacingToggle.checked = preferences.relaxedSpacing;
+    if (linksToggle) linksToggle.checked = preferences.underlineLinks;
+};
+
+const savePreferences = (): void => {
+    applyPreferences(readingPreferences);
+    try {
+        const isDefault = readingPreferences.font === 'default'
+            && !readingPreferences.relaxedSpacing
+            && !readingPreferences.underlineLinks;
+        if (isDefault) window.localStorage.removeItem(preferencesKey);
+        else window.localStorage.setItem(preferencesKey, JSON.stringify(readingPreferences));
+    } catch {
+        // Preferences still apply to the current page when storage is unavailable.
+    }
+};
+
+if (settingsButton && settingsDialog) {
+    applyPreferences(readingPreferences);
+    settingsButton.addEventListener('click', () => {
+        if (typeof settingsDialog.showModal === 'function') settingsDialog.showModal();
+        else settingsDialog.setAttribute('open', '');
+    });
+    settingsDialog.addEventListener('click', (event) => {
+        if (event.target !== settingsDialog) return;
+        const bounds = settingsDialog.getBoundingClientRect();
+        const inside = event.clientX >= bounds.left && event.clientX <= bounds.right
+            && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+        if (!inside) settingsDialog.close();
+    });
+}
+
+fontButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const font = button.dataset.readingFont;
+        if (font !== 'default' && font !== 'large' && font !== 'xlarge') return;
+        readingPreferences = { ...readingPreferences, font };
+        savePreferences();
+    });
+});
+
+spacingToggle?.addEventListener('change', () => {
+    readingPreferences = { ...readingPreferences, relaxedSpacing: spacingToggle.checked };
+    savePreferences();
+});
+
+linksToggle?.addEventListener('change', () => {
+    readingPreferences = { ...readingPreferences, underlineLinks: linksToggle.checked };
+    savePreferences();
+});
+
+resetSettingsButton?.addEventListener('click', () => {
+    readingPreferences = { ...defaultPreferences };
+    savePreferences();
+});
 
 const readState = (): ReadingState | null => {
     try {

@@ -95,6 +95,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | SITE-DISCOVERY-P29-001 | Done | Center | Center | 已释放 | 无 | 友链搜索/分类/随机拜访、全站快捷面板、低干扰入场动画与专项回归已完成 |
 | SITE-GITHUB-SNAPSHOT-P30-001 | Done | Center | Center | 已释放 | 无 | GitHub 项目改为每月 1/16 日静态快照、失败保留旧数据、零访客 API 请求与桌面/移动验收已完成 |
 | SITE-NAVIGATION-NOW-P31-001 | Done | Center | Center + Research/Audit agents | 已释放 | 无 | 博客组件调研、原生跨页过渡、近况页、reduced-motion 与桌面/移动验收已完成 |
+| SITE-READING-SETTINGS-P32-001 | Done | Center | Center | 已释放 | 无 | 文章页字号/行距/链接设置、预绘制恢复、本地持久化、重置和桌面/移动验收已完成 |
 
 ## 3. 文件锁登记
 
@@ -150,6 +151,7 @@ Backlog -> Ready -> Assigned -> In Progress -> Review -> Done
 | LOCK-SITE-DISCOVERY-P29 | SITE-DISCOVERY-P29-001 | Center | `apps/site/content/page/links/index.md`, `apps/site/layouts/{baseof.html,_partials/article/components/links.html}`, `apps/site/assets/{ts/custom.ts,ts/linksAvatars.ts,scss/custom.scss,scss/command-palette.scss}`, `scripts/qa/{about-links-p21,site-discovery-p29}.mjs`, P29 参考/QA/过程文档 | API/Admin、数据库 schema、文章正文、上游 Theme Stack 核心、生产数据与部署凭据、持续 Canvas/重型动画依赖 | 2026-07-15 | 已释放：Hugo production、P29/P21 Playwright、1280/390、键盘、reduced-motion 与仓库 preflight 通过 |
 | LOCK-SITE-GITHUB-SNAPSHOT-P30 | SITE-GITHUB-SNAPSHOT-P30-001 | Center | `apps/site/{data/github_projects.json,layouts/projects.html,assets/scss/github-projects.scss}`, `scripts/{sync-github-projects.mjs,qa/*github*}`, `.github/workflows/sync-github-projects.yml`, P19/P30 文档与证据 | API/Admin、数据库 schema、文章正文、上游 Theme Stack 核心、个人 PAT、私有仓库数据 | 2026-07-15 | 已释放：同步脚本、静态 Hugo 渲染、失败保留、零浏览器 API 请求、1280/390/320 与 production build 通过 |
 | LOCK-SITE-NAVIGATION-NOW-P31 | SITE-NAVIGATION-NOW-P31-001 | Center | `apps/site/assets/scss/custom.scss`, `apps/site/content/page/now/index.md`, `scripts/qa/site-navigation-now-p31.mjs`, P31 调研/QA/过程文档与证据 | API/Admin、数据库 schema、上游 Theme Stack 核心、持续动画依赖、重复阅读侧轨、远程链接抓取 | 2026-07-15 | 已释放：真实 ViewTransition 事件、reduced-motion、主菜单/快捷面板、前进后退、1280/390 与 production build 通过 |
+| LOCK-SITE-READING-SETTINGS-P32 | SITE-READING-SETTINGS-P32-001 | Center | `apps/site/layouts/baseof.html`, `apps/site/assets/{ts/articleActions.ts,scss/reading-settings.scss}`, `scripts/qa/{site-reading-settings-p32,site-reader-ui}.mjs`, P32 前端/QA/过程文档与证据 | API/Admin、数据库 schema、上游 Theme Stack 核心、任意字体下载、账号同步、统计跟踪 | 2026-07-15 | 已释放：三档字号、二项开关、预绘制恢复、重置、P16 回归、1280/390/320 与 production build 通过 |
 
 规则：
 
