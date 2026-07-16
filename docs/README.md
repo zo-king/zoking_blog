@@ -31,6 +31,7 @@
 - [P33 文章轻量工具](frontend/article-utilities-p33.md)
 - [P34 打印与订阅发现](frontend/print-discovery-p34.md)
 - [P35 Blogroll 与内容纠错](frontend/blogroll-feedback-p35.md)
+- [P37 技术文章提示块](frontend/article-callouts-p37.md)
 - [B 端后台技术决策](frontend/admin-tech-decision.md)
 - [前后台前端规划](frontend/frontend-plan.md)
 - [运维与部署规划](operations/README.md)
@@ -50,6 +51,7 @@
 - [P33 文章工具验收](qa/site-article-utilities-p33.md)
 - [P34 打印与订阅发现验收](qa/site-print-discovery-p34.md)
 - [P35 Blogroll 与内容纠错验收](qa/site-blogroll-feedback-p35.md)
+- [P37 技术文章提示块验收](qa/site-article-callout-p37.md)
 - [参考资料](references/sources.md)
 
 ## 新窗口接手顺序

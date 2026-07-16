@@ -1486,3 +1486,13 @@
 - 保留：调研记录改为“未采用”，任务状态改为 Superseded，交接文档明确禁止后续窗口恢复同一视觉方案。
 - 页面结果：`/post/` 恢复 Theme Stack 默认文章列表；P35 及其他站点能力不受影响。
 - 验证：清理 Hugo 生成缓存并重启 1313 预览，`/post/` 返回 200、`post-archive-list` 不存在、`article-list--compact` 恢复；production build 63 pages 与 `preflight.ps1 -SkipE2E` 的 Go/Admin/Hugo 全部通过。
+
+## 2026-07-16 - CENTER - SITE-ARTICLE-CALLOUT-P37-001 TECHNICAL ARTICLE CALLOUTS
+
+- 调研：使用 Grok `grok-4.5` 定向检索个人技术博客的文章层次、局部教学交互、脚注/边注、CSS 原生能力和内容发现；过滤掉生成式 HTML 片段、重复能力、Canvas、鼠标跟随和虚假热度。
+- 决策：不改首页和 `/post/`，复用 Theme Stack 已有 Markdown alert，给技术文章增加真实的边界、风险、建议和不变量提示。
+- 内容：Gin 生产加固新增 NOTE/WARNING，Go Context 新增 TIP，GORM 事务与锁新增 IMPORTANT；均来自文章已有论点，非装饰性文本。
+- 样式：`custom.scss` 仅补轻圆角、一级阴影、标题/正文间距和移动内边距；`print.scss` 清除提示块负外边距并保留灰色边框，修复 A4 10px 溢出。
+- 隐私/降级：无第三方请求、无新 JavaScript、无 localStorage；无 JS、打印、reduced-motion 和深色模式均保留可读内容。
+- QA：P37 专项通过语义类型、中文内容、暗色、无 JS、1280/390/320；P16 7/7、P29、P34 回归通过；preflight Go/Admin/Hugo 63 pages 通过。
+- 证据：`site-p37-article-callouts-desktop-1280x900.png`、`site-p37-article-callouts-mobile-390x844.png`；状态 Done，`LOCK-SITE-ARTICLE-CALLOUT-P37` 已释放。

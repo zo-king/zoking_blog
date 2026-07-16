@@ -164,6 +164,22 @@
         color: #222 !important;
     }
 
+    .article-content blockquote.alert {
+        border: 1px solid #888 !important;
+        box-shadow: none !important;
+        margin-inline: 0 !important;
+        max-width: 100% !important;
+        padding: 8pt 10pt !important;
+        width: auto !important;
+    }
+
+    .article-content blockquote.alert .alert-body,
+    .article-content blockquote.alert .alert-header {
+        margin-inline: 0 !important;
+        max-width: 100% !important;
+        width: auto !important;
+    }
+
     .article-content .highlight {
         background: #f7f7f7 !important;
         border: 1px solid #ccc;
