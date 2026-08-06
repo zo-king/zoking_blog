@@ -1,9 +1,12 @@
 FROM debian:bookworm-slim
 
 ARG GOATCOUNTER_VERSION=2.7.0
-RUN apt-get update \
+ARG DEBIAN_MIRROR=mirrors.tuna.tsinghua.edu.cn
+ARG GITHUB_RELEASE_PROXY=https://ghfast.top/
+RUN sed -i "s|deb.debian.org|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata curl gzip \
-    && curl -fsSL "https://github.com/arp242/goatcounter/releases/download/v${GOATCOUNTER_VERSION}/goatcounter-v${GOATCOUNTER_VERSION}-linux-amd64.gz" \
+    && curl -fsSL "${GITHUB_RELEASE_PROXY}https://github.com/arp242/goatcounter/releases/download/v${GOATCOUNTER_VERSION}/goatcounter-v${GOATCOUNTER_VERSION}-linux-amd64.gz" \
     | gzip -d > /usr/local/bin/goatcounter \
     && chmod +x /usr/local/bin/goatcounter \
     && rm -rf /var/lib/apt/lists/*
