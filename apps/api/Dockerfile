@@ -2,8 +2,10 @@ FROM golang:1.23-alpine AS builder
 
 WORKDIR /src
 
+ARG GOPROXY=https://goproxy.cn,direct
+
 COPY apps/api/go.mod apps/api/go.sum ./
-RUN go mod download
+RUN GOPROXY=${GOPROXY} go mod download
 
 COPY apps/api ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api ./cmd/api \
@@ -16,7 +18,7 @@ FROM debian:bookworm-slim
 ARG HUGO_VERSION=0.160.1
 ARG PAGEFIND_VERSION=1.5.2
 ARG DEBIAN_MIRROR=mirrors.tuna.tsinghua.edu.cn
-ARG GITHUB_RELEASE_PROXY=https://ghproxy.net/
+ARG GITHUB_RELEASE_PROXY=https://ghfast.top/
 RUN sed -i "s|deb.debian.org|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
     && apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata curl tar \
