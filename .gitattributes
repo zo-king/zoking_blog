@@ -15,6 +15,10 @@ apps/**/*.jpeg binary
 apps/**/*.jpg binary
 apps/**/*.png binary
 apps/**/*.webp binary
+apps/**/*.ttf binary
+apps/**/*.otf binary
+apps/**/*.woff binary
+apps/**/*.woff2 binary
 docs/**/*.gif binary
 docs/**/*.jpeg binary
 docs/**/*.jpg binary

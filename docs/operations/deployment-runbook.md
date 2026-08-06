@@ -91,6 +91,40 @@ pwsh -NoProfile -File scripts/qa/production-preflight.ps1
 - 将 `https://preview.zoking.tech/preview-files/*` 代理到 API 的同路径，并保留外部 `Host` 与 `X-Forwarded-Proto`。不要在 `api.zoking.tech` 或 `zoking.tech` 暴露该路径；生产 API 会对错误 Host 返回 404。
 - TLS 与路由就绪后，再执行生产发布冒烟检查；不要直接把 Compose 暴露的开发端口作为正式入口。
 
+### VPS 公网入口与物理服务器
+
+公网入口在云 VPS、应用运行在内网物理服务器时，推荐使用 WireGuard（或 Tailscale）建立仅允许两台机器互通的私网隧道。示例地址：VPS `10.20.0.1`、物理服务器 `10.20.0.2`。
+
+1. DNS 的所有公网记录只指向 VPS 公网 IP；物理服务器不需要公网入站端口。VPS 防火墙仅开放 `80/443` 和 WireGuard UDP 端口，物理服务器防火墙仅允许 `wg0` 来源访问应用端口。
+2. 在物理服务器的 `infra/docker/.env.prod` 将 `API_BIND_ADDRESS`、`ADMIN_BIND_ADDRESS`、`SITE_BIND_ADDRESS`、`STATS_BIND_ADDRESS` 都设为 `10.20.0.2`（不要设为 `0.0.0.0`），然后执行：
+
+   ```powershell
+   pwsh -NoProfile -File scripts/qa/production-preflight.ps1 -AllowNonLoopbackBindings
+   ```
+
+   只有确认防火墙已限制为 WireGuard 私网后才允许该参数；PostgreSQL 仍保持不发布端口。
+3. 在 VPS 上终止 TLS 并反向代理到 `10.20.0.2`。Caddy 示例：
+
+   ```text
+   zoking.tech {
+       reverse_proxy 10.20.0.2:1313
+   }
+   api.zoking.tech {
+       reverse_proxy 10.20.0.2:18080
+   }
+   admin.zoking.tech {
+       reverse_proxy 10.20.0.2:8081
+   }
+   preview.zoking.tech {
+       reverse_proxy 10.20.0.2:18080
+   }
+   stats.zoking.tech {
+       reverse_proxy 10.20.0.2:8100
+   }
+   ```
+
+   保留原始 `Host`、`X-Forwarded-For` 和 `X-Forwarded-Proto`；不要把 `postgres`、`18080`、`8081` 或 `8100` 直接暴露到公网。上线前从 VPS 检查隧道地址和四个 HTTPS 域名，再从公网执行健康检查。
+
 构建并启动：
 
 ```powershell
