@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
@@ -9,8 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 type publicCommentDTO struct {
@@ -70,7 +73,7 @@ func listPublicComments(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func submitPublicComment(db *gorm.DB) gin.HandlerFunc {
+func submitPublicComment(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 	type request struct {
 		ParentID      *uuid.UUID `json:"parent_id"`
 		AuthorName    string     `json:"author_name" binding:"required"`
@@ -122,11 +125,11 @@ func submitPublicComment(db *gorm.DB) gin.HandlerFunc {
 			PostID:          post.ID,
 			ParentID:        req.ParentID,
 			AuthorName:      authorName,
-			AuthorEmailHash: hashString(strings.ToLower(strings.TrimSpace(req.AuthorEmail))),
+			AuthorEmailHash: hashString(strings.ToLower(strings.TrimSpace(req.AuthorEmail)), cfg.PrivacyHashSecret),
 			AuthorWebsite:   strings.TrimSpace(req.AuthorWebsite),
 			Content:         content,
 			Status:          "pending",
-			IPHash:          hashString(c.ClientIP()),
+			IPHash:          hashString(c.ClientIP(), cfg.PrivacyHashSecret),
 			UserAgent:       trimTo(c.GetHeader("User-Agent"), 512),
 		}
 		if err := db.WithContext(c.Request.Context()).Create(&comment).Error; err != nil {
@@ -137,7 +140,11 @@ func submitPublicComment(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func listAdminComments(db *gorm.DB) gin.HandlerFunc {
+func listAdminComments(db *gorm.DB, cfg ...config.Config) gin.HandlerFunc {
+	privacySecret := "dev-only-privacy-hash-secret"
+	if len(cfg) > 0 && cfg[0].PrivacyHashSecret != "" {
+		privacySecret = cfg[0].PrivacyHashSecret
+	}
 	return func(c *gin.Context) {
 		pagination, ok := parsePagination(c)
 		if !ok {
@@ -159,9 +166,9 @@ func listAdminComments(db *gorm.DB) gin.HandlerFunc {
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
 			query = query.Where(
-				"comments.author_name ILIKE ? OR comments.author_email_hash = ? OR comments.content ILIKE ?",
+				"(comments.author_name ILIKE ? OR comments.author_email_hash = ? OR comments.content ILIKE ?)",
 				pattern,
-				hashString(strings.ToLower(pagination.Query)),
+				hashString(strings.ToLower(pagination.Query), privacySecret),
 				pattern,
 			)
 		}
@@ -325,10 +332,14 @@ func trimTo(value string, max int) string {
 	return string(runes[:max])
 }
 
-func hashString(value string) string {
+func hashString(value, secret string) string {
 	if strings.TrimSpace(value) == "" {
 		return ""
 	}
-	sum := sha256.Sum256([]byte(value))
-	return hex.EncodeToString(sum[:])
+	if strings.TrimSpace(secret) == "" {
+		return ""
+	}
+	mac := hmac.New(sha256.New, []byte(secret))
+	_, _ = mac.Write([]byte(value))
+	return hex.EncodeToString(mac.Sum(nil))
 }

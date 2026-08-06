@@ -10,9 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 type contentAccessListResponse[T any] struct {
@@ -60,6 +61,19 @@ func TestContentAccessPostgresOwnerIsolation(t *testing.T) {
 		contentAccessDecode(t, globalRecorder, http.StatusOK, &global)
 		if global.Pagination.Total != 4 || len(global.Data) != 4 {
 			t.Fatalf("global posts = %d total=%d, want 4", len(global.Data), global.Pagination.Total)
+		}
+
+		foreignPostSearch := contentAccessServe(t, db, http.MethodGet, "/posts", "/posts?page=1&page_size=20&q=Owner%20B", "", ownerA, []string{"author"}, nil, listAdminPosts(db))
+		var foreignPostResult contentAccessListResponse[model.Post]
+		contentAccessDecode(t, foreignPostSearch, http.StatusOK, &foreignPostResult)
+		if foreignPostResult.Pagination.Total != 0 {
+			t.Fatalf("foreign post search widened owner scope: total=%d", foreignPostResult.Pagination.Total)
+		}
+		foreignPageSearch := contentAccessServe(t, db, http.MethodGet, "/pages", "/pages?page=1&page_size=20&q=Owner%20B", "", ownerA, []string{"author"}, nil, listAdminPages(db))
+		var foreignPageResult contentAccessListResponse[model.Page]
+		contentAccessDecode(t, foreignPageSearch, http.StatusOK, &foreignPageResult)
+		if foreignPageResult.Pagination.Total != 0 {
+			t.Fatalf("foreign page search widened owner scope: total=%d", foreignPageResult.Pagination.Total)
 		}
 	})
 
@@ -220,6 +234,12 @@ func TestContentAccessPostgresOwnerIsolation(t *testing.T) {
 		contentAccessDecode(t, previewRecorder, http.StatusOK, &previewResponse)
 		if previewResponse.Pagination.Total != 1 || previewResponse.Data[0].ID != previews[0].ID {
 			t.Fatalf("owner previews = %#v total=%d", previewResponse.Data, previewResponse.Pagination.Total)
+		}
+		foreignPreviewSearch := contentAccessServe(t, db, http.MethodGet, "/publish/previews", "/publish/previews?page=1&page_size=20&q=owner-b", "", ownerA, []string{"author"}, []string{"publish:read"}, listPublishPreviews(db))
+		var foreignPreviewResult contentAccessListResponse[model.PublishPreview]
+		contentAccessDecode(t, foreignPreviewSearch, http.StatusOK, &foreignPreviewResult)
+		if foreignPreviewResult.Pagination.Total != 0 {
+			t.Fatalf("foreign preview search widened owner scope: total=%d", foreignPreviewResult.Pagination.Total)
 		}
 
 		foreignJobRecorder := contentAccessServe(t, db, http.MethodGet, "/publish/jobs/:id", "/publish/jobs/"+jobs[2].ID.String(), "", ownerA, []string{"author"}, []string{"publish:read"}, getPublishJob(db))

@@ -11,10 +11,11 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
 
 func TestNormalizeMediaOptionsAllowsExplicitImmediateGrace(t *testing.T) {

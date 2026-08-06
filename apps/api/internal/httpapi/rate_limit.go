@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"golang.org/x/time/rate"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
 
 type rateLimitClient struct {

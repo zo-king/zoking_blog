@@ -7,6 +7,46 @@ on:
       - main
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12
+          working-directory: apps/api
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Install admin dependencies
+        working-directory: apps/admin
+        run: npm ci
+
+      - name: ESLint
+        working-directory: apps/admin
+        run: npm run lint
+
+      - name: Prettier check
+        working-directory: apps/admin
+        run: npm run format:check
+
   race:
     name: Go race detector
     runs-on: ubuntu-latest

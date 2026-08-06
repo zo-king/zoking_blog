@@ -7,9 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/auth"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 type adminUserResponse struct {
@@ -51,7 +52,7 @@ func listAdminUsers(db *gorm.DB) gin.HandlerFunc {
 		query := db.WithContext(c.Request.Context()).Model(&model.User{})
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
-			query = query.Where("email ILIKE ? OR username ILIKE ? OR display_name ILIKE ?", pattern, pattern, pattern)
+			query = query.Where("(email ILIKE ? OR username ILIKE ? OR display_name ILIKE ?)", pattern, pattern, pattern)
 		}
 		if pagination.Status != "" {
 			query = query.Where("status = ?", pagination.Status)
@@ -72,13 +73,26 @@ func listAdminUsers(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		result := make([]adminUserResponse, 0, len(users))
-		for _, user := range users {
-			roles, err := roleCodesForUser(c, db, user.ID)
-			if err != nil {
+		roleRows := make([]struct {
+			UserID uuid.UUID
+			Code   string
+		}, 0)
+		if len(users) > 0 {
+			if err := db.WithContext(c.Request.Context()).Table("user_roles ur").
+				Select("ur.user_id, r.code").
+				Joins("join roles r on r.id = ur.role_id").
+				Where("ur.user_id in ?", userIDs(users)).
+				Order("ur.user_id, r.code").Scan(&roleRows).Error; err != nil {
 				Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not load user roles")
 				return
 			}
-			result = append(result, adminUserResponse{ID: user.ID, Email: user.Email, Username: user.Username, DisplayName: user.DisplayName, Status: user.Status, Roles: roles, CreatedAt: user.CreatedAt})
+		}
+		rolesByUser := make(map[uuid.UUID][]string, len(users))
+		for _, row := range roleRows {
+			rolesByUser[row.UserID] = append(rolesByUser[row.UserID], row.Code)
+		}
+		for _, user := range users {
+			result = append(result, adminUserResponse{ID: user.ID, Email: user.Email, Username: user.Username, DisplayName: user.DisplayName, Status: user.Status, Roles: rolesByUser[user.ID], CreatedAt: user.CreatedAt})
 		}
 		OKPaginated(c, result, total, pagination)
 	}
@@ -290,17 +304,40 @@ func listAdminRoles(db *gorm.DB) gin.HandlerFunc {
 			Fail(c, 500, "INTERNAL_ERROR", "could not list roles")
 			return
 		}
-		result := make([]roleResponse, 0, len(rows))
-		for _, row := range rows {
-			var permissions []string
-			if err := db.WithContext(c.Request.Context()).Table("permissions p").Select("p.code").Joins("join role_permissions rp on rp.permission_id=p.id").Where("rp.role_id=?", row.ID).Order("p.code").Pluck("p.code", &permissions).Error; err != nil {
+		permissionRows := make([]struct {
+			RoleID uuid.UUID
+			Code   string
+		}, 0)
+		if len(rows) > 0 {
+			roleIDs := make([]uuid.UUID, 0, len(rows))
+			for _, row := range rows {
+				roleIDs = append(roleIDs, row.ID)
+			}
+			if err := db.WithContext(c.Request.Context()).Table("role_permissions rp").
+				Select("rp.role_id, p.code").Joins("join permissions p on p.id = rp.permission_id").
+				Where("rp.role_id in ?", roleIDs).Order("rp.role_id, p.code").Scan(&permissionRows).Error; err != nil {
 				Fail(c, 500, "INTERNAL_ERROR", "could not load role permissions")
 				return
 			}
-			result = append(result, roleResponse{ID: row.ID, Code: row.Code, Name: row.Name, Description: row.Description, IsSystem: row.IsSystem, Permissions: permissions})
+		}
+		permissionsByRole := make(map[uuid.UUID][]string, len(rows))
+		for _, permission := range permissionRows {
+			permissionsByRole[permission.RoleID] = append(permissionsByRole[permission.RoleID], permission.Code)
+		}
+		result := make([]roleResponse, 0, len(rows))
+		for _, row := range rows {
+			result = append(result, roleResponse{ID: row.ID, Code: row.Code, Name: row.Name, Description: row.Description, IsSystem: row.IsSystem, Permissions: permissionsByRole[row.ID]})
 		}
 		OK(c, result)
 	}
+}
+
+func userIDs(users []model.User) []uuid.UUID {
+	ids := make([]uuid.UUID, 0, len(users))
+	for _, user := range users {
+		ids = append(ids, user.ID)
+	}
+	return ids
 }
 
 var errLastSuperAdmin = errors.New("last active super administrator")

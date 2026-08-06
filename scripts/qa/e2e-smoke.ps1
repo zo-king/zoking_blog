@@ -508,6 +508,20 @@ $login = Invoke-RestMethod -Method POST -Uri "$ApiBase/api/v1/admin/auth/login" 
 } | ConvertTo-Json)
 $script:AdminWebSession = $AdminWebSession
 $headers = @{ "X-CSRF-Token" = [string]$login.data.csrf_token }
+
+# Fail before creating any test data when the guarded cleanup route is disabled.
+$cleanupProbeID = [guid]::NewGuid().ToString()
+$cleanupProbe = Invoke-WebRequest -Method POST `
+    -Uri "$ApiBase/api/v1/admin/qa/e2e-runs/$cleanupProbeID/cleanup" `
+    -Headers $headers `
+    -WebSession $script:AdminWebSession `
+    -ContentType "application/json" `
+    -Body '{"dry_run":true,"manifest":{}}' `
+    -TimeoutSec 10 `
+    -SkipHttpErrorCheck
+Assert-True ([int]$cleanupProbe.StatusCode -in @(409, 422)) `
+    "E2E cleanup route is unavailable; enable APP_ENV=test and QA_E2E_CLEANUP_ENABLED=true before running smoke."
+
 Invoke-PendingE2ERunRecovery -ApiBase $ApiBase -Headers $headers -TimeoutSeconds $PublishTimeoutSeconds
 
 $runID = [guid]::NewGuid().ToString()

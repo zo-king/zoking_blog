@@ -13,9 +13,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 func TestAchievementPostgresContract(t *testing.T) {

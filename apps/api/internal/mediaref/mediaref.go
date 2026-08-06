@@ -6,9 +6,10 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 const (

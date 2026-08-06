@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
 
@@ -24,7 +26,7 @@ func main() {
 		log.Fatalf("set goose dialect: %v", err)
 	}
 
-	if err := goose.Run(command, db, cfg.MigrationsDir, args...); err != nil {
+	if err := goose.RunContext(context.Background(), command, db, cfg.MigrationsDir, args...); err != nil {
 		log.Fatalf("goose %s: %v", command, err)
 	}
 }

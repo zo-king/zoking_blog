@@ -16,12 +16,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       componentConfig={{
         Button: { shape: "square" },
         Card: { bordered: true },
-        Table: { borderCell: false }
+        Table: { borderCell: false },
       }}
     >
       <BrowserRouter>
         <AdminRouter />
       </BrowserRouter>
     </ConfigProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

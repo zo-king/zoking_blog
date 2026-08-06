@@ -8,9 +8,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 var (
@@ -89,13 +90,6 @@ func postgresConstraint(err error) string {
 		return pgErr.ConstraintName
 	}
 	return ""
-}
-
-func loadPostWithTaxonomy(db *gorm.DB, query string, args ...interface{}) (model.Post, error) {
-	var post model.Post
-	conds := append([]interface{}{query}, args...)
-	err := preloadPostTaxonomy(db).First(&post, conds...).Error
-	return post, err
 }
 
 func syncPostTaxonomy(tx *gorm.DB, post *model.Post, categoryIDs *[]uuid.UUID, tagIDs *[]uuid.UUID) error {

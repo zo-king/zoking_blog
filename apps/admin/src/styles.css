@@ -1,34 +1,45 @@
 :root {
-  color: #1d2824;
-  background: #f4f6f5;
-  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #1d2129;
+  background: #f2f3f5;
+  font-family:
+    Inter,
+    "PingFang SC",
+    "Microsoft YaHei",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --admin-bg: #f4f6f5;
+  /* 设计令牌:与 Arco Design 官方色板对齐(arcoblue / gray),
+     换品牌只需改这一段 + 下方 body 的 --primary-* 数值。 */
+  --admin-bg: #f2f3f5;
   --admin-surface: #ffffff;
-  --admin-surface-subtle: #f8faf9;
-  --admin-ink: #1d2824;
-  --admin-muted: #66736e;
-  --admin-line: #dfe6e2;
-  --admin-line-strong: #cad5cf;
-  --admin-primary: #147d68;
-  --admin-primary-hover: #0f6b59;
-  --admin-primary-soft: #e7f3ef;
-  --admin-coral: #cf654a;
-  --admin-coral-soft: #fcece7;
-  --admin-sidebar: #19231f;
-  --admin-sidebar-muted: #91a39c;
-  --admin-sidebar-line: rgba(255, 255, 255, 0.09);
-  --primary-1: 231, 243, 239;
-  --primary-2: 207, 231, 223;
-  --primary-3: 166, 213, 200;
-  --primary-4: 121, 194, 175;
-  --primary-5: 66, 168, 142;
-  --primary-6: 20, 125, 104;
-  --primary-7: 15, 107, 89;
-  --primary-8: 11, 88, 74;
-  --primary-9: 7, 70, 59;
-  --primary-10: 4, 53, 45;
+  --admin-surface-subtle: #f7f8fa;
+  --admin-ink: #1d2129;
+  --admin-secondary: #4e5969;
+  --admin-muted: #86909c;
+  --admin-line: #e5e6eb;
+  --admin-line-strong: #c9cdd4;
+  --admin-primary: #165dff;
+  --admin-primary-hover: #0e42d2;
+  --admin-primary-soft: #e8f3ff;
+  --admin-coral: #ff7d00;
+  --admin-coral-soft: #fff3e8;
+  --admin-sidebar: #ffffff;
+  --admin-sidebar-muted: #86909c;
+  --admin-sidebar-line: #e5e6eb;
+  --primary-1: 232, 243, 255;
+  --primary-2: 190, 218, 255;
+  --primary-3: 148, 191, 255;
+  --primary-4: 106, 161, 255;
+  --primary-5: 64, 128, 255;
+  --primary-6: 22, 93, 255;
+  --primary-7: 14, 66, 210;
+  --primary-8: 7, 44, 166;
+  --primary-9: 3, 26, 121;
+  --primary-10: 0, 13, 77;
 }
 
 * {
@@ -47,16 +58,16 @@ body {
   overflow-x: hidden;
   background: var(--admin-bg);
   color: var(--admin-ink);
-  --primary-1: 231, 243, 239;
-  --primary-2: 207, 231, 223;
-  --primary-3: 166, 213, 200;
-  --primary-4: 121, 194, 175;
-  --primary-5: 66, 168, 142;
-  --primary-6: 20, 125, 104;
-  --primary-7: 15, 107, 89;
-  --primary-8: 11, 88, 74;
-  --primary-9: 7, 70, 59;
-  --primary-10: 4, 53, 45;
+  --primary-1: 232, 243, 255;
+  --primary-2: 190, 218, 255;
+  --primary-3: 148, 191, 255;
+  --primary-4: 106, 161, 255;
+  --primary-5: 64, 128, 255;
+  --primary-6: 22, 93, 255;
+  --primary-7: 14, 66, 210;
+  --primary-8: 7, 44, 166;
+  --primary-9: 3, 26, 121;
+  --primary-10: 0, 13, 77;
 }
 
 button,
@@ -97,7 +108,7 @@ select {
 }
 
 .arco-form-label-item > label {
-  color: #34423c;
+  color: var(--admin-secondary);
   font-weight: 600;
 }
 
@@ -129,7 +140,7 @@ select {
   padding: 48px clamp(40px, 6vw, 88px);
   flex-direction: column;
   justify-content: space-between;
-  background: var(--admin-sidebar);
+  background: linear-gradient(160deg, #0b1f52 0%, #123b9e 62%, #165dff 130%);
   color: #ffffff;
 }
 
@@ -160,7 +171,7 @@ select {
 }
 
 .login-brand span {
-  color: #b6c7c0;
+  color: #a8c0f5;
   font-size: 13px;
   line-height: 1.4;
 }
@@ -172,7 +183,7 @@ select {
 
 .login-kicker {
   margin: 0 0 16px;
-  color: #f2a188;
+  color: #94bfff;
   font-size: 14px;
   font-weight: 700;
 }
@@ -189,7 +200,7 @@ select {
 .login-context-copy > p:last-child {
   max-width: 460px;
   margin: 22px 0 0;
-  color: #b6c7c0;
+  color: #a8c0f5;
   font-size: 17px;
   line-height: 1.8;
 }
@@ -198,7 +209,7 @@ select {
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #d6e1dc;
+  color: #c8d8f8;
   font-size: 14px;
 }
 
@@ -222,7 +233,7 @@ select {
 
 .login-form-heading p {
   margin: 0 0 10px;
-  color: var(--admin-coral);
+  color: var(--admin-primary);
   font-size: 14px;
   font-weight: 700;
 }
@@ -275,11 +286,11 @@ select {
   z-index: 30;
   display: flex;
   height: 100vh;
-  flex: 0 0 216px !important;
   flex-direction: column;
   overflow: hidden;
   background: var(--admin-sidebar);
-  border-right: 1px solid #111915;
+  border-right: 1px solid var(--admin-line);
+  transition: width 0.2s ease;
 }
 
 .app-sider > .arco-layout-sider-children {
@@ -294,9 +305,9 @@ select {
   align-items: center;
   gap: 11px;
   min-height: 56px;
-  padding: 0 18px;
+  padding: 0 15px;
   border-bottom: 1px solid var(--admin-sidebar-line);
-  color: #ffffff;
+  color: var(--admin-ink);
 }
 
 .brand-mark {
@@ -306,10 +317,9 @@ select {
   flex: 0 0 34px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 5px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #79c9b5;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #4080ff, #165dff);
+  color: #ffffff;
   font-size: 18px;
 }
 
@@ -358,8 +368,9 @@ select {
   min-height: 0;
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  scrollbar-color: var(--admin-line-strong) transparent;
 }
 
 .nav-section {
@@ -368,7 +379,7 @@ select {
 
 .nav-section-label {
   padding: 0 18px 5px;
-  color: #71847c;
+  color: var(--admin-muted);
   font-size: 11px;
   font-weight: 600;
 }
@@ -385,21 +396,21 @@ select {
   height: 38px;
   margin: 2px 10px;
   padding: 0 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   background: transparent !important;
-  color: #b7c7c0;
+  color: var(--admin-secondary);
   line-height: 38px;
 }
 
 .app-sider .arco-menu-item:hover {
-  background: rgba(255, 255, 255, 0.055) !important;
-  color: #ffffff !important;
+  background: var(--admin-surface-subtle) !important;
+  color: var(--admin-ink) !important;
 }
 
 .app-sider .arco-menu-selected,
 .app-sider .arco-menu-selected:hover {
-  background: #e7f3ef !important;
-  color: #116b59 !important;
+  background: var(--admin-primary-soft) !important;
+  color: var(--admin-primary) !important;
   font-weight: 600;
 }
 
@@ -408,43 +419,43 @@ select {
   font-size: 16px;
 }
 
-.sidebar-account {
-  display: grid;
-  min-height: 66px;
-  padding: 14px 14px;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  border-top: 1px solid var(--admin-sidebar-line);
-}
-
-.sidebar-account .arco-avatar {
-  background: #2d8d76;
-  color: #ffffff;
-}
-
-.sidebar-account > div {
+.sider-collapse-trigger {
   display: flex;
-  min-width: 0;
-  flex-direction: column;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 22px;
+  align-items: center;
+  justify-content: flex-start;
+  border: 0;
+  border-top: 1px solid var(--admin-sidebar-line);
+  background: transparent;
+  color: var(--admin-muted);
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.sidebar-account strong,
-.sidebar-account span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.sider-collapse-trigger:hover {
+  background: var(--admin-surface-subtle);
+  color: var(--admin-ink);
 }
 
-.sidebar-account strong {
-  color: #eef5f2;
-  font-size: 12px;
+.app-sider-collapsed .brand {
+  justify-content: center;
+  padding: 0;
 }
 
-.sidebar-account span {
-  margin-top: 3px;
-  color: var(--admin-sidebar-muted);
-  font-size: 11px;
+.app-sider-collapsed .sider-collapse-trigger {
+  justify-content: center;
+  padding: 0;
+}
+
+.app-sider-collapsed .arco-menu-item {
+  padding: 0;
+  text-align: center;
+}
+
+.app-sider-collapsed .arco-menu-item .arco-icon {
+  margin-right: 0;
 }
 
 .app-header {
@@ -472,8 +483,18 @@ select {
 }
 
 .header-workspace-name {
-  color: #52615b;
+  color: var(--admin-secondary);
   font-size: 13px;
+  font-weight: 600;
+}
+
+.header-breadcrumb .arco-breadcrumb-item {
+  color: var(--admin-muted);
+  font-size: 13px;
+}
+
+.header-breadcrumb .arco-breadcrumb-item:last-child {
+  color: var(--admin-ink);
   font-weight: 600;
 }
 
@@ -482,7 +503,78 @@ select {
 }
 
 .header-actions .arco-btn-text {
-  color: #52615b;
+  color: var(--admin-secondary);
+}
+
+.header-user {
+  display: flex;
+  padding: 4px 8px 4px 4px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.header-user:hover {
+  background: var(--admin-surface-subtle);
+}
+
+.header-user .arco-avatar {
+  background: var(--admin-primary);
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.header-user-name {
+  max-width: 180px;
+  overflow: hidden;
+  color: var(--admin-secondary);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu {
+  min-width: 200px;
+  padding-bottom: 4px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgba(29, 33, 41, 0.1);
+  overflow: hidden;
+}
+
+.user-menu .arco-menu {
+  background: transparent;
+}
+
+.user-menu-summary {
+  display: flex;
+  min-width: 180px;
+  margin-bottom: 4px;
+  padding: 10px 12px;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid var(--admin-line);
+}
+
+.user-menu-summary strong {
+  overflow: hidden;
+  color: var(--admin-ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu-summary span {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.user-menu-logout {
+  color: rgb(var(--red-6));
 }
 
 .header-actions > .arco-tag {
@@ -582,7 +674,7 @@ select {
 
 .content-panel-header h6.arco-typography {
   margin: 0;
-  color: #26332e;
+  color: var(--admin-ink);
   font-size: 15px;
   line-height: 1.45;
   letter-spacing: 0;
@@ -800,12 +892,12 @@ select {
 
 .health-list > div {
   display: flex;
-  min-height: 62px;
+  min-height: 58px;
   padding: 12px 2px;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-bottom: 1px solid #edf1ef;
+  border-bottom: 1px solid var(--admin-line);
 }
 
 .health-list > div:last-child {
@@ -819,8 +911,46 @@ select {
 }
 
 .health-list strong {
-  color: #2a3732;
+  color: var(--admin-ink);
   font-size: 13px;
+}
+
+.asset-count {
+  color: var(--admin-ink);
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-breakdown {
+  display: flex;
+  max-width: 220px;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.status-chip {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--admin-surface-subtle);
+  color: var(--admin-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.status-chip strong {
+  color: var(--admin-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-chip.is-highlight {
+  background: var(--admin-coral-soft);
+  color: var(--admin-coral);
+}
+
+.status-chip.is-highlight strong {
+  color: var(--admin-coral);
 }
 
 .health-list .arco-typography-secondary {
@@ -864,20 +994,24 @@ select {
   border-radius: 0;
 }
 
+.arco-table-content {
+  overflow-x: auto;
+}
+
 .arco-table-th {
   background: var(--admin-surface-subtle);
-  color: #51605a;
+  color: var(--admin-secondary);
   font-size: 12px;
   font-weight: 600;
 }
 
 .arco-table-td {
-  color: #2a3732;
+  color: var(--admin-ink);
   font-size: 13px;
 }
 
 .arco-table-tr:hover .arco-table-td {
-  background: #f4f8f6;
+  background: var(--admin-surface-subtle);
 }
 
 .arco-table-cell {
@@ -1236,5 +1370,125 @@ select {
   .arco-form-layout-inline .arco-form-item {
     width: 100%;
     margin-right: 0;
+  }
+}
+
+/* ---- 工作台(仪表盘)---- */
+
+.stat-card-grid {
+  display: grid;
+  margin-bottom: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.stat-card {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 104px;
+  padding: 18px;
+  align-items: center;
+  gap: 14px;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-line);
+  border-radius: 8px;
+}
+
+.stat-card-link {
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.stat-card-link:hover {
+  border-color: rgb(var(--primary-4));
+  box-shadow: 0 4px 14px rgba(22, 93, 255, 0.08);
+}
+
+.stat-card-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 20px;
+}
+
+.stat-icon-blue {
+  background: #e8f3ff;
+  color: #165dff;
+}
+
+.stat-icon-red {
+  background: #ffece8;
+  color: #f53f3f;
+}
+
+.stat-icon-cyan {
+  background: #e8fffb;
+  color: #0fc6c2;
+}
+
+.stat-icon-orange {
+  background: #fff3e8;
+  color: #ff7d00;
+}
+
+.stat-card-body {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-card-body .arco-statistic-title {
+  margin-bottom: 2px;
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.stat-card-body .arco-statistic-value {
+  color: var(--admin-ink);
+  font-size: 24px;
+  font-weight: 650;
+}
+
+.stat-card-body > .arco-typography-secondary {
+  font-size: 12px;
+}
+
+.stat-card-arrow {
+  color: var(--admin-muted);
+  font-size: 14px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 14px;
+}
+
+.dashboard-grid .content-panel {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .stat-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .stat-card-grid {
+    grid-template-columns: 1fr;
   }
 }

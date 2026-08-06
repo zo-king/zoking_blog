@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/contentquality"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 var ErrContentQualityBlocked = errors.New("content quality check failed")
@@ -31,7 +32,7 @@ func ValidatePostContent(post model.Post) error {
 		return fmt.Errorf("%w: post %s status is %s", ErrContentQualityBlocked, post.ID, post.Status)
 	}
 	if err := validatePostSeries(post); err != nil {
-		return fmt.Errorf("%w: post %s has invalid series metadata: %v", ErrContentQualityBlocked, post.ID, err)
+		return fmt.Errorf("%w: post %s has invalid series metadata: %w", ErrContentQualityBlocked, post.ID, err)
 	}
 	return reportQualityError("post", post.ID.String(), contentquality.EvaluatePost(post))
 }

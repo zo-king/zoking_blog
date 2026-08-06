@@ -8,9 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 type PreviewCleanupOptions struct {
@@ -131,6 +132,11 @@ func RunPreviewCleanup(ctx context.Context, db *gorm.DB, cfg config.Config, logg
 		return
 	}
 	run := func() {
+		if deleted, err := CleanupOldViewMarks(ctx, db, time.Now().UTC().AddDate(0, 0, -180), 5000); err != nil {
+			logger.Printf("engagement retention cleanup failed: %v", err)
+		} else if deleted > 0 {
+			logger.Printf("engagement retention cleanup completed: deleted=%d", deleted)
+		}
 		result, err := CleanupExpiredPreviews(ctx, db, cfg, PreviewCleanupOptions{DryRun: false})
 		if err != nil {
 			logger.Printf("preview cleanup failed: %v", err)
@@ -151,4 +157,15 @@ func RunPreviewCleanup(ctx context.Context, db *gorm.DB, cfg config.Config, logg
 			run()
 		}
 	}
+}
+
+// CleanupOldViewMarks bounds the deduplication table while preserving the
+// aggregate counters. Marks older than the retention window can no longer
+// affect the current daily view metric.
+func CleanupOldViewMarks(ctx context.Context, db *gorm.DB, cutoff time.Time, batchSize int) (int64, error) {
+	if batchSize <= 0 {
+		batchSize = 5000
+	}
+	result := db.WithContext(ctx).Exec(`delete from post_view_marks where ctid in (select ctid from post_view_marks where view_day < ? order by view_day limit ?)`, cutoff.Format("2006-01-02"), batchSize)
+	return result.RowsAffected, result.Error
 }

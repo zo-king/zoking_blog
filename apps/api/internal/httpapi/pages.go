@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/contentquality"
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type pageCreateRequest struct {
@@ -116,7 +117,7 @@ func listAdminPages(db *gorm.DB) gin.HandlerFunc {
 		}
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
-			query = query.Where("title ILIKE ? OR summary ILIKE ? OR slug ILIKE ?", pattern, pattern, pattern)
+			query = query.Where("(pages.title ILIKE ? OR pages.summary ILIKE ? OR pages.slug ILIKE ?)", pattern, pattern, pattern)
 		}
 		if pagination.Status != "" {
 			query = query.Where("status = ?", pagination.Status)

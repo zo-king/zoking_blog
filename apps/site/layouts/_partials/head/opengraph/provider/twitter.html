@@ -1,0 +1,20 @@
+{{- with .Site.Params.opengraph.twitter.site -}}
+    <meta name="twitter:site" content="@{{ . }}">
+    <meta name="twitter:creator" content="@{{ . }}">
+{{- end -}}
+
+{{- $title := partialCached "data/title" . .RelPermalink -}}
+{{- $description := partialCached "data/description" . .RelPermalink -}}
+
+<meta name="twitter:title" {{ printf "content=%q" $title | safeHTMLAttr }}>
+<meta name="twitter:description" {{ printf "content=%q" $description | safeHTMLAttr }}>
+
+{{/* 文章页优先使用构建期生成的分享卡，其余页面回落到封面图。 */}}
+{{- $image := partialCached "opengraph/card.html" . .RelPermalink -}}
+{{- if not $image -}}
+    {{- $image = partial "helper/image" (dict "Image" .Params.image "Resources" .Resources "Context" .) -}}
+{{- end -}}
+{{- if $image -}}
+    <meta name="twitter:card" content="{{ default `summary_large_image` .Site.Params.opengraph.twitter.card }}">
+    <meta name="twitter:image" content='{{ absURL $image.Permalink }}' />
+{{- end -}}

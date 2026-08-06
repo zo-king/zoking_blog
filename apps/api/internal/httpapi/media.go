@@ -19,10 +19,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 var allowedMediaTypes = map[string]string{
@@ -134,7 +135,7 @@ func listAdminMedia(db *gorm.DB) gin.HandlerFunc {
 		query := db.WithContext(c.Request.Context()).Model(&model.MediaAsset{}).Where("status <> ?", "deleted")
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
-			query = query.Where("original_name ILIKE ? OR filename ILIKE ? OR mime_type ILIKE ?", pattern, pattern, pattern)
+			query = query.Where("(original_name ILIKE ? OR filename ILIKE ? OR mime_type ILIKE ?)", pattern, pattern, pattern)
 		}
 		if pagination.Status != "" {
 			query = query.Where("status = ?", pagination.Status)

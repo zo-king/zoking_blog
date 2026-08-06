@@ -164,6 +164,8 @@ func permissionForRoute(method string, route string) string {
 		return "role:manage"
 	case "permissions":
 		return "role:read"
+	case "stats":
+		return "system:read"
 	case "qa":
 		return "qa:cleanup"
 	default:

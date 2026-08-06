@@ -39,24 +39,67 @@
 }
 
 :root {
-    --base-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
-    --body-background: #f3f4f6;
-    --accent-color: #34745f;
-    --accent-color-darker: #285c4b;
-    --card-border-radius: 6px;
+    --base-font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    // 苹果风 · 天蓝主色
+    --body-background: #fbfbfd;
+    --accent-color: #0071e3;
+    --accent-color-darker: #0060c0;
+    --accent-color-text: #ffffff; // 主色填充面上的文字(修复暗色白字低对比)
+    --code-text-color: #3a3f45; // 行内代码文字(令牌化)
+    --card-border-radius: 12px; // 大圆角,更接近苹果
     --section-separation: 24px;
-    --main-top-padding: 26px;
-    --shadow-l1: 0 1px 2px rgb(15 23 42 / 0.04);
-    --shadow-l2: 0 8px 24px rgb(15 23 42 / 0.08);
+    --main-top-padding: 24px;
+    --shadow-l1: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px rgb(0 0 0 / 0.05);
+    --shadow-l2: 0 2px 6px rgb(0 0 0 / 0.06), 0 16px 40px rgb(0 0 0 / 0.08);
+
+    // —— 设计令牌(苹果化)——
+    // 圆角:内部元件 sm、卡片 md、大容器 lg
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    // 间距:8pt 节奏
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 24px;
+    --sp-6: 32px;
+    // 字号:6 档,约 1.25 比率
+    --fs-caption: 1.2rem;
+    --fs-body: 1.5rem;
+    --fs-lead: 1.7rem;
+    --fs-h3: 2rem;
+    --fs-h2: 2.4rem;
+    --fs-h1: 3.2rem;
+    // 通用毛玻璃遮罩 / 焦点环
+    --backdrop: rgb(0 0 0 / 0.42);
+    --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+// 大标题:苹果式负字距 + Semibold(而非 700 无字距)
+.site-topbar__brand,
+.home-page .article-title,
+.article-title,
+.page-primary-title {
+    letter-spacing: -0.02em;
 }
 
 [data-scheme="dark"] {
-    --body-background: #202224;
-    --accent-color: #8cc9b4;
-    --accent-color-darker: #a5d7c6;
-    --body-text-color: #c2c2c2;
-    --card-text-color-secondary: #c2c2c2;
-    --card-text-color-tertiary: #b8b8b8;
+    --body-background: #000000;
+    // 纯黑底下卡片需要"抬起"一层,否则只靠阴影会与背景糊在一起
+    --card-background: #1c1c1e;
+    --card-background-selected: #2a2a2d;
+    --card-separator-color: #2a2a2d;
+    --accent-color: #0a84ff; // 苹果暗色系统蓝
+    --accent-color-darker: #409cff;
+    --accent-color-text: #ffffff;
+    --code-text-color: #d6dbe1; // 暗色下可读的行内代码
+    --body-text-color: #e6e9ec;
+    --card-text-color-main: #f5f5f7;
+    --card-text-color-secondary: #a1a1a6; // 与正文拉开层级
+    --card-text-color-tertiary: #86868b;
+    --shadow-l1: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.5);
+    --shadow-l2: 0 2px 8px rgb(0 0 0 / 0.5), 0 18px 44px rgb(0 0 0 / 0.6);
 }
 
 @view-transition {
@@ -90,7 +133,9 @@
 }
 
 .site-topbar {
-    background: color-mix(in srgb, var(--card-background) 94%, transparent);
+    background: color-mix(in srgb, var(--body-background) 72%, transparent);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
     border-bottom: 1px solid var(--card-separator-color);
     position: sticky;
     top: 0;
@@ -303,12 +348,10 @@
     outline-offset: 3px;
 }
 
+// 侧栏各 widget 统一为"无外框 + 上边框分隔"的清爽列(与 hitokoto 一致)
 .popular-posts-widget {
-    background: var(--card-background);
-    border: 1px solid var(--card-separator-color);
-    border-radius: var(--card-border-radius);
-    box-shadow: var(--shadow-l1);
-    padding: 16px;
+    border-top: 1px solid var(--card-separator-color);
+    padding-top: var(--sp-4);
 }
 
 .popular-posts-widget .widget-title {
@@ -346,7 +389,7 @@
 
 .popular-posts-widget__item img,
 .popular-posts-widget__image-placeholder {
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     height: 64px;
     object-fit: cover;
     width: 88px;
@@ -510,11 +553,11 @@
 
 .home-page .article-category a {
     background: color-mix(in srgb, var(--accent-color) 13%, var(--card-background));
-    border-radius: 3px;
+    border-radius: 980px; // 胶囊标签,更苹果
     color: var(--accent-color);
     font-size: 1.15rem;
     font-weight: 600;
-    padding: 4px 7px;
+    padding: 4px 10px;
 }
 
 .home-page .article-title {
@@ -548,7 +591,7 @@
 }
 
 .article-content code {
-    color: #4f4f4f;
+    color: var(--code-text-color, #3a3f45);
 }
 
 @media (min-width: 1280px) {

@@ -1,4 +1,14 @@
-import { Button, Drawer, Popconfirm, Space, Table, Tabs, Tag, Typography, type TableColumnProps } from "@arco-design/web-react";
+import {
+  Button,
+  Drawer,
+  Popconfirm,
+  Space,
+  Table,
+  Tabs,
+  Tag,
+  Typography,
+  type TableColumnProps,
+} from "@arco-design/web-react";
 import { IconDelete, IconLaunch, IconRefresh, IconStop, IconSwap } from "@arco-design/web-react/icon";
 import { useState } from "react";
 import { ContentPanel, PageHeader } from "../components/AdminPage";
@@ -18,7 +28,7 @@ const statusColors: Record<string, string> = {
   published: "green",
   ready: "green",
   canceled: "gray",
-  failed: "red"
+  failed: "red",
 };
 
 function targetLabel(record: PublishJob | PublishRelease | PublishPreview) {
@@ -33,13 +43,21 @@ function formatDate(value?: string | null) {
   return value ? new Date(value).toLocaleString() : "-";
 }
 
-function ErrorCell({ record }: { record: { status: string; error_code?: string | null; error_message?: string | null } }) {
+function ErrorCell({
+  record,
+}: {
+  record: { status: string; error_code?: string | null; error_message?: string | null };
+}) {
   if (record.status !== "failed") return <>-</>;
 
   return (
     <div className="publish-error-cell">
       <Text type="error">{record.error_code || "失败"}</Text>
-      {record.error_message ? <Text type="secondary" ellipsis={{ rows: 2, showTooltip: true }}>{record.error_message}</Text> : null}
+      {record.error_message ? (
+        <Text type="secondary" ellipsis={{ rows: 2, showTooltip: true }}>
+          {record.error_message}
+        </Text>
+      ) : null}
     </div>
   );
 }
@@ -77,15 +95,25 @@ export function PublishingPage(props: Props) {
     hideOnSinglePage: true,
     size: "small" as const,
     showTotal: true,
-    onChange: (page: number, pageSize: number) => listQuery.update({ page, pageSize })
+    onChange: (page: number, pageSize: number) => listQuery.update({ page, pageSize }),
   });
 
   const jobColumns: TableColumnProps<PublishJob>[] = [
     { title: "目标", width: 220, render: (_, record) => targetLabel(record) },
     { title: "类型", dataIndex: "job_type", width: 100, render: (value) => <Tag>{displayLabel(value || "post")}</Tag> },
-    { title: "状态", dataIndex: "status", width: 110, render: (value) => <Tag color={statusColors[value] || "gold"}>{displayLabel(value)}</Tag> },
+    {
+      title: "状态",
+      dataIndex: "status",
+      width: 110,
+      render: (value) => <Tag color={statusColors[value] || "gold"}>{displayLabel(value)}</Tag>,
+    },
     { title: "版本", dataIndex: "release_key", width: 180, ellipsis: true, render: (value) => value || "-" },
-    { title: "错误", width: 160, render: (_, record) => record.status === "failed" ? <Text type="error">{record.error_code || "失败"}</Text> : "-" },
+    {
+      title: "错误",
+      width: 160,
+      render: (_, record) =>
+        record.status === "failed" ? <Text type="error">{record.error_code || "失败"}</Text> : "-",
+    },
     { title: "创建时间", dataIndex: "created_at", width: 180, render: (value) => formatDate(value) },
     {
       title: "操作",
@@ -93,33 +121,49 @@ export function PublishingPage(props: Props) {
       fixed: "right",
       render: (_, record) => (
         <Space size="mini">
-          <Button size="mini" onClick={() => setSelectedJob(record)}>详情</Button>
-          {props.canManageJobs && <Button
-            size="mini"
-            icon={<IconRefresh />}
-            disabled={record.status !== "failed" && record.status !== "canceled"}
-            onClick={() => props.onRetryJob(record.id)}
-          >
-            重试
-          </Button>}
-          {props.canManageJobs && <Button
-            size="mini"
-            status="danger"
-            icon={<IconStop />}
-            disabled={record.status !== "requested" && record.status !== "queued"}
-            onClick={() => props.onCancelJob(record.id)}
-          >
-            取消
-          </Button>}
+          <Button size="mini" onClick={() => setSelectedJob(record)}>
+            详情
+          </Button>
+          {props.canManageJobs && (
+            <Button
+              size="mini"
+              icon={<IconRefresh />}
+              disabled={record.status !== "failed" && record.status !== "canceled"}
+              onClick={() => props.onRetryJob(record.id)}
+            >
+              重试
+            </Button>
+          )}
+          {props.canManageJobs && (
+            <Button
+              size="mini"
+              status="danger"
+              icon={<IconStop />}
+              disabled={record.status !== "requested" && record.status !== "queued"}
+              onClick={() => props.onCancelJob(record.id)}
+            >
+              取消
+            </Button>
+          )}
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   const releaseColumns: TableColumnProps<PublishRelease>[] = [
     { title: "版本", dataIndex: "release_key", width: 180, ellipsis: true },
-    { title: "状态", dataIndex: "status", width: 100, render: (value) => <Tag color={value === "active" ? "green" : "gray"}>{displayLabel(value || "inactive")}</Tag> },
-    { title: "当前版本", dataIndex: "is_active", width: 100, render: (value) => <Tag color={value ? "green" : "gray"}>{value ? "是" : "否"}</Tag> },
+    {
+      title: "状态",
+      dataIndex: "status",
+      width: 100,
+      render: (value) => <Tag color={value === "active" ? "green" : "gray"}>{displayLabel(value || "inactive")}</Tag>,
+    },
+    {
+      title: "当前版本",
+      dataIndex: "is_active",
+      width: 100,
+      render: (value) => <Tag color={value ? "green" : "gray"}>{value ? "是" : "否"}</Tag>,
+    },
     { title: "目标", width: 220, render: (_, record) => targetLabel(record) },
     { title: "创建时间", dataIndex: "created_at", width: 180, render: (value) => formatDate(value) },
     { title: "启用时间", dataIndex: "promoted_at", width: 180, render: (value) => formatDate(value) },
@@ -127,22 +171,30 @@ export function PublishingPage(props: Props) {
       title: "操作",
       width: 120,
       fixed: "right",
-      render: (_, record) => record.is_active ? (
-        <Text type="secondary">当前版本</Text>
-      ) : !props.canPromote ? (
-        <Text type="secondary">只读</Text>
-      ) : (
-        <Popconfirm title="确认切换到此版本？" okText="切换" onOk={() => props.onPromoteRelease(record.id)}>
-          <Button size="mini" icon={<IconSwap />} loading={props.releaseBusy === record.id}>切换</Button>
-        </Popconfirm>
-      )
-    }
+      render: (_, record) =>
+        record.is_active ? (
+          <Text type="secondary">当前版本</Text>
+        ) : !props.canPromote ? (
+          <Text type="secondary">只读</Text>
+        ) : (
+          <Popconfirm title="确认切换到此版本？" okText="切换" onOk={() => props.onPromoteRelease(record.id)}>
+            <Button size="mini" icon={<IconSwap />} loading={props.releaseBusy === record.id}>
+              切换
+            </Button>
+          </Popconfirm>
+        ),
+    },
   ];
 
   const previewColumns: TableColumnProps<PublishPreview>[] = [
     { title: "目标", width: 220, render: (_, record) => targetLabel(record) },
     { title: "类型", dataIndex: "scope", width: 100, render: (value) => <Tag>{displayLabel(value)}</Tag> },
-    { title: "状态", dataIndex: "status", width: 110, render: (value) => <Tag color={statusColors[value] || "gold"}>{displayLabel(value)}</Tag> },
+    {
+      title: "状态",
+      dataIndex: "status",
+      width: 110,
+      render: (value) => <Tag color={statusColors[value] || "gold"}>{displayLabel(value)}</Tag>,
+    },
     { title: "预览标识", dataIndex: "preview_key", width: 220, ellipsis: true },
     { title: "错误", width: 260, render: (_, record) => <ErrorCell record={record} /> },
     { title: "过期时间", dataIndex: "expires_at", width: 180, render: (value) => formatDate(value) },
@@ -159,16 +211,13 @@ export function PublishingPage(props: Props) {
         >
           打开
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <>
-      <PageHeader
-        title="发布中心"
-        description="查看任务、正式版本和临时预览。"
-      />
+      <PageHeader title="发布中心" description="查看任务、正式版本和临时预览。" />
 
       <ContentPanel className="tabbed-workbench">
         <Tabs
@@ -190,37 +239,39 @@ export function PublishingPage(props: Props) {
           </Tabs.TabPane>
 
           <Tabs.TabPane key="releases" title={`正式版本 (${props.releasePagination.total})`}>
-            {props.canCleanup && <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-              <Space wrap size="small">
-                <Button
-                  size="small"
-                  icon={<IconRefresh />}
-                  disabled={!props.canCleanup}
-                  loading={props.releaseCleanupBusy}
-                  onClick={() => props.onReleaseCleanup(true)}
-                >
-                  清理预演
-                </Button>
-                <Popconfirm
-                  title="确认清理旧的非活动版本？"
-                  content="当前活动版本不会被删除。"
-                  okText="清理"
-                  okButtonProps={{ status: "danger" }}
-                  disabled={!props.canCleanup}
-                  onOk={() => props.onReleaseCleanup(false)}
-                >
+            {props.canCleanup && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                <Space wrap size="small">
                   <Button
                     size="small"
-                    status="danger"
-                    icon={<IconDelete />}
+                    icon={<IconRefresh />}
                     disabled={!props.canCleanup}
                     loading={props.releaseCleanupBusy}
+                    onClick={() => props.onReleaseCleanup(true)}
                   >
-                    清理旧版本
+                    清理预演
                   </Button>
-                </Popconfirm>
-              </Space>
-            </div>}
+                  <Popconfirm
+                    title="确认清理旧的非活动版本？"
+                    content="当前活动版本不会被删除。"
+                    okText="清理"
+                    okButtonProps={{ status: "danger" }}
+                    disabled={!props.canCleanup}
+                    onOk={() => props.onReleaseCleanup(false)}
+                  >
+                    <Button
+                      size="small"
+                      status="danger"
+                      icon={<IconDelete />}
+                      disabled={!props.canCleanup}
+                      loading={props.releaseCleanupBusy}
+                    >
+                      清理旧版本
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              </div>
+            )}
             <Table
               rowKey="id"
               data={props.releases}
@@ -232,36 +283,38 @@ export function PublishingPage(props: Props) {
           </Tabs.TabPane>
 
           <Tabs.TabPane key="previews" title={`预览构建 (${props.previewPagination.total})`}>
-            {props.canCleanup && <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-              <Space wrap size="small">
-                <Button
-                  size="small"
-                  icon={<IconRefresh />}
-                  disabled={!props.canCleanup}
-                  loading={props.previewCleanupBusy}
-                  onClick={() => props.onPreviewCleanup(true)}
-                >
-                  清理预演
-                </Button>
-                <Popconfirm
-                  title="确认删除所有过期预览目录？"
-                  okText="执行清理"
-                  okButtonProps={{ status: "danger" }}
-                  disabled={!props.canCleanup}
-                  onOk={() => props.onPreviewCleanup(false)}
-                >
+            {props.canCleanup && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+                <Space wrap size="small">
                   <Button
                     size="small"
-                    status="danger"
-                    icon={<IconDelete />}
+                    icon={<IconRefresh />}
                     disabled={!props.canCleanup}
                     loading={props.previewCleanupBusy}
+                    onClick={() => props.onPreviewCleanup(true)}
                   >
-                    执行清理
+                    清理预演
                   </Button>
-                </Popconfirm>
-              </Space>
-            </div>}
+                  <Popconfirm
+                    title="确认删除所有过期预览目录？"
+                    okText="执行清理"
+                    okButtonProps={{ status: "danger" }}
+                    disabled={!props.canCleanup}
+                    onOk={() => props.onPreviewCleanup(false)}
+                  >
+                    <Button
+                      size="small"
+                      status="danger"
+                      icon={<IconDelete />}
+                      disabled={!props.canCleanup}
+                      loading={props.previewCleanupBusy}
+                    >
+                      执行清理
+                    </Button>
+                  </Popconfirm>
+                </Space>
+              </div>
+            )}
             <Table
               rowKey="id"
               data={props.previews}
@@ -284,16 +337,26 @@ export function PublishingPage(props: Props) {
         {selectedJob ? (
           <div style={{ display: "grid", gap: 20 }}>
             <div style={{ display: "grid", gridTemplateColumns: "96px minmax(0, 1fr)", gap: "10px 16px" }}>
-              <Text type="secondary">目标</Text><Text>{targetLabel(selectedJob)}</Text>
-              <Text type="secondary">任务类型</Text><Text>{displayLabel(selectedJob.job_type || "post")}</Text>
-              <Text type="secondary">状态</Text><Tag color={statusColors[selectedJob.status] || "gold"}>{displayLabel(selectedJob.status)}</Tag>
-              <Text type="secondary">版本</Text><Text copyable={Boolean(selectedJob.release_key)}>{selectedJob.release_key || "-"}</Text>
-              <Text type="secondary">重试次数</Text><Text>{selectedJob.retry_count || 0}</Text>
-              <Text type="secondary">创建时间</Text><Text>{formatDate(selectedJob.created_at)}</Text>
-              <Text type="secondary">完成时间</Text><Text>{formatDate(selectedJob.finished_at)}</Text>
-              <Text type="secondary">取消时间</Text><Text>{formatDate(selectedJob.canceled_at)}</Text>
-              <Text type="secondary">内容路径</Text><Text copyable={Boolean(selectedJob.content_path)}>{selectedJob.content_path || "-"}</Text>
-              <Text type="secondary">输出路径</Text><Text copyable={Boolean(selectedJob.output_path)}>{selectedJob.output_path || "-"}</Text>
+              <Text type="secondary">目标</Text>
+              <Text>{targetLabel(selectedJob)}</Text>
+              <Text type="secondary">任务类型</Text>
+              <Text>{displayLabel(selectedJob.job_type || "post")}</Text>
+              <Text type="secondary">状态</Text>
+              <Tag color={statusColors[selectedJob.status] || "gold"}>{displayLabel(selectedJob.status)}</Tag>
+              <Text type="secondary">版本</Text>
+              <Text copyable={Boolean(selectedJob.release_key)}>{selectedJob.release_key || "-"}</Text>
+              <Text type="secondary">重试次数</Text>
+              <Text>{selectedJob.retry_count || 0}</Text>
+              <Text type="secondary">创建时间</Text>
+              <Text>{formatDate(selectedJob.created_at)}</Text>
+              <Text type="secondary">完成时间</Text>
+              <Text>{formatDate(selectedJob.finished_at)}</Text>
+              <Text type="secondary">取消时间</Text>
+              <Text>{formatDate(selectedJob.canceled_at)}</Text>
+              <Text type="secondary">内容路径</Text>
+              <Text copyable={Boolean(selectedJob.content_path)}>{selectedJob.content_path || "-"}</Text>
+              <Text type="secondary">输出路径</Text>
+              <Text copyable={Boolean(selectedJob.output_path)}>{selectedJob.output_path || "-"}</Text>
             </div>
 
             <div>
@@ -301,32 +364,49 @@ export function PublishingPage(props: Props) {
               {selectedJob.error_code || selectedJob.error_message ? (
                 <div style={{ display: "grid", gap: 8 }}>
                   <Text type="error">{selectedJob.error_code || "失败"}</Text>
-                  <Text style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{selectedJob.error_message || "-"}</Text>
+                  <Text style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                    {selectedJob.error_message || "-"}
+                  </Text>
                 </div>
-              ) : <Text type="secondary">无错误信息</Text>}
+              ) : (
+                <Text type="secondary">无错误信息</Text>
+              )}
             </div>
 
             <div>
               <Typography.Title heading={6}>最近日志</Typography.Title>
               {Array.isArray(selectedJob.log_json) && selectedJob.log_json.length > 0 ? (
                 <div style={{ display: "grid", gap: 10 }}>
-                  {selectedJob.log_json.slice(-10).reverse().map((entry, index) => (
-                    <div key={`${selectedJob.id}-${index}`} style={{ borderBottom: "1px solid var(--color-neutral-3)", paddingBottom: 10 }}>
-                      <Space size="mini" wrap>
-                        <Tag size="small">{entry.stage || "阶段"}</Tag>
-                        <Text type="secondary">{entry.level || "信息"}</Text>
-                        <Text type="secondary">{formatDate(entry.at)}</Text>
-                      </Space>
-                      <div style={{ marginTop: 6, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{entry.message || "-"}</div>
-                      {entry.fields && Object.keys(entry.fields).length > 0 ? (
-                        <Text type="secondary" style={{ display: "block", marginTop: 6, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-                          {JSON.stringify(entry.fields, null, 2)}
-                        </Text>
-                      ) : null}
-                    </div>
-                  ))}
+                  {selectedJob.log_json
+                    .slice(-10)
+                    .reverse()
+                    .map((entry, index) => (
+                      <div
+                        key={`${selectedJob.id}-${index}`}
+                        style={{ borderBottom: "1px solid var(--color-neutral-3)", paddingBottom: 10 }}
+                      >
+                        <Space size="mini" wrap>
+                          <Tag size="small">{entry.stage || "阶段"}</Tag>
+                          <Text type="secondary">{entry.level || "信息"}</Text>
+                          <Text type="secondary">{formatDate(entry.at)}</Text>
+                        </Space>
+                        <div style={{ marginTop: 6, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
+                          {entry.message || "-"}
+                        </div>
+                        {entry.fields && Object.keys(entry.fields).length > 0 ? (
+                          <Text
+                            type="secondary"
+                            style={{ display: "block", marginTop: 6, whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+                          >
+                            {JSON.stringify(entry.fields, null, 2)}
+                          </Text>
+                        ) : null}
+                      </div>
+                    ))}
                 </div>
-              ) : <Text type="secondary">暂无日志</Text>}
+              ) : (
+                <Text type="secondary">暂无日志</Text>
+              )}
             </div>
           </div>
         ) : null}

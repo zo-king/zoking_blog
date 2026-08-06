@@ -11,8 +11,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 type adminPostsIntegrationResponse struct {

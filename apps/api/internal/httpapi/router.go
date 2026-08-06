@@ -2,7 +2,9 @@ package httpapi
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"net/url"
@@ -11,20 +13,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/auth"
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/contentquality"
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
-	adminAccessCookieName = "zoking_admin_access"
-	adminCSRFCookieName   = "zoking_admin_csrf"
-	adminCookiePath       = "/api/v1/admin"
+	adminAccessCookieName  = "zoking_admin_access"
+	adminCSRFCookieName    = "zoking_admin_csrf"
+	adminRefreshCookieName = "zoking_admin_refresh"
+	adminCookiePath        = "/api/v1/admin"
 )
 
 func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
@@ -63,7 +67,10 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	public.GET("/posts", listPublicPosts(db))
 	public.GET("/posts/:slug", getPublicPost(db))
 	public.GET("/posts/:slug/comments", listPublicComments(db))
-	public.POST("/posts/:slug/comments", commentRateLimitMiddleware(cfg), submitPublicComment(db))
+	public.POST("/posts/:slug/comments", commentRateLimitMiddleware(cfg), submitPublicComment(db, cfg))
+	public.GET("/posts/:slug/metrics", getPublicPostMetrics(db, cfg))
+	public.POST("/posts/:slug/views", commentRateLimitMiddleware(cfg), recordPostView(db, cfg))
+	public.POST("/posts/:slug/likes", commentRateLimitMiddleware(cfg), togglePostLike(db, cfg))
 	public.GET("/pages", listPublicPages(db))
 	public.GET("/pages/:slug", getPublicPage(db))
 	public.GET("/categories", listCategories(db))
@@ -75,6 +82,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	admin := api.Group("/admin")
 	admin.Use(adminOriginMiddleware(cfg))
 	admin.POST("/auth/login", login(db, cfg, newAdminLoginRateLimiter(cfg)))
+	admin.POST("/auth/refresh", refreshAdminSession(db, cfg))
 	admin.POST("/auth/session", authMiddleware(cfg), resumeAdminSession(cfg))
 
 	authed := admin.Group("")
@@ -82,7 +90,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	authed.Use(csrfMiddleware(cfg))
 	authed.Use(auditMiddleware(db, cfg))
 	authed.Use(authorizationMiddleware(db))
-	authed.POST("/auth/logout", logout(cfg))
+	authed.POST("/auth/logout", logout(db, cfg))
 	authed.GET("/auth/me", func(c *gin.Context) {
 		OK(c, gin.H{
 			"id":          c.GetString("user_id"),
@@ -91,6 +99,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 			"permissions": c.MustGet("permissions"),
 		})
 	})
+	authed.GET("/stats/overview", getStatsOverview(db))
 	authed.GET("/posts", listAdminPosts(db))
 	authed.POST("/posts/quality-check", qualityCheckNewPost())
 	authed.POST("/posts", createPost(db))
@@ -134,7 +143,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	authed.POST("/media/cleanup", cleanupOrphanMedia(db, cfg))
 	authed.GET("/media/:id", getAdminMedia(db))
 	authed.DELETE("/media/:id", deleteMedia(db, cfg))
-	authed.GET("/comments", listAdminComments(db))
+	authed.GET("/comments", listAdminComments(db, cfg))
 	authed.PATCH("/comments/:id/moderation", moderateComment(db))
 	authed.POST("/comments/:id/reply", replyComment(db))
 	authed.DELETE("/comments/:id", deleteComment(db))
@@ -198,7 +207,8 @@ func splitCSV(value string) []string {
 
 func login(db *gorm.DB, cfg config.Config, limiter *adminLoginRateLimiter) gin.HandlerFunc {
 	type request struct {
-		Email    string `json:"email" binding:"required,email"`
+		Account  string `json:"account"`
+		Email    string `json:"email"`
 		Password string `json:"password" binding:"required"`
 	}
 
@@ -208,15 +218,22 @@ func login(db *gorm.DB, cfg config.Config, limiter *adminLoginRateLimiter) gin.H
 			Fail(c, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "invalid login payload")
 			return
 		}
-		email := strings.ToLower(strings.TrimSpace(req.Email))
-		if !limiter.allow(c.ClientIP(), email) {
+		identifier := strings.ToLower(strings.TrimSpace(req.Account))
+		if identifier == "" {
+			identifier = strings.ToLower(strings.TrimSpace(req.Email))
+		}
+		if identifier == "" || len([]rune(identifier)) > 254 {
+			Fail(c, http.StatusUnprocessableEntity, "VALIDATION_FAILED", "account is required")
+			return
+		}
+		if !limiter.allow(c.ClientIP(), identifier) {
 			c.Header("Retry-After", "60")
 			Fail(c, http.StatusTooManyRequests, "RATE_LIMITED", "too many login attempts")
 			return
 		}
 
 		var user model.User
-		if err := db.WithContext(c.Request.Context()).Where("email = ?", email).First(&user).Error; err != nil {
+		if err := db.WithContext(c.Request.Context()).Where("lower(email) = ? or lower(username) = ?", identifier, identifier).First(&user).Error; err != nil {
 			Fail(c, http.StatusUnauthorized, "AUTH_INVALID_CREDENTIALS", "invalid credentials")
 			return
 		}
@@ -239,6 +256,18 @@ func login(db *gorm.DB, cfg config.Config, limiter *adminLoginRateLimiter) gin.H
 		_ = db.WithContext(c.Request.Context()).Model(&user).Update("last_login_at", now).Error
 
 		secureCookie := secureAdminCookie(cfg)
+		refreshToken := ""
+		if cfg.RefreshTokenTTL > 0 {
+			refreshToken, err = newCSRFToken()
+			if err != nil {
+				Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not create refresh token")
+				return
+			}
+			if err := db.WithContext(c.Request.Context()).Exec(`insert into refresh_tokens (user_id, token_hash, user_agent, ip_hash, expires_at) values (?, ?, ?, ?, ?)`, user.ID, tokenDigest(refreshToken), trimTo(c.GetHeader("User-Agent"), 512), hashString(c.ClientIP(), cfg.PrivacyHashSecret), time.Now().Add(cfg.RefreshTokenTTL)).Error; err != nil {
+				Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not persist refresh token")
+				return
+			}
+		}
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:     adminAccessCookieName,
 			Value:    token,
@@ -257,6 +286,9 @@ func login(db *gorm.DB, cfg config.Config, limiter *adminLoginRateLimiter) gin.H
 			Secure:   secureCookie,
 			SameSite: http.SameSiteStrictMode,
 		})
+		if refreshToken != "" {
+			http.SetCookie(c.Writer, &http.Cookie{Name: adminRefreshCookieName, Value: refreshToken, Path: adminCookiePath, MaxAge: int(cfg.RefreshTokenTTL.Seconds()), HttpOnly: true, Secure: secureCookie, SameSite: http.SameSiteStrictMode})
+		}
 		OK(c, gin.H{
 			"csrf_token": csrfToken,
 			"token_type": "Cookie",
@@ -270,6 +302,66 @@ func login(db *gorm.DB, cfg config.Config, limiter *adminLoginRateLimiter) gin.H
 	}
 }
 
+func refreshAdminSession(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
+	allowedOrigins := originAllowlist(cfg.AdminAllowedOrigins)
+	return func(c *gin.Context) {
+		origin := strings.TrimSpace(c.GetHeader("Origin"))
+		if origin == "" || !allowedOrigins[origin] {
+			Fail(c, http.StatusForbidden, "ORIGIN_NOT_ALLOWED", "untrusted admin origin")
+			return
+		}
+		value, err := c.Cookie(adminRefreshCookieName)
+		if err != nil || value == "" || cfg.RefreshTokenTTL <= 0 {
+			Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "refresh token required")
+			return
+		}
+		var identity struct {
+			ID     uuid.UUID
+			UserID uuid.UUID
+			Email  string
+		}
+		if err := db.WithContext(c.Request.Context()).Table("refresh_tokens rt").Select("rt.id, rt.user_id, u.email").Joins("join users u on u.id = rt.user_id").Where("rt.token_hash = ? and rt.revoked_at is null and rt.expires_at > now() and u.status = 'active' and u.deleted_at is null", tokenDigest(value)).First(&identity).Error; err != nil {
+			Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "invalid refresh token")
+			return
+		}
+		access, err := auth.GenerateAccessToken(cfg.JWTSecret, identity.UserID.String(), identity.Email, cfg.AccessTokenTTL)
+		if err != nil {
+			Fail(c, 500, "INTERNAL_ERROR", "could not create token")
+			return
+		}
+		csrf, err := newCSRFToken()
+		if err != nil {
+			Fail(c, 500, "INTERNAL_ERROR", "could not create session")
+			return
+		}
+		refresh, err := newCSRFToken()
+		if err != nil {
+			Fail(c, 500, "INTERNAL_ERROR", "could not create refresh token")
+			return
+		}
+		err = db.WithContext(c.Request.Context()).Transaction(func(tx *gorm.DB) error {
+			result := tx.Exec("update refresh_tokens set revoked_at = now() where id = ? and revoked_at is null", identity.ID)
+			if result.Error != nil {
+				return result.Error
+			}
+			if result.RowsAffected != 1 {
+				return gorm.ErrRecordNotFound
+			}
+			return tx.Exec(`insert into refresh_tokens (user_id, token_hash, user_agent, ip_hash, expires_at) values (?, ?, ?, ?, ?)`, identity.UserID, tokenDigest(refresh), trimTo(c.GetHeader("User-Agent"), 512), hashString(c.ClientIP(), cfg.PrivacyHashSecret), time.Now().Add(cfg.RefreshTokenTTL)).Error
+		})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "refresh token already used")
+			return
+		}
+		if err != nil {
+			Fail(c, 500, "INTERNAL_ERROR", "could not rotate refresh token")
+			return
+		}
+		setAdminSessionCookies(c, cfg, access, csrf, refresh)
+		OK(c, gin.H{"csrf_token": csrf, "token_type": "Cookie", "expires_in": int(cfg.AccessTokenTTL.Seconds())})
+	}
+}
+
 func resumeAdminSession(cfg config.Config) gin.HandlerFunc {
 	allowedOrigins := originAllowlist(cfg.AdminAllowedOrigins)
 	return func(c *gin.Context) {
@@ -278,10 +370,16 @@ func resumeAdminSession(cfg config.Config) gin.HandlerFunc {
 			Fail(c, http.StatusForbidden, "SESSION_RESUME_FORBIDDEN", "admin session cannot be resumed")
 			return
 		}
-		csrfToken, err := newCSRFToken()
-		if err != nil {
-			Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not resume session")
-			return
+		// 沿用已有的合法 CSRF cookie:恢复会话若轮换 token,会立刻废掉
+		// 其它已打开标签页里持有的旧 token,导致它们的写操作全部 403。
+		csrfToken := existingCSRFToken(c)
+		if csrfToken == "" {
+			fresh, err := newCSRFToken()
+			if err != nil {
+				Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not resume session")
+				return
+			}
+			csrfToken = fresh
 		}
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:     adminCSRFCookieName,
@@ -300,9 +398,12 @@ func resumeAdminSession(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
-func logout(cfg config.Config) gin.HandlerFunc {
+func logout(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		for _, name := range []string{adminAccessCookieName, adminCSRFCookieName} {
+		if value, err := c.Cookie(adminRefreshCookieName); err == nil && value != "" {
+			_ = db.WithContext(c.Request.Context()).Exec("update refresh_tokens set revoked_at = now() where token_hash = ? and revoked_at is null", tokenDigest(value)).Error
+		}
+		for _, name := range []string{adminAccessCookieName, adminCSRFCookieName, adminRefreshCookieName} {
 			http.SetCookie(c.Writer, &http.Cookie{
 				Name:     name,
 				Value:    "",
@@ -317,6 +418,20 @@ func logout(cfg config.Config) gin.HandlerFunc {
 	}
 }
 
+func setAdminSessionCookies(c *gin.Context, cfg config.Config, access, csrf, refresh string) {
+	secure := secureAdminCookie(cfg)
+	http.SetCookie(c.Writer, &http.Cookie{Name: adminAccessCookieName, Value: access, Path: adminCookiePath, MaxAge: int(cfg.AccessTokenTTL.Seconds()), HttpOnly: true, Secure: secure, SameSite: http.SameSiteStrictMode})
+	http.SetCookie(c.Writer, &http.Cookie{Name: adminCSRFCookieName, Value: csrf, Path: adminCookiePath, MaxAge: int(cfg.AccessTokenTTL.Seconds()), HttpOnly: true, Secure: secure, SameSite: http.SameSiteStrictMode})
+	if refresh != "" {
+		http.SetCookie(c.Writer, &http.Cookie{Name: adminRefreshCookieName, Value: refresh, Path: adminCookiePath, MaxAge: int(cfg.RefreshTokenTTL.Seconds()), HttpOnly: true, Secure: secure, SameSite: http.SameSiteStrictMode})
+	}
+}
+
+func tokenDigest(value string) string {
+	sum := sha256.Sum256([]byte(value))
+	return hex.EncodeToString(sum[:])
+}
+
 func secureAdminCookie(cfg config.Config) bool {
 	return cfg.AppEnv != "development" && cfg.AppEnv != "dev" && cfg.AppEnv != "test"
 }
@@ -327,6 +442,20 @@ func newCSRFToken() (string, error) {
 		return "", err
 	}
 	return base64.RawURLEncoding.EncodeToString(value), nil
+}
+
+// existingCSRFToken returns the current CSRF cookie value when it looks like a
+// token we issued (32 random bytes, base64url);否则返回空串由调用方新发。
+func existingCSRFToken(c *gin.Context) string {
+	value, err := c.Cookie(adminCSRFCookieName)
+	if err != nil || value == "" {
+		return ""
+	}
+	decoded, err := base64.RawURLEncoding.DecodeString(value)
+	if err != nil || len(decoded) != 32 {
+		return ""
+	}
+	return value
 }
 
 func listPublicPosts(db *gorm.DB) gin.HandlerFunc {
@@ -423,7 +552,7 @@ func listAdminPosts(db *gorm.DB) gin.HandlerFunc {
 		}
 		if keyword := strings.TrimSpace(c.Query("keyword")); keyword != "" {
 			like := "%" + keyword + "%"
-			query = query.Where("title ILIKE ? OR summary ILIKE ? OR content_md ILIKE ?", like, like, like)
+			query = query.Where("(posts.title ILIKE ? OR posts.summary ILIKE ? OR posts.content_md ILIKE ?)", like, like, like)
 		}
 		if categoryID := strings.TrimSpace(c.Query("category_id")); categoryID != "" {
 			parsedCategoryID, err := uuid.Parse(categoryID)

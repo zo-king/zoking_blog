@@ -10,9 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
 )
 
 const (
@@ -65,8 +66,8 @@ func auditMiddleware(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			Result:        result,
 			StatusCode:    status,
 			RequestID:     requestID(c),
-			IPHash:        hashAuditIP(c.ClientIP(), cfg.JWTSecret),
-			IPHashVersion: 1,
+			IPHash:        hashAuditIP(c.ClientIP(), cfg.PrivacyHashSecret),
+			IPHashVersion: 2,
 			UserAgent:     userAgent,
 			DetailsJSON:   details,
 		}
@@ -135,7 +136,7 @@ func listAuditLogs(db *gorm.DB) gin.HandlerFunc {
 		query := db.WithContext(c.Request.Context()).Model(&model.AuditLog{})
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
-			query = query.Where("actor_email ILIKE ? OR action ILIKE ? OR resource_type ILIKE ? OR request_id ILIKE ? OR route ILIKE ?", pattern, pattern, pattern, pattern, pattern)
+			query = query.Where("(actor_email ILIKE ? OR action ILIKE ? OR resource_type ILIKE ? OR request_id ILIKE ? OR route ILIKE ?)", pattern, pattern, pattern, pattern, pattern)
 		}
 		if pagination.Status != "" {
 			query = query.Where("result = ?", pagination.Status)

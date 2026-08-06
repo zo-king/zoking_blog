@@ -14,10 +14,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
 )
 
 var errPreviewTerminalTransition = errors.New("preview terminal state transition failed")
@@ -169,7 +170,7 @@ func listPublishPreviews(db *gorm.DB) gin.HandlerFunc {
 		}
 		if pagination.Query != "" {
 			pattern := "%" + pagination.Query + "%"
-			query = query.Where("preview_key ILIKE ? OR error_code ILIKE ? OR error_message ILIKE ?", pattern, pattern, pattern)
+			query = query.Where("(publish_previews.preview_key ILIKE ? OR publish_previews.error_code ILIKE ? OR publish_previews.error_message ILIKE ?)", pattern, pattern, pattern)
 		}
 		if pagination.Status != "" {
 			query = query.Where("status = ?", pagination.Status)

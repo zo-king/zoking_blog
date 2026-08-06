@@ -24,6 +24,7 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      PRIVACY_HASH_SECRET: ${PRIVACY_HASH_SECRET:?PRIVACY_HASH_SECRET is required}
     command:
       - /bin/sh
       - -ec
@@ -31,6 +32,8 @@ services:
         case "$${POSTGRES_PASSWORD}" in __REQUIRED_*|*change-me*) echo "POSTGRES_PASSWORD is still a placeholder" >&2; exit 1;; esac
         case "$${JWT_SECRET}" in __REQUIRED_*|*change-me*) echo "JWT_SECRET is still a placeholder" >&2; exit 1;; esac
         [ "$${#JWT_SECRET}" -ge 32 ] || { echo "JWT_SECRET must contain at least 32 characters" >&2; exit 1; }
+        case "$${PRIVACY_HASH_SECRET}" in __REQUIRED_*|*change-me*) echo "PRIVACY_HASH_SECRET is still a placeholder" >&2; exit 1;; esac
+        [ "$${#PRIVACY_HASH_SECRET}" -ge 32 ] || { echo "PRIVACY_HASH_SECRET must contain at least 32 characters" >&2; exit 1; }
         cp -a /workspace/apps/site-template/. /workspace/apps/site/
         chown -R 10001:10001 /workspace/apps/site /data
     volumes:
@@ -54,6 +57,7 @@ services:
       APP_PORT: 18080
       DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      PRIVACY_HASH_SECRET: ${PRIVACY_HASH_SECRET:?PRIVACY_HASH_SECRET is required}
       SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://zoking.tech}
@@ -71,6 +75,7 @@ services:
       HUGO_SITE_DIR: /workspace/apps/site
       HUGO_PUBLIC_DIR: /data/current
       HUGO_BIN: /usr/local/bin/hugo
+      PAGEFIND_BIN: /usr/local/bin/pagefind
       MIGRATIONS_DIR: /workspace/db/migrations
       PUBLISH_RELEASE_ROOT: ${PUBLISH_RELEASE_ROOT:-/data/releases}
       PUBLISH_CURRENT_DIR: ${PUBLISH_CURRENT_DIR:-/data/current}
@@ -86,6 +91,7 @@ services:
       PUBLISH_WORKER_ENABLED: "false"
       # Derived from PUBLIC_API_BASE_URL; do not introduce a second API URL.
       HUGO_COMMENTS_API_BASE: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      HUGO_STATS_HOST: ${STATS_HOST:-stats.zoking.tech}
     ports:
       - "${API_BIND_ADDRESS:-127.0.0.1}:${API_PORT:-18080}:18080"
     volumes:
@@ -110,10 +116,12 @@ services:
       APP_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      PRIVACY_HASH_SECRET: ${PRIVACY_HASH_SECRET:?PRIVACY_HASH_SECRET is required}
       SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
       # Derived from PUBLIC_API_BASE_URL; do not introduce a second API URL.
       HUGO_COMMENTS_API_BASE: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      HUGO_STATS_HOST: ${STATS_HOST:-stats.zoking.tech}
       MEDIA_STORAGE_DRIVER: local
       MEDIA_LOCAL_DIR: /data/media
       MEDIA_PUBLIC_BASE_URL: /media-files
@@ -122,6 +130,7 @@ services:
       HUGO_SITE_DIR: /workspace/apps/site
       HUGO_PUBLIC_DIR: /data/current
       HUGO_BIN: /usr/local/bin/hugo
+      PAGEFIND_BIN: /usr/local/bin/pagefind
       MIGRATIONS_DIR: /workspace/db/migrations
       PUBLISH_RELEASE_ROOT: ${PUBLISH_RELEASE_ROOT:-/data/releases}
       PUBLISH_CURRENT_DIR: ${PUBLISH_CURRENT_DIR:-/data/current}
@@ -165,6 +174,7 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-zoking}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-zoking_blog}?sslmode=disable
       SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:?SEED_ADMIN_EMAIL is required}
+      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-zoking}
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?SEED_ADMIN_PASSWORD is required}
     command:
       - /bin/sh
@@ -173,6 +183,27 @@ services:
         case "$${SEED_ADMIN_PASSWORD}" in __REQUIRED_*|*change-me*) echo "SEED_ADMIN_PASSWORD is still a placeholder" >&2; exit 1;; esac
         [ "$${#SEED_ADMIN_PASSWORD}" -ge 16 ] || { echo "SEED_ADMIN_PASSWORD must contain at least 16 characters" >&2; exit 1; }
         exec /app/seed
+
+  goatcounter:
+    build:
+      context: ../..
+      dockerfile: infra/docker/goatcounter.Dockerfile
+    restart: unless-stopped
+    environment:
+      # GoatCounter 保留 GOATCOUNTER_* 前缀给自身配置,容器内改用 GC_* 传参。
+      GC_VHOST: ${STATS_HOST:-stats.zoking.tech}
+      GC_EMAIL: ${GOATCOUNTER_EMAIL:?GOATCOUNTER_EMAIL is required}
+      GC_PASSWORD: ${GOATCOUNTER_PASSWORD:?GOATCOUNTER_PASSWORD is required}
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${STATS_BIND_ADDRESS:-127.0.0.1}:${STATS_PORT:-8100}:8080"
+    volumes:
+      - goatcounter_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8080/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   site:
     image: nginx:1.27-alpine
@@ -199,3 +230,4 @@ volumes:
   media_data:
   site_releases:
   publisher_site:
+  goatcounter_data:

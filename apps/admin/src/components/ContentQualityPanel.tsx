@@ -13,7 +13,15 @@ type Props = {
   onRetry: () => void;
 };
 
-function IssueGroup({ title, issues, severity }: { title: string; issues: ContentQualityIssue[]; severity: "error" | "warning" }) {
+function IssueGroup({
+  title,
+  issues,
+  severity,
+}: {
+  title: string;
+  issues: ContentQualityIssue[];
+  severity: "error" | "warning";
+}) {
   if (!issues.length) return null;
   return (
     <section className="quality-issue-group">
@@ -43,11 +51,12 @@ export function ContentQualityPanel({ visible, loading, report, targetLabel, onC
   const errors = report?.issues.filter((issue) => issue.severity === "error") || [];
   const warnings = report?.issues.filter((issue) => issue.severity === "warning") || [];
   const status = report?.status || "passed";
-  const statusMeta = status === "blocked"
-    ? { label: "暂不可发布", color: "red", message: "请先修复阻断项，再重新检查。" }
-    : status === "warning"
-      ? { label: "可以发布", color: "orange", message: "检查已通过，建议发布前处理提示项。" }
-      : { label: "检查通过", color: "green", message: "当前内容符合发布要求。" };
+  const statusMeta =
+    status === "blocked"
+      ? { label: "暂不可发布", color: "red", message: "请先修复阻断项，再重新检查。" }
+      : status === "warning"
+        ? { label: "可以发布", color: "orange", message: "检查已通过，建议发布前处理提示项。" }
+        : { label: "检查通过", color: "green", message: "当前内容符合发布要求。" };
 
   return (
     <Drawer
@@ -60,20 +69,30 @@ export function ContentQualityPanel({ visible, loading, report, targetLabel, onC
       footer={
         <div className="quality-drawer-footer">
           <Button onClick={onClose}>关闭</Button>
-          <Button type="primary" icon={<IconRefresh />} loading={loading} onClick={onRetry}>重新检查</Button>
+          <Button type="primary" icon={<IconRefresh />} loading={loading} onClick={onRetry}>
+            重新检查
+          </Button>
         </div>
       }
       onCancel={onClose}
     >
       {report ? (
         <div className="quality-panel-content">
-          <Text type="secondary" ellipsis>{targetLabel || "当前内容"}</Text>
+          <Text type="secondary" ellipsis>
+            {targetLabel || "当前内容"}
+          </Text>
           <div className="quality-score-summary">
             <Progress
               type="circle"
               size="small"
               percent={Math.max(0, Math.min(100, report.score))}
-              color={status === "blocked" ? "rgb(var(--red-6))" : status === "warning" ? "rgb(var(--orange-6))" : "rgb(var(--green-6))"}
+              color={
+                status === "blocked"
+                  ? "rgb(var(--red-6))"
+                  : status === "warning"
+                    ? "rgb(var(--orange-6))"
+                    : "rgb(var(--green-6))"
+              }
               formatText={() => `${report.score}`}
             />
             <div>
@@ -90,9 +109,18 @@ export function ContentQualityPanel({ visible, loading, report, targetLabel, onC
           ) : null}
 
           <div className="quality-counts" aria-label="检查结果统计">
-            <div><strong>{report.error_count}</strong><span>阻断项</span></div>
-            <div><strong>{report.warning_count}</strong><span>提示项</span></div>
-            <div><strong>{report.issues.length}</strong><span>检查发现</span></div>
+            <div>
+              <strong>{report.error_count}</strong>
+              <span>阻断项</span>
+            </div>
+            <div>
+              <strong>{report.warning_count}</strong>
+              <span>提示项</span>
+            </div>
+            <div>
+              <strong>{report.issues.length}</strong>
+              <span>检查发现</span>
+            </div>
           </div>
 
           <IssueGroup title="必须修复" issues={errors} severity="error" />
@@ -101,7 +129,9 @@ export function ContentQualityPanel({ visible, loading, report, targetLabel, onC
 
           <div className="quality-report-meta">
             <Text type="secondary">规则版本 {report.policy_version || "-"}</Text>
-            <Text type="secondary" ellipsis>内容指纹 {report.content_hash || "-"}</Text>
+            <Text type="secondary" ellipsis>
+              内容指纹 {report.content_hash || "-"}
+            </Text>
           </div>
         </div>
       ) : (

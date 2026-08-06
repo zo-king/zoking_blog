@@ -10,6 +10,7 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/auth"
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
@@ -41,6 +42,10 @@ func validateSeedConfig(cfg config.Config) error {
 	emailValue := strings.TrimSpace(cfg.SeedAdminEmail)
 	email := strings.ToLower(emailValue)
 	password := cfg.SeedAdminPassword
+	username := strings.TrimSpace(cfg.SeedAdminUsername)
+	if username == "" || username != cfg.SeedAdminUsername || len([]rune(username)) < 3 || len([]rune(username)) > 64 {
+		return fmt.Errorf("SEED_ADMIN_USERNAME must be 3 to 64 characters without surrounding whitespace")
+	}
 	if emailValue != cfg.SeedAdminEmail || email == "" || email == "admin@zoking.local" {
 		return fmt.Errorf("SEED_ADMIN_EMAIL must be set to a production administrator address")
 	}
@@ -206,7 +211,7 @@ func ensureAdmin(ctx context.Context, db seedDB, cfg config.Config) (string, err
 		insert into users (email, username, password_hash, display_name, status)
 		values ($1, $2, $3, $4, 'active')
 		on conflict (email) where deleted_at is null do nothing
-		returning id`, email, "admin", hash, "Super Admin").Scan(&id)
+		returning id`, email, cfg.SeedAdminUsername, hash, "Super Admin").Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
 		err = db.QueryRowContext(ctx, `select id, status from users where email = $1 and deleted_at is null`, email).Scan(&id, &status)
 		if err == nil && status != "active" {

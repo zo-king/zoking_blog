@@ -38,7 +38,7 @@ favicon        = "img/favicon-64.png"
     [comments.public]
         # The publisher writes the production API origin from site settings.
         # Local development falls back to localhost in the comments partial.
-        apiBase = ""
+        apiBase = "http://localhost:18080"
 
 # GDPR Cookie Consent Configuration
 # When enabled, analytics and functional cookies require user consent

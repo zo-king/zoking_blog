@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/auth"
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
@@ -84,14 +85,18 @@ func corsMiddleware(cfg config.Config) gin.HandlerFunc {
 		if origin != "" {
 			c.Header("Vary", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers")
 		}
-		isAdmin := strings.HasPrefix(c.Request.URL.Path, "/api/v1/admin/")
+		path := c.Request.URL.Path
+		isAdmin := strings.HasPrefix(path, "/api/v1/admin/")
 		allowed := publicAllowed
 		if isAdmin {
 			allowed = adminAllowed
 		}
-		if allowed[origin] {
+		// 探活端点也被后台仪表盘跨域调用(admin 源,且带凭据),否则其健康检查会被 CORS 拦截。
+		isProbe := path == "/healthz" || path == "/readyz"
+		adminProbe := isProbe && adminAllowed[origin]
+		if allowed[origin] || adminProbe {
 			c.Header("Access-Control-Allow-Origin", origin)
-			if isAdmin {
+			if isAdmin || adminProbe {
 				c.Header("Access-Control-Allow-Credentials", "true")
 			}
 			c.Header("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Request-ID, X-CSRF-Token")

@@ -14,7 +14,7 @@ import {
   Tag,
   Tooltip,
   Typography,
-  type FormInstance
+  type FormInstance,
 } from "@arco-design/web-react";
 import {
   IconArrowLeft,
@@ -24,7 +24,7 @@ import {
   IconPlus,
   IconSafe,
   IconSave,
-  IconSend
+  IconSend,
 } from "@arco-design/web-react/icon";
 import { ContentPanel, PageHeader } from "../components/AdminPage";
 import { useListQuery } from "../hooks/useListQuery";
@@ -84,7 +84,7 @@ export function PagesPage({
   onPreview,
   onPublish,
   onQualityCheck,
-  onFormChange
+  onFormChange,
 }: Props) {
   const listQuery = useListQuery(20);
   const [query, setQuery] = useState(listQuery.q);
@@ -101,9 +101,11 @@ export function PagesPage({
           title="独立页面"
           description="管理固定页面及其菜单展示属性。"
           actions={
-            canCreate ? <Button type="primary" icon={<IconPlus />} onClick={onNew}>
-              新建页面
-            </Button> : null
+            canCreate ? (
+              <Button type="primary" icon={<IconPlus />} onClick={onNew}>
+                新建页面
+              </Button>
+            ) : null
           }
         />
 
@@ -129,7 +131,7 @@ export function PagesPage({
                   { label: "全部状态", value: "all" },
                   { label: "草稿", value: "draft" },
                   { label: "已发布", value: "published" },
-                  { label: "已下线", value: "offline" }
+                  { label: "已下线", value: "offline" },
                 ]}
               />
               <Text type="secondary">共 {pagination.total} 个页面</Text>
@@ -148,12 +150,12 @@ export function PagesPage({
                 showTotal: true,
                 size: "small",
                 sizeCanChange: true,
-                onChange: (page, pageSize) => listQuery.update({ page, pageSize })
+                onChange: (page, pageSize) => listQuery.update({ page, pageSize }),
               }}
               size="small"
               tableLayoutFixed
               scroll={{ x: 860 }}
-              noDataElement={(
+              noDataElement={
                 <Empty
                   description={
                     !enabled
@@ -163,11 +165,15 @@ export function PagesPage({
                         : "暂无独立页面。"
                   }
                 />
-              )}
-              onRow={(record) => canUpdate ? ({
-                onClick: () => onSelect(record),
-                style: { cursor: "pointer" }
-              }) : {}}
+              }
+              onRow={(record) =>
+                canUpdate
+                  ? {
+                      onClick: () => onSelect(record),
+                      style: { cursor: "pointer" },
+                    }
+                  : {}
+              }
               columns={[
                 {
                   title: "页面",
@@ -182,7 +188,7 @@ export function PagesPage({
                         {record.summary || "暂无摘要"}
                       </Text>
                     </div>
-                  )
+                  ),
                 },
                 { title: "Slug", dataIndex: "slug", width: 190, ellipsis: true },
                 {
@@ -193,13 +199,13 @@ export function PagesPage({
                     <Tag color={value === "published" ? "green" : value === "offline" ? "gray" : "orange"}>
                       {value === "published" ? "已发布" : value === "offline" ? "已下线" : "草稿"}
                     </Tag>
-                  )
+                  ),
                 },
                 {
                   title: "菜单",
                   dataIndex: "show_in_menu",
                   width: 100,
-                  render: (value) => <Tag color={value ? "green" : undefined}>{value ? "显示" : "隐藏"}</Tag>
+                  render: (value) => <Tag color={value ? "green" : undefined}>{value ? "显示" : "隐藏"}</Tag>,
                 },
                 {
                   title: "操作",
@@ -208,27 +214,31 @@ export function PagesPage({
                   render: (_, record) => (
                     <div onClick={(event) => event.stopPropagation()}>
                       <Space size={4}>
-                        {canUpdate && <Tooltip content="编辑页面">
-                          <Button type="text" size="mini" icon={<IconEdit />} onClick={() => onSelect(record)}>
-                            编辑
-                          </Button>
-                        </Tooltip>}
-                        {canDelete && <Popconfirm
-                          title="确认归档此页面？"
-                          okText="归档"
-                          okButtonProps={{ status: "danger" }}
-                          onOk={() => onDelete(record.id)}
-                        >
-                          <Tooltip content="归档页面">
-                            <Button type="text" size="mini" status="danger" icon={<IconDelete />}>
-                              归档
+                        {canUpdate && (
+                          <Tooltip content="编辑页面">
+                            <Button type="text" size="mini" icon={<IconEdit />} onClick={() => onSelect(record)}>
+                              编辑
                             </Button>
                           </Tooltip>
-                        </Popconfirm>}
+                        )}
+                        {canDelete && (
+                          <Popconfirm
+                            title="确认归档此页面？"
+                            okText="归档"
+                            okButtonProps={{ status: "danger" }}
+                            onOk={() => onDelete(record.id)}
+                          >
+                            <Tooltip content="归档页面">
+                              <Button type="text" size="mini" status="danger" icon={<IconDelete />}>
+                                归档
+                              </Button>
+                            </Tooltip>
+                          </Popconfirm>
+                        )}
                       </Space>
                     </div>
-                  )
-                }
+                  ),
+                },
               ]}
             />
           </div>
@@ -248,18 +258,30 @@ export function PagesPage({
             <Button icon={<IconArrowLeft />} onClick={onBack}>
               返回列表
             </Button>
-            <Button icon={<IconSave />} disabled={!canSave || writeBlocked} loading={busy} onClick={() => form.submit()}>
+            <Button
+              icon={<IconSave />}
+              disabled={!canSave || writeBlocked}
+              loading={busy}
+              onClick={() => form.submit()}
+            >
               保存
             </Button>
             <Button icon={<IconEye />} disabled={!canPreview || writeBlocked} loading={previewBusy} onClick={onPreview}>
               预览
             </Button>
-            <Button icon={<IconSafe />} disabled={!canSave || writeBlocked} loading={qualityBusy} onClick={onQualityCheck}>
+            <Button
+              icon={<IconSafe />}
+              disabled={!canSave || writeBlocked}
+              loading={qualityBusy}
+              onClick={onQualityCheck}
+            >
               发布检查
             </Button>
-            {canPublish && <Button type="primary" icon={<IconSend />} loading={busy || qualityBusy} onClick={onPublish}>
-              发布
-            </Button>}
+            {canPublish && (
+              <Button type="primary" icon={<IconSend />} loading={busy || qualityBusy} onClick={onPublish}>
+                发布
+              </Button>
+            )}
           </Space>
         }
       />
@@ -304,24 +326,31 @@ export function PagesPage({
 
           <Col xs={24} xl={8} style={{ minWidth: 0 }}>
             <ContentPanel className="page-editor-sidebar" title="发布与菜单" description="控制访问范围和导航展示。">
-              <Title heading={6} style={{ marginTop: 0 }}>发布设置</Title>
+              <Title heading={6} style={{ marginTop: 0 }}>
+                发布设置
+              </Title>
               <Row gutter={[12, 0]}>
                 <Col xs={24} sm={12} xl={24} xxl={12}>
                   <Form.Item field="status" label="状态">
-                    <Select disabled={!canPublish} options={[
-                      { label: "草稿", value: "draft" },
-                      { label: "已发布", value: "published" },
-                      { label: "已下线", value: "offline" }
-                    ]} />
+                    <Select
+                      disabled={!canPublish}
+                      options={[
+                        { label: "草稿", value: "draft" },
+                        { label: "已发布", value: "published" },
+                        { label: "已下线", value: "offline" },
+                      ]}
+                    />
                   </Form.Item>
                 </Col>
                 <Col xs={24} sm={12} xl={24} xxl={12}>
                   <Form.Item field="visibility" label="可见性">
-                    <Select options={[
-                      { label: "公开", value: "public" },
-                      { label: "私密", value: "private" },
-                      { label: "不公开列出", value: "unlisted" }
-                    ]} />
+                    <Select
+                      options={[
+                        { label: "公开", value: "public" },
+                        { label: "私密", value: "private" },
+                        { label: "不公开列出", value: "unlisted" },
+                      ]}
+                    />
                   </Form.Item>
                 </Col>
               </Row>

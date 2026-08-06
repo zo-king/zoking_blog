@@ -81,8 +81,8 @@ func ValidateReleaseOutputPublicURLs(appEnv string, outputPath string, expectedS
 		if err != nil {
 			return err
 		}
-		extension := strings.ToLower(filepath.Ext(path))
-		if extension == ".html" {
+		switch strings.ToLower(filepath.Ext(path)) {
+		case ".html":
 			document, err := xhtml.Parse(bytes.NewReader(raw))
 			if err != nil {
 				return fmt.Errorf("parse generated HTML: %w", err)
@@ -93,7 +93,7 @@ func ValidateReleaseOutputPublicURLs(appEnv string, outputPath string, expectedS
 				return fmt.Errorf("release output %s: %w", filepath.ToSlash(relative), err)
 			}
 			canonicalSeen = canonicalSeen || seen
-		} else if extension == ".css" {
+		case ".css":
 			if err := validateGeneratedCSSPublicURLs(string(raw)); err != nil {
 				relative, _ := filepath.Rel(outputPath, path)
 				return fmt.Errorf("release output %s: %w", filepath.ToSlash(relative), err)

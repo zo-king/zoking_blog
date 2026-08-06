@@ -58,13 +58,17 @@
 
 ```powershell
 Copy-Item infra/docker/.env.prod.example infra/docker/.env.prod
+pwsh -NoProfile -File scripts/qa/production-preflight.ps1
 ```
+
+`production-preflight.ps1` 只读检查生产变量、占位符、管理员账号、HTTPS 来源、loopback 绑定、migration 文件和 Compose 配置；不会启动服务、执行 migration/seed 或打印密钥。确认公网反向代理确实运行在独立主机或 Docker 网络后，才可使用 `-AllowNonLoopbackBindings` 放宽绑定检查。
 
 必须修改：
 
 - `POSTGRES_PASSWORD`
 - `JWT_SECRET`
 - `SEED_ADMIN_EMAIL`
+- `SEED_ADMIN_USERNAME`（正式管理员账号为 `zoking`）
 - `SEED_ADMIN_PASSWORD`（至少 16 个字符，不能保留 `change-me` 或开发默认值）
 - `SITE_BASE_URL`（正式环境为 `https://zoking.tech/`，保留末尾 `/`）
 - `PUBLIC_API_BASE_URL`（正式环境为 `https://api.zoking.tech`，不带末尾 `/`）

@@ -9,11 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type createSeriesRequest struct {

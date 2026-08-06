@@ -1,0 +1,54 @@
+{{- /*
+    构建期生成文章的社交分享卡(1200×630 PNG):天蓝渐变底 + 标题 + 站名·日期。
+    仅对 post 区块的文章页生成;底图或字体缺失时返回空,由调用方回落到封面图。
+    调用方应使用 partialCached(以 .RelPermalink 为 key),避免同页重复渲染。
+*/ -}}
+{{- $card := "" -}}
+{{- if and .IsPage (eq .Section "post") -}}
+    {{- $base := resources.Get "img/og-base.png" -}}
+    {{- $font := resources.Get "fonts/NotoSansSC.ttf" -}}
+    {{- if and $base $font -}}
+        {{- /* images.Text 只在空格处折行,中文标题需要按字符数手动折行:
+               每行最多 15 个全宽字符(68px × 15 ≈ 1020px,画布留白 80×2),最多 3 行。 */ -}}
+        {{- $lineLen := 15 -}}
+        {{- $maxRunes := 44 -}}
+        {{- $title := .Title -}}
+        {{- if gt (strings.RuneCount $title) $maxRunes -}}
+            {{- $title = printf "%s…" (substr $title 0 $maxRunes) -}}
+        {{- end -}}
+        {{- $wrapped := "" -}}
+        {{- $line := "" -}}
+        {{- range $r := split $title "" -}}
+            {{- $line = printf "%s%s" $line $r -}}
+            {{- if ge (strings.RuneCount $line) $lineLen -}}
+                {{- $wrapped = printf "%s%s\n" $wrapped $line -}}
+                {{- $line = "" -}}
+            {{- end -}}
+        {{- end -}}
+        {{- $wrapped = printf "%s%s" $wrapped $line | strings.TrimSuffix "\n" -}}
+        {{- $titleOpts := dict
+            "font" $font
+            "color" "#f8fbff"
+            "size" 68
+            "linespacing" 16
+            "x" 80
+            "y" 168
+        -}}
+        {{- $img := $base.Filter (images.Text $wrapped $titleOpts) -}}
+        {{- $meta := site.Title -}}
+        {{- if not .Date.IsZero -}}
+            {{- $meta = printf "%s · %s" site.Title (.Date.Format "2006-01-02") -}}
+        {{- end -}}
+        {{- $metaOpts := dict
+            "font" $font
+            "color" "#a5d8f5"
+            "size" 32
+            "x" 80
+            "y" 536
+        -}}
+        {{- $img = $img.Filter (images.Text $meta $metaOpts) -}}
+        {{- $name := path.Base (strings.TrimSuffix "/" .RelPermalink) -}}
+        {{- $card = resources.Copy (printf "img/og/%s.png" $name) $img -}}
+    {{- end -}}
+{{- end -}}
+{{- return $card -}}

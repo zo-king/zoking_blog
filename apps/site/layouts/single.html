@@ -17,6 +17,7 @@
     {{ if $isLinksPage }}{{ partial "article/components/links" . }}{{ end }}
     {{ partial "article/components/navigation" . }}
     {{ if eq .Section "post" }}{{ partial "article/components/related-content" . }}{{ end }}
+    {{ if eq .Section "post" }}{{ partial "article/components/engagement" . }}{{ end }}
     {{ if not (eq .Params.comments false) }}{{ partial "comments/include" . }}{{ end }}
     {{ partialCached "footer/footer" . }}
     {{ partialCached "article/components/photoswipe" . }}

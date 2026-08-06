@@ -17,10 +17,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/pressly/goose/v3"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 var seriesMigrationSchemaPattern = regexp.MustCompile(`^series_contract_[0-9a-f]{32}$`)

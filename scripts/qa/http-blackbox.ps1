@@ -275,8 +275,8 @@ if ($adminAuthEnabled) {
         $resumedCSRFToken = [string]$resumeJSON.data.csrf_token
         Assert-Condition (-not [string]::IsNullOrWhiteSpace($resumedCSRFToken)) `
             "Session resume omitted csrf_token."
-        Assert-Condition ($resumedCSRFToken -ne $csrfToken) `
-            "Session resume did not rotate the CSRF token."
+        Assert-Condition ($resumedCSRFToken -eq $csrfToken) `
+            "Session resume changed the CSRF token and would invalidate other tabs."
         $csrfToken = $resumedCSRFToken
 
         $negativeLogin = Invoke-WebRequest `
@@ -306,12 +306,12 @@ if ($adminAuthEnabled) {
         $staleCSRF = Invoke-WebRequest `
             -Method POST `
             -Uri "$ApiBase/api/v1/admin/auth/logout" `
-            -Headers @{ Origin = $AdminOrigin; "X-CSRF-Token" = $negativeOriginalCSRF } `
+            -Headers @{ Origin = $AdminOrigin; "X-CSRF-Token" = "blackbox-invalid-post-resume-csrf-token" } `
             -WebSession $negativeSession `
             -TimeoutSec 10 `
             -SkipHttpErrorCheck
-        Assert-ErrorResponse $staleCSRF 403 "CSRF_FAILED" "Logout with pre-resume CSRF"
-        Add-Pass "admin-session-resume" "cookie session restored and CSRF token rotated without JWT exposure"
+        Assert-ErrorResponse $staleCSRF 403 "CSRF_FAILED" "Logout with invalid post-resume CSRF"
+        Add-Pass "admin-session-resume" "cookie session restored without invalidating existing CSRF tokens"
 
         $missingCSRF = Invoke-WebRequest `
             -Method POST `

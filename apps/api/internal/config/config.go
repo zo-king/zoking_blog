@@ -26,12 +26,14 @@ type Config struct {
 	PublicAPIBaseURL               string
 	DatabaseURL                    string
 	JWTSecret                      string
+	PrivacyHashSecret              string
 	AccessTokenTTL                 time.Duration
 	RefreshTokenTTL                time.Duration
 	MigrationsDir                  string
 	HugoSiteDir                    string
 	HugoPublicDir                  string
 	HugoBin                        string
+	PagefindBin                    string
 	PublishReleaseRoot             string
 	PublishCurrentDir              string
 	PublishPreviewRoot             string
@@ -53,6 +55,7 @@ type Config struct {
 	PublishReleaseKeepLatest       int
 	PublishReleaseKeepDays         int
 	SeedAdminEmail                 string
+	SeedAdminUsername              string
 	SeedAdminPassword              string
 	DBMaxOpenConns                 int
 	DBMaxIdleConns                 int
@@ -72,7 +75,7 @@ type Config struct {
 func Load() Config {
 	_ = godotenv.Load("../../.env", ".env")
 	repoRoot := repoRoot()
-	hugoPublicDir := absPath(env("HUGO_PUBLIC_DIR", filepath.Join(repoRoot, "dist", "site")))
+	hugoPublicDir := resolvePath(repoRoot, env("HUGO_PUBLIC_DIR", filepath.Join(repoRoot, "dist", "site")))
 
 	cfg := Config{
 		AppEnv:                         env("APP_ENV", "development"),
@@ -81,21 +84,23 @@ func Load() Config {
 		PublicAPIBaseURL:               env("PUBLIC_API_BASE_URL", "http://localhost:18080"),
 		DatabaseURL:                    env("DATABASE_URL", defaultDatabaseURL),
 		JWTSecret:                      env("JWT_SECRET", defaultJWTSecret),
+		PrivacyHashSecret:              env("PRIVACY_HASH_SECRET", "dev-only-privacy-hash-secret"),
 		AccessTokenTTL:                 durationEnv("ACCESS_TOKEN_TTL", 30*time.Minute),
 		RefreshTokenTTL:                durationEnv("REFRESH_TOKEN_TTL", 720*time.Hour),
-		MigrationsDir:                  absPath(env("MIGRATIONS_DIR", filepath.Join(repoRoot, "db", "migrations"))),
-		HugoSiteDir:                    absPath(env("HUGO_SITE_DIR", filepath.Join(repoRoot, "apps", "site"))),
+		MigrationsDir:                  resolvePath(repoRoot, env("MIGRATIONS_DIR", filepath.Join(repoRoot, "db", "migrations"))),
+		HugoSiteDir:                    resolvePath(repoRoot, env("HUGO_SITE_DIR", filepath.Join(repoRoot, "apps", "site"))),
 		HugoPublicDir:                  hugoPublicDir,
-		HugoBin:                        absPath(env("HUGO_BIN", filepath.Join(repoRoot, ".tools", "hugo", "hugo.exe"))),
-		PublishReleaseRoot:             absPath(env("PUBLISH_RELEASE_ROOT", filepath.Join(filepath.Dir(hugoPublicDir), "releases"))),
-		PublishCurrentDir:              absPath(env("PUBLISH_CURRENT_DIR", hugoPublicDir)),
-		PublishPreviewRoot:             absPath(env("PUBLISH_PREVIEW_ROOT", filepath.Join(filepath.Dir(hugoPublicDir), "previews"))),
+		HugoBin:                        resolvePath(repoRoot, env("HUGO_BIN", filepath.Join(repoRoot, ".tools", "hugo", "hugo.exe"))),
+		PagefindBin:                    resolvePath(repoRoot, env("PAGEFIND_BIN", filepath.Join(repoRoot, ".tools", "pagefind", "pagefind.exe"))),
+		PublishReleaseRoot:             resolvePath(repoRoot, env("PUBLISH_RELEASE_ROOT", filepath.Join(filepath.Dir(hugoPublicDir), "releases"))),
+		PublishCurrentDir:              resolvePath(repoRoot, env("PUBLISH_CURRENT_DIR", hugoPublicDir)),
+		PublishPreviewRoot:             resolvePath(repoRoot, env("PUBLISH_PREVIEW_ROOT", filepath.Join(filepath.Dir(hugoPublicDir), "previews"))),
 		PublishPreviewPublicBaseURL:    env("PUBLISH_PREVIEW_PUBLIC_BASE_URL", "/preview-files"),
 		PublishPreviewTTL:              durationEnv("PUBLISH_PREVIEW_TTL", 24*time.Hour),
 		PublishPreviewCleanupInterval:  durationEnv("PUBLISH_PREVIEW_CLEANUP_INTERVAL", time.Hour),
 		PublishPreviewCleanupBatchSize: intEnv("PUBLISH_PREVIEW_CLEANUP_BATCH_SIZE", 100),
 		MediaStorageDriver:             env("MEDIA_STORAGE_DRIVER", "local"),
-		MediaLocalDir:                  absPath(env("MEDIA_LOCAL_DIR", filepath.Join(repoRoot, "storage", "media"))),
+		MediaLocalDir:                  resolvePath(repoRoot, env("MEDIA_LOCAL_DIR", filepath.Join(repoRoot, "storage", "media"))),
 		MediaPublicBaseURL:             env("MEDIA_PUBLIC_BASE_URL", "/media-files"),
 		MediaMaxBytes:                  int64Env("MEDIA_MAX_BYTES", 10*1024*1024),
 		MediaUploadMaxConcurrency:      intEnv("MEDIA_UPLOAD_MAX_CONCURRENCY", 4),
@@ -108,6 +113,7 @@ func Load() Config {
 		PublishReleaseKeepLatest:       intEnv("PUBLISH_RELEASE_KEEP_LATEST", 20),
 		PublishReleaseKeepDays:         intEnv("PUBLISH_RELEASE_KEEP_DAYS", 30),
 		SeedAdminEmail:                 env("SEED_ADMIN_EMAIL", "admin@zoking.local"),
+		SeedAdminUsername:              env("SEED_ADMIN_USERNAME", "zoking"),
 		SeedAdminPassword:              env("SEED_ADMIN_PASSWORD", "ChangeMe123!"),
 		DBMaxOpenConns:                 intEnv("DB_MAX_OPEN_CONNS", 20),
 		DBMaxIdleConns:                 intEnv("DB_MAX_IDLE_CONNS", 5),
@@ -137,6 +143,10 @@ func (cfg Config) ValidateRuntime() error {
 	secret := strings.TrimSpace(cfg.JWTSecret)
 	if secret == "" || secret != cfg.JWTSecret || len(secret) < 32 || obviousPlaceholder(secret) {
 		errs = append(errs, errors.New("JWT_SECRET must be a non-placeholder secret of at least 32 characters"))
+	}
+	privacySecret := strings.TrimSpace(cfg.PrivacyHashSecret)
+	if privacySecret == "" || privacySecret != cfg.PrivacyHashSecret || len(privacySecret) < 32 || obviousPlaceholder(privacySecret) {
+		errs = append(errs, errors.New("PRIVACY_HASH_SECRET must be a non-placeholder secret of at least 32 characters"))
 	}
 
 	databaseURL := strings.TrimSpace(cfg.DatabaseURL)
@@ -338,11 +348,11 @@ func repoRoot() string {
 	return filepath.Clean(filepath.Join(configDir, "../../../.."))
 }
 
-func absPath(path string) string {
+func resolvePath(root, path string) string {
 	if filepath.IsAbs(path) {
 		return path
 	}
-	abs, err := filepath.Abs(path)
+	abs, err := filepath.Abs(filepath.Join(root, path))
 	if err != nil {
 		return path
 	}

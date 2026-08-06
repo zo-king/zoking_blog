@@ -8,11 +8,12 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 func TestSitemapContainsSlugScansNestedLanguageSitemaps(t *testing.T) {

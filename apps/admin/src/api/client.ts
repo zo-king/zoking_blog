@@ -26,7 +26,10 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}, token
   if (!response.ok) {
     const text = await response.text();
     try {
-      const payload = JSON.parse(text) as { error?: { code?: string; message?: string; details?: unknown }; request_id?: string };
+      const payload = JSON.parse(text) as {
+        error?: { code?: string; message?: string; details?: unknown };
+        request_id?: string;
+      };
       throw new ApiError(
         response.status,
         payload.error?.message || `${response.status} ${response.statusText}`,

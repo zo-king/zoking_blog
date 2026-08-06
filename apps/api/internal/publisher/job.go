@@ -20,11 +20,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/mediaref"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 const (
@@ -332,7 +333,7 @@ func ProcessPostWithdrawalJob(ctx context.Context, db *gorm.DB, cfg config.Confi
 	}
 	if _, restoreErr := WritePost(cfg.HugoSiteDir, post); restoreErr != nil {
 		markJobFailedWithLogs(ctx, db, &job, &logs, "restore", "SNAPSHOT_RESTORE_FAILED", restoreErr)
-		return ProcessResult{}, fmt.Errorf("withdraw post failed: %w; snapshot restore failed: %v", err, restoreErr)
+		return ProcessResult{}, fmt.Errorf("withdraw post failed: %w; snapshot restore failed: %w", err, restoreErr)
 	}
 	appendJobLog(ctx, db, job.ID, &logs, "restore", "info", "post snapshot restored after failed withdrawal", nil)
 	return ProcessResult{}, err
@@ -375,7 +376,7 @@ func ProcessPageWithdrawalJob(ctx context.Context, db *gorm.DB, cfg config.Confi
 	}
 	if _, restoreErr := WritePage(cfg.HugoSiteDir, page); restoreErr != nil {
 		markJobFailedWithLogs(ctx, db, &job, &logs, "restore", "SNAPSHOT_RESTORE_FAILED", restoreErr)
-		return ProcessResult{}, fmt.Errorf("withdraw page failed: %w; snapshot restore failed: %v", err, restoreErr)
+		return ProcessResult{}, fmt.Errorf("withdraw page failed: %w; snapshot restore failed: %w", err, restoreErr)
 	}
 	appendJobLog(ctx, db, job.ID, &logs, "restore", "info", "page snapshot restored after failed withdrawal", nil)
 	return ProcessResult{}, err
@@ -496,6 +497,13 @@ func processHugoBuildJob(ctx context.Context, db *gorm.DB, cfg config.Config, jo
 	if err := ValidateReleaseOutputPublicURLs(cfg.AppEnv, outputPath, cfg.SiteBaseURL, cfg.PublicAPIBaseURL); err != nil {
 		markJobFailedWithLogs(ctx, db, &job, logs, "verify", "PUBLIC_URL_OUTPUT_INVALID", err)
 		return ProcessResult{}, err
+	}
+
+	// 站内搜索索引:索引不可用只降级(搜索页会提示不可用),不阻塞发布。
+	if indexSummary, err := runPagefindIndex(buildCtx, cfg, outputPath); err != nil {
+		appendJobLog(ctx, db, job.ID, logs, "build", "warn", fmt.Sprintf("pagefind index skipped: %v", err), nil)
+	} else if indexSummary != "" {
+		appendJobLog(ctx, db, job.ID, logs, "build", "info", indexSummary, nil)
 	}
 
 	if err := updateJobStage(ctx, db, job.ID, logs, "building", "verifying", "verify", "verifying Hugo release artifacts", nil); err != nil {
@@ -1336,16 +1344,11 @@ func verifyReleasePath(outputPath string, post *model.Post) error {
 		return fmt.Errorf("release article page path is not a file")
 	}
 
-	if ok, err := fileContainsAny(filepath.Join(outputPath, "index.html"), post.Title, post.Slug); err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("release home page does not include post %q", post.Slug)
-	}
-	if ok, err := fileContainsAny(filepath.Join(outputPath, "index.xml"), post.Title, post.Slug); err != nil {
-		return err
-	} else if !ok {
-		return fmt.Errorf("release RSS does not include post %q", post.Slug)
-	}
+	// NOTE: We intentionally do NOT require the post to appear on the home page
+	// (index.html) or in the RSS feed (index.xml). Both are paginated/limited, so
+	// re-publishing any post that is not among the newest few would otherwise fail
+	// verification. The authoritative checks are the article page existing (above)
+	// and the slug being present in the sitemap (below).
 	if ok, err := sitemapContainsSlug(outputPath, post.Slug); err != nil {
 		return err
 	} else if !ok {

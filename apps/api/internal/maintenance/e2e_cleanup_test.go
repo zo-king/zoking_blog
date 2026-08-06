@@ -13,12 +13,13 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
-	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
+	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
 )
 
 func TestSafeE2EPath(t *testing.T) {

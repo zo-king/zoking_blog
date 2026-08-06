@@ -11,7 +11,7 @@ import {
   Tooltip,
   Typography,
   Upload,
-  type TableColumnProps
+  type TableColumnProps,
 } from "@arco-design/web-react";
 import { IconCode, IconCopy, IconDelete, IconEye, IconSettings, IconUpload } from "@arco-design/web-react/icon";
 import { useEffect, useState } from "react";
@@ -30,11 +30,7 @@ type Props = {
   busy: boolean;
   cleanupBusy: boolean;
   mediaURL: (asset: MediaAsset) => string;
-  onUpload: (options: {
-    file: File;
-    onSuccess?: (body?: unknown) => void;
-    onError?: (event: Error) => void;
-  }) => void;
+  onUpload: (options: { file: File; onSuccess?: (body?: unknown) => void; onError?: (event: Error) => void }) => void;
   onCleanup: (dryRun: boolean) => void;
   onCopyURL: (asset: MediaAsset) => void;
   onInsertMarkdown: (asset: MediaAsset) => void;
@@ -82,7 +78,7 @@ export function MediaPage(props: Props) {
           alt={record.original_name || record.filename}
           style={{ objectFit: "cover", borderRadius: 4, background: "#f2f5f3" }}
         />
-      )
+      ),
     },
     {
       title: "资产",
@@ -100,7 +96,7 @@ export function MediaPage(props: Props) {
             {record.mime_type || record.filename}
           </Text>
         </div>
-      )
+      ),
     },
     {
       title: "规格",
@@ -112,7 +108,7 @@ export function MediaPage(props: Props) {
             {record.width && record.height ? `${record.width} x ${record.height}` : "尺寸未知"}
           </Text>
         </div>
-      )
+      ),
     },
     {
       title: "状态",
@@ -121,7 +117,7 @@ export function MediaPage(props: Props) {
       render: (value) => {
         const status = mediaStatus(value);
         return <Tag color={status.color}>{status.label}</Tag>;
-      }
+      },
     },
     {
       title: "引用",
@@ -131,13 +127,13 @@ export function MediaPage(props: Props) {
       render: (value) => {
         const count = value ?? 0;
         return <Tag color={count > 0 ? "orange" : "gray"}>{count}</Tag>;
-      }
+      },
     },
     {
       title: "上传时间",
       dataIndex: "created_at",
       width: 176,
-      render: (value) => formatDate(value)
+      render: (value) => formatDate(value),
     },
     {
       title: "操作",
@@ -171,44 +167,45 @@ export function MediaPage(props: Props) {
                 />
               </Tooltip>
             ) : null}
-            {props.canDelete && (usageCount > 0 ? (
-              <Tooltip content={`仍被 ${usageCount} 处内容引用，不能删除`}>
-                <span style={{ display: "inline-flex" }}>
-                  <Button
-                    type="text"
-                    size="mini"
-                    status="danger"
-                    icon={<IconDelete />}
-                    aria-label={`删除 ${record.original_name || record.filename}`}
-                    disabled
-                  />
-                </span>
-              </Tooltip>
-            ) : (
-              <Popconfirm
-                title="确认删除此媒体？"
-                content="该操作会永久移除文件，且无法恢复。"
-                okText="删除"
-                cancelText="取消"
-                okButtonProps={{ status: "danger" }}
-                onOk={() => props.onDelete(record.id)}
-              >
-                <Tooltip content="删除媒体">
-                  <Button
-                    type="text"
-                    size="mini"
-                    status="danger"
-                    icon={<IconDelete />}
-                    aria-label={`删除 ${record.original_name || record.filename}`}
-                    disabled={props.busy}
-                  />
+            {props.canDelete &&
+              (usageCount > 0 ? (
+                <Tooltip content={`仍被 ${usageCount} 处内容引用，不能删除`}>
+                  <span style={{ display: "inline-flex" }}>
+                    <Button
+                      type="text"
+                      size="mini"
+                      status="danger"
+                      icon={<IconDelete />}
+                      aria-label={`删除 ${record.original_name || record.filename}`}
+                      disabled
+                    />
+                  </span>
                 </Tooltip>
-              </Popconfirm>
-            ))}
+              ) : (
+                <Popconfirm
+                  title="确认删除此媒体？"
+                  content="该操作会永久移除文件，且无法恢复。"
+                  okText="删除"
+                  cancelText="取消"
+                  okButtonProps={{ status: "danger" }}
+                  onOk={() => props.onDelete(record.id)}
+                >
+                  <Tooltip content="删除媒体">
+                    <Button
+                      type="text"
+                      size="mini"
+                      status="danger"
+                      icon={<IconDelete />}
+                      aria-label={`删除 ${record.original_name || record.filename}`}
+                      disabled={props.busy}
+                    />
+                  </Tooltip>
+                </Popconfirm>
+              ))}
           </Space>
         );
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -217,85 +214,76 @@ export function MediaPage(props: Props) {
         title="媒体资产"
         description="统一管理内容图片、引用关系与孤立文件清理。"
         eyebrow="内容资源"
-        actions={props.canUpload || props.canDelete ? (
-          <Space size={8} wrap>
-            {props.canDelete ? (
-              <Button
-                icon={<IconSettings />}
-                onClick={() => setMaintenanceVisible(true)}
-              >
-                维护
-              </Button>
-            ) : null}
-            {props.canUpload ? (
-              <Upload
-                accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp"
-                disabled={props.busy}
-                showUploadList={false}
-                customRequest={({ file, onSuccess, onError }) => {
-                  props.onUpload({
-                    file,
-                    onSuccess: (body) => onSuccess((body ?? {}) as object),
-                    onError: (error) => onError(error)
-                  });
-                }}
-              >
-                <Button
-                  type="primary"
-                  icon={<IconUpload />}
-                  loading={props.busy}
-                >
-                  上传图片
+        actions={
+          props.canUpload || props.canDelete ? (
+            <Space size={8} wrap>
+              {props.canDelete ? (
+                <Button icon={<IconSettings />} onClick={() => setMaintenanceVisible(true)}>
+                  维护
                 </Button>
-              </Upload>
-            ) : null}
-          </Space>
-        ) : undefined}
+              ) : null}
+              {props.canUpload ? (
+                <Upload
+                  accept=".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp"
+                  disabled={props.busy}
+                  showUploadList={false}
+                  customRequest={({ file, onSuccess, onError }) => {
+                    props.onUpload({
+                      file,
+                      onSuccess: (body) => onSuccess((body ?? {}) as object),
+                      onError: (error) => onError(error),
+                    });
+                  }}
+                >
+                  <Button type="primary" icon={<IconUpload />} loading={props.busy}>
+                    上传图片
+                  </Button>
+                </Upload>
+              ) : null}
+            </Space>
+          ) : undefined
+        }
       />
 
-      {props.canDelete ? <Modal
-        title="媒体维护"
-        visible={maintenanceVisible}
-        footer={null}
-        unmountOnExit
-        onCancel={() => setMaintenanceVisible(false)}
-      >
-        <Space direction="vertical" size={16} style={{ width: "100%" }}>
-          <div>
-            <Text bold style={{ display: "block" }}>清理预演</Text>
-            <Text type="secondary">检查可清理的孤立媒体，不会删除文件。</Text>
-          </div>
-          <Button
-            long
-            icon={<IconEye />}
-            loading={props.cleanupBusy}
-            onClick={() => props.onCleanup(true)}
-          >
-            运行清理预演
-          </Button>
-          <div>
-            <Text bold style={{ display: "block" }}>执行清理</Text>
-            <Text type="secondary">永久删除未被内容引用的媒体文件。</Text>
-          </div>
-          <Popconfirm
-            title="确认清理孤立媒体？"
-            content="仅删除未被内容引用的媒体文件，建议先执行清理预演。"
-            okText="开始清理"
-            cancelText="取消"
-            okButtonProps={{ status: "danger" }}
-            onOk={() => props.onCleanup(false)}
-          >
-            <Button
-              long
-              status="danger"
-              icon={<IconDelete />}
-              loading={props.cleanupBusy}
-            >
-              清理孤立媒体
+      {props.canDelete ? (
+        <Modal
+          title="媒体维护"
+          visible={maintenanceVisible}
+          footer={null}
+          unmountOnExit
+          onCancel={() => setMaintenanceVisible(false)}
+        >
+          <Space direction="vertical" size={16} style={{ width: "100%" }}>
+            <div>
+              <Text bold style={{ display: "block" }}>
+                清理预演
+              </Text>
+              <Text type="secondary">检查可清理的孤立媒体，不会删除文件。</Text>
+            </div>
+            <Button long icon={<IconEye />} loading={props.cleanupBusy} onClick={() => props.onCleanup(true)}>
+              运行清理预演
             </Button>
-          </Popconfirm>
-        </Space>
-      </Modal> : null}
+            <div>
+              <Text bold style={{ display: "block" }}>
+                执行清理
+              </Text>
+              <Text type="secondary">永久删除未被内容引用的媒体文件。</Text>
+            </div>
+            <Popconfirm
+              title="确认清理孤立媒体？"
+              content="仅删除未被内容引用的媒体文件，建议先执行清理预演。"
+              okText="开始清理"
+              cancelText="取消"
+              okButtonProps={{ status: "danger" }}
+              onOk={() => props.onCleanup(false)}
+            >
+              <Button long status="danger" icon={<IconDelete />} loading={props.cleanupBusy}>
+                清理孤立媒体
+              </Button>
+            </Popconfirm>
+          </Space>
+        </Modal>
+      ) : null}
 
       <ContentPanel
         title="资产列表"
@@ -318,7 +306,7 @@ export function MediaPage(props: Props) {
               { label: "可用", value: "ready" },
               { label: "处理中", value: "processing" },
               { label: "失败", value: "failed" },
-              { label: "已删除", value: "deleted" }
+              { label: "已删除", value: "deleted" },
             ]}
             onChange={(value) => listQuery.update({ status: value === "all" ? "" : value })}
           />
@@ -338,7 +326,7 @@ export function MediaPage(props: Props) {
             sizeCanChange: true,
             sizeOptions: [20, 50],
             showTotal: true,
-            onChange: (page, pageSize) => listQuery.update({ page, pageSize })
+            onChange: (page, pageSize) => listQuery.update({ page, pageSize }),
           }}
           data={props.media}
           columns={columns}

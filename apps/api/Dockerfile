@@ -14,11 +14,16 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api ./cmd/api \
 FROM debian:bookworm-slim
 
 ARG HUGO_VERSION=0.160.1
+ARG PAGEFIND_VERSION=1.5.2
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata curl tar \
     && curl -fsSL "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" \
     | tar -xz -C /usr/local/bin hugo \
     && chmod +x /usr/local/bin/hugo \
+    && curl -fsSL "https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+    | tar -xz -C /usr/local/bin \
+    && mv /usr/local/bin/pagefind_extended /usr/local/bin/pagefind \
+    && chmod +x /usr/local/bin/pagefind \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 10001 zoking \

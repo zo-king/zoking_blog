@@ -22,9 +22,9 @@
     window.searchResultTitleTemplate = "{{ T `search.resultTitle` }}"
 </script>
 
-{{- $opts := dict "minify" hugo.IsProduction "JSXFactory" "createElement" -}}
-{{- $searchScript := resources.Get "ts/search.tsx" | js.Build $opts -}}
-<script type="text/javascript" src="{{ $searchScript.RelPermalink }}" defer></script>
+{{- $opts := dict "minify" hugo.IsProduction "externals" (slice "/pagefind/pagefind.js") -}}
+{{- $searchScript := resources.Get "ts/pagefindSearch.ts" | js.Build $opts | fingerprint -}}
+<script type="text/javascript" src="{{ $searchScript.RelPermalink }}" integrity="{{ $searchScript.Data.Integrity }}" defer></script>
 
 {{ partialCached "footer/footer" . }}
 {{ end }}

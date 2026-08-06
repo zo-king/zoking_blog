@@ -1,5 +1,27 @@
 <meta property="og:locale" content="zh_CN">
 
+<link rel="manifest" href="{{ "manifest.webmanifest" | relURL }}">
+<meta name="theme-color" content="#0e74b5">
+<link rel="apple-touch-icon" href="{{ "img/pwa/apple-touch-icon.png" | relURL }}">
+{{- /* GoatCounter 自托管统计:仅生产构建且部署侧注入了 HUGO_STATS_HOST 时输出。
+       无 Cookie、不采集个人信息;count.js 加载失败(如被拦截)对页面无影响。 */ -}}
+{{- $statsHost := getenv "HUGO_STATS_HOST" -}}
+{{- if and $statsHost hugo.IsProduction }}
+<script data-goatcounter="https://{{ $statsHost }}/count" async src="https://{{ $statsHost }}/count.js"></script>
+{{- end }}
+
+{{- /* 开发服务器下不注册 Service Worker,避免缓存干扰热重载;构建产物中启用。 */ -}}
+{{- if not hugo.IsServer }}
+{{- $sw := resources.Get "ts/sw.ts" | js.Build (dict "minify" hugo.IsProduction) | resources.Copy "sw.js" }}
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register("{{ $sw.RelPermalink }}");
+        });
+    }
+</script>
+{{- end }}
+
 {{- if and .IsPage (eq .Section "post") -}}
     {{- with .Site.Home.OutputFormats.Get "RSS" }}
 <link rel="alternate" type="{{ .MediaType.Type }}" title="{{ $.Site.Title }} RSS" href="{{ .Permalink | safeURL }}">

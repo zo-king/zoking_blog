@@ -14,11 +14,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/auth"
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
 )
 
 func TestContentQualityRouteAuthenticationPostgres(t *testing.T) {

@@ -24,7 +24,7 @@ html[data-reading-links="underlined"] .article-content a:not(.header-anchor) {
 .reading-settings {
     background: var(--card-background);
     border: 1px solid var(--card-separator-color);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 12px);
     box-shadow: var(--shadow-l2);
     color: var(--card-text-color-main);
     max-width: 420px;
@@ -33,7 +33,9 @@ html[data-reading-links="underlined"] .article-content a:not(.header-anchor) {
 }
 
 .reading-settings::backdrop {
-    background: rgba(15, 23, 42, 0.42);
+    background: var(--backdrop, rgba(0, 0, 0, 0.42));
+    backdrop-filter: saturate(150%) blur(12px);
+    -webkit-backdrop-filter: saturate(150%) blur(12px);
 }
 
 .reading-settings form {

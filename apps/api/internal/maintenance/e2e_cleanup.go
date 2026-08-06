@@ -11,10 +11,11 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
-	"gorm.io/gorm"
 )
 
 type E2EIDRef struct {
@@ -120,7 +121,7 @@ func CleanupE2ERun(ctx context.Context, db *gorm.DB, cfg config.Config, manifest
 	deleted, err := deleteE2ERecords(ctx, db, plan)
 	if err != nil {
 		if rollbackErr := staging.rollback(); rollbackErr != nil {
-			return result, fmt.Errorf("delete E2E records: %w; restore staged files: %v", err, rollbackErr)
+			return result, fmt.Errorf("delete E2E records: %w; restore staged files: %w", err, rollbackErr)
 		}
 		return result, err
 	}
@@ -368,7 +369,7 @@ func stageE2EFiles(cfg config.Config, plan e2eCleanupPlan) (*e2eFileStaging, err
 	}
 	rollbackOnError := func(err error) (*e2eFileStaging, error) {
 		if rollbackErr := staging.rollback(); rollbackErr != nil {
-			return staging, fmt.Errorf("stage E2E files: %w; rollback: %v", err, rollbackErr)
+			return staging, fmt.Errorf("stage E2E files: %w; rollback: %w", err, rollbackErr)
 		}
 		return staging, err
 	}
@@ -832,7 +833,7 @@ func e2eSettingKeys() []string {
 
 func fieldString(item interface{}, name string) string {
 	value := reflect.ValueOf(item)
-	if value.Kind() == reflect.Ptr {
+	if value.Kind() == reflect.Pointer {
 		value = value.Elem()
 	}
 	if value.Kind() != reflect.Struct {
@@ -894,25 +895,6 @@ func pathInsideRoot(root, target string) bool {
 func safeContentPath(site, section, slug string) (string, bool) {
 	return safeDirectChildPath(filepath.Join(site, "content", section), slug)
 }
-func removeValidatedPath(root, key string) error {
-	path, ok := safeE2EPath(root, key)
-	if !ok {
-		return validationError("unsafe cleanup directory")
-	}
-	return os.RemoveAll(path)
-}
-func removeValidatedFile(root, key string) error {
-	path, ok := safeE2EPath(root, key)
-	if !ok {
-		return validationError("unsafe cleanup file")
-	}
-	err := os.Remove(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return nil
-	}
-	return err
-}
-
 func snapshotRemovalPlan(refs []E2ESlugRef) map[uuid.UUID]bool {
 	result := make(map[uuid.UUID]bool, len(refs))
 	for _, ref := range refs {

@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 func TestResolveReadyMediaRejectsInvalidUUID(t *testing.T) {

@@ -7,7 +7,9 @@ const sessionMarkerKey = "zoking_admin_session";
 const csrfTokenKey = "zoking_admin_csrf";
 
 export function useAdminSession() {
-  const [token, setToken] = useState(() => sessionStorage.getItem(sessionMarkerKey) === "1" ? sessionStorage.getItem(csrfTokenKey) || "" : "");
+  const [token, setToken] = useState(() =>
+    sessionStorage.getItem(sessionMarkerKey) === "1" ? sessionStorage.getItem(csrfTokenKey) || "" : "",
+  );
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loginBusy, setLoginBusy] = useState(false);
   const [initializing, setInitializing] = useState(true);
@@ -26,7 +28,8 @@ export function useAdminSession() {
   }, []);
 
   useEffect(() => {
-    const storedToken = sessionStorage.getItem(sessionMarkerKey) === "1" ? sessionStorage.getItem(csrfTokenKey) || "" : "";
+    const storedToken =
+      sessionStorage.getItem(sessionMarkerKey) === "1" ? sessionStorage.getItem(csrfTokenKey) || "" : "";
     if (storedToken) {
       setInitializing(false);
       return;
@@ -37,16 +40,33 @@ export function useAdminSession() {
       .finally(() => setInitializing(false));
   }, [expireSession, persistSession]);
 
-  const login = useCallback(async (values: { email: string; password: string }) => {
-    setLoginBusy(true);
-    try {
-      const result = await apiFetch<ApiEnvelope<LoginResponse>>("/api/v1/admin/auth/login", { method: "POST", body: JSON.stringify(values) });
-      persistSession(result.data.csrf_token);
-      Message.success("登录成功");
-    } finally {
-      setLoginBusy(false);
-    }
-  }, [persistSession]);
+  useEffect(() => {
+    if (!token) return;
+    const refresh = () => {
+      void apiFetch<ApiEnvelope<SessionResumeResponse>>("/api/v1/admin/auth/refresh", { method: "POST" })
+        .then((result) => persistSession(result.data.csrf_token))
+        .catch(() => expireSession());
+    };
+    const timer = window.setInterval(refresh, 10 * 60 * 1000);
+    return () => window.clearInterval(timer);
+  }, [expireSession, persistSession, token]);
+
+  const login = useCallback(
+    async (values: { account: string; password: string }) => {
+      setLoginBusy(true);
+      try {
+        const result = await apiFetch<ApiEnvelope<LoginResponse>>("/api/v1/admin/auth/login", {
+          method: "POST",
+          body: JSON.stringify(values),
+        });
+        persistSession(result.data.csrf_token);
+        Message.success("登录成功");
+      } finally {
+        setLoginBusy(false);
+      }
+    },
+    [persistSession],
+  );
 
   const logout = useCallback(async () => {
     try {

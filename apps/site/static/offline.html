@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>离线中 · Zoking 博客</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+            background: linear-gradient(135deg, #0e74b5, #022c56);
+            color: #f8fbff;
+            text-align: center;
+            padding: 24px;
+        }
+        .card { max-width: 26rem; }
+        .card svg { width: 72px; height: 72px; opacity: 0.9; margin-bottom: 20px; }
+        h1 { font-size: 1.5rem; margin-bottom: 12px; }
+        p { color: #a5d8f5; line-height: 1.7; margin-bottom: 24px; }
+        button {
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: rgba(255, 255, 255, 0.12);
+            color: #f8fbff;
+            font-size: 1rem;
+            padding: 10px 28px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        button:hover { background: rgba(255, 255, 255, 0.22); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 1l22 22"/>
+            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/>
+            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/>
+            <path d="M10.71 5.05A16 16 0 0 1 22.58 9"/>
+            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+            <line x1="12" y1="20" x2="12.01" y2="20"/>
+        </svg>
+        <h1>当前处于离线状态</h1>
+        <p>网络似乎断开了。已经看过的文章仍可离线浏览，其余内容需要联网后再试。</p>
+        <button type="button" onclick="location.reload()">重新加载</button>
+    </div>
+</body>
+</html>

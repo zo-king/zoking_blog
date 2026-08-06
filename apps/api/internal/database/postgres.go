@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 )
 
 func Connect(ctx context.Context, cfg config.Config) (*gorm.DB, error) {

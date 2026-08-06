@@ -21,11 +21,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
-	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
+	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
 )
 
 func TestPreviewTerminalUpdatesRequireBuildingRow(t *testing.T) {

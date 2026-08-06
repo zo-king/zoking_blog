@@ -8,17 +8,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          arco: ["@arco-design/web-react"]
-        }
-      }
-    }
+          arco: ["@arco-design/web-react"],
+          echarts: ["echarts"],
+        },
+      },
+    },
   },
   server: {
     port: 5173,
     proxy: {
       "/api": "http://localhost:18080",
       "/healthz": "http://localhost:18080",
-      "/readyz": "http://localhost:18080"
-    }
-  }
+      "/readyz": "http://localhost:18080",
+    },
+  },
 });

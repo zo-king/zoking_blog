@@ -1,0 +1,81 @@
+.post-engagement {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 24px 0 4px;
+}
+
+.post-engagement__stat,
+.post-engagement__like {
+    align-items: center;
+    border-radius: 980px;
+    display: inline-flex;
+    font-size: 1.3rem;
+    gap: 6px;
+    line-height: 1;
+    padding: 7px 15px;
+}
+
+.post-engagement__stat {
+    background: var(--card-background-selected, rgba(0, 0, 0, 0.04));
+    color: var(--card-text-color-tertiary);
+}
+
+.post-engagement__like {
+    background: var(--card-background);
+    border: 1px solid var(--card-separator-color);
+    color: var(--card-text-color-secondary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.3rem;
+    transition:
+        transform 160ms ease,
+        background 160ms ease,
+        color 160ms ease,
+        border-color 160ms ease;
+}
+
+.post-engagement__like:hover {
+    transform: translateY(-1px);
+}
+
+.post-engagement__like.is-liked {
+    background: color-mix(in srgb, var(--accent-color) 14%, var(--card-background));
+    border-color: color-mix(in srgb, var(--accent-color) 40%, transparent);
+    color: var(--accent-color);
+}
+
+.post-engagement__like.is-liked svg {
+    fill: currentColor;
+}
+
+.post-engagement__like:focus-visible {
+    box-shadow: var(--focus-ring, 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent));
+    outline: none;
+}
+
+.post-engagement__stat svg {
+    height: 15px;
+    opacity: 0.85;
+    width: 15px;
+}
+
+.post-engagement__like svg {
+    height: 16px;
+    width: 16px;
+}
+
+.post-engagement__label {
+    color: inherit;
+    opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .post-engagement__like {
+        transition: none;
+    }
+    .post-engagement__like:hover {
+        transform: none;
+    }
+}

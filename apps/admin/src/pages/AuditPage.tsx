@@ -9,7 +9,9 @@ const { Text } = Typography;
 function TruncatedValue({ value, code = false }: { value: string; code?: boolean }) {
   return (
     <Tooltip content={value}>
-      <Text code={code} ellipsis style={{ display: "block", maxWidth: "100%" }}>{value}</Text>
+      <Text code={code} ellipsis style={{ display: "block", maxWidth: "100%" }}>
+        {value}
+      </Text>
     </Tooltip>
   );
 }
@@ -35,26 +37,24 @@ export function AuditPage({ logs, pagination }: Props) {
       render: (_, record) => {
         const resource = record.resource_id ? `${record.resource_type}:${record.resource_id}` : record.resource_type;
         return <TruncatedValue value={resource} />;
-      }
+      },
     },
     { title: "路由", dataIndex: "route", width: 240, render: (value) => <TruncatedValue value={value} code /> },
     {
       title: "结果",
       dataIndex: "result",
       width: 100,
-      render: (value) => <Tag color={value === "success" ? "green" : "red"}>{value === "success" ? "成功" : "失败"}</Tag>
+      render: (value) => (
+        <Tag color={value === "success" ? "green" : "red"}>{value === "success" ? "成功" : "失败"}</Tag>
+      ),
     },
     { title: "HTTP", width: 110, render: (_, record) => `${record.method} ${record.status_code}` },
-    { title: "请求 ID", dataIndex: "request_id", width: 220, render: (value) => <TruncatedValue value={value} code /> }
+    { title: "请求 ID", dataIndex: "request_id", width: 220, render: (value) => <TruncatedValue value={value} code /> },
   ];
 
   return (
     <>
-      <PageHeader
-        title="审计日志"
-        description="按时间追踪后台操作、资源、响应结果和请求链路。"
-        eyebrow="系统记录"
-      />
+      <PageHeader title="审计日志" description="按时间追踪后台操作、资源、响应结果和请求链路。" eyebrow="系统记录" />
       <ContentPanel title="操作记录" description={`共 ${pagination.total} 条审计记录。`}>
         <Space wrap size={8} style={{ marginBottom: 16 }}>
           <Input.Search
@@ -71,7 +71,7 @@ export function AuditPage({ logs, pagination }: Props) {
             options={[
               { label: "全部结果", value: "all" },
               { label: "成功", value: "success" },
-              { label: "失败", value: "failure" }
+              { label: "失败", value: "failure" },
             ]}
             onChange={(value) => listQuery.update({ status: value === "all" ? "" : value })}
           />
@@ -89,7 +89,7 @@ export function AuditPage({ logs, pagination }: Props) {
             sizeCanChange: true,
             sizeOptions: [20, 50],
             showTotal: true,
-            onChange: (page, pageSize) => listQuery.update({ page, pageSize })
+            onChange: (page, pageSize) => listQuery.update({ page, pageSize }),
           }}
           size="small"
           scroll={{ x: 1480 }}

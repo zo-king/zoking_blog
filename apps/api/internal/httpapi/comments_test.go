@@ -1,13 +1,30 @@
 package httpapi
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
+
+func TestHashStringUsesConfiguredHMACSecret(t *testing.T) {
+	value, secret := "reader@example.com", "0123456789abcdef0123456789abcdef"
+	mac := hmac.New(sha256.New, []byte(secret))
+	_, _ = mac.Write([]byte(value))
+	want := hex.EncodeToString(mac.Sum(nil))
+	if got := hashString(value, secret); got != want {
+		t.Fatalf("hashString() = %q, want keyed digest %q", got, want)
+	}
+	if got := hashString(value, "different-secret"); got == want {
+		t.Fatal("hashString() did not change when the secret changed")
+	}
+}
 
 func TestPublicCommentDTOExposesOnlyPublicFields(t *testing.T) {
 	parentID := uuid.New()

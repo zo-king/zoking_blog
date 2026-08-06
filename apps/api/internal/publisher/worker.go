@@ -7,19 +7,24 @@ import (
 	"log"
 	"time"
 
-	"github.com/zo-king/zoking_blog/apps/api/internal/config"
-	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
+	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 )
 
 const publishWorkerLockID int64 = 2026071101
 
 type Worker struct {
-	db           *gorm.DB
-	cfg          config.Config
-	pollInterval time.Duration
-	logger       *log.Logger
+	db                 *gorm.DB
+	cfg                config.Config
+	pollInterval       time.Duration
+	logger             *log.Logger
+	lastReconcileError string
+	lastReconcileLogAt time.Time
+	lastRecoveryError  string
+	lastRecoveryLogAt  time.Time
 }
 
 func NewWorker(db *gorm.DB, cfg config.Config, logger *log.Logger) *Worker {
@@ -193,10 +198,10 @@ func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
 	}
 	defer releaseLock()
 	if err := ReconcileCurrentRelease(ctx, w.db, w.cfg); err != nil {
-		w.logger.Printf("publish worker current release reconciliation failed: %v", err)
+		w.logRateLimited(&w.lastReconcileError, &w.lastReconcileLogAt, "publish worker current release reconciliation failed", err)
 	}
 	if err := RecoverStaleJobs(ctx, w.db, w.cfg); err != nil {
-		w.logger.Printf("publish worker stale job recovery failed: %v", err)
+		w.logRateLimited(&w.lastRecoveryError, &w.lastRecoveryLogAt, "publish worker stale job recovery failed", err)
 	}
 
 	job, err := ClaimNextJob(ctx, w.db)
@@ -297,6 +302,17 @@ func (w *Worker) ProcessOne(ctx context.Context) (bool, error) {
 		return true, nil
 	}
 	return true, nil
+}
+
+func (w *Worker) logRateLimited(lastMessage *string, lastAt *time.Time, prefix string, err error) {
+	message := err.Error()
+	now := time.Now()
+	if message == *lastMessage && now.Sub(*lastAt) < time.Minute {
+		return
+	}
+	*lastMessage = message
+	*lastAt = now
+	w.logger.Printf("%s: %v", prefix, err)
 }
 
 // AcquirePublishWorkerLock serializes operations that mutate Hugo source or current releases.

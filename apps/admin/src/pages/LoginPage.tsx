@@ -1,9 +1,9 @@
 import { Alert, Button, Form, Input } from "@arco-design/web-react";
-import { IconEmail, IconLock, IconSafe } from "@arco-design/web-react/icon";
+import { IconLock, IconSafe, IconUser } from "@arco-design/web-react/icon";
 import { useState } from "react";
 
 type LoginValues = {
-  email: string;
+  account: string;
   password: string;
 };
 
@@ -71,31 +71,18 @@ export function LoginPage({ busy, onLogin }: Props) {
             className="login-form"
             layout="vertical"
             requiredSymbol={false}
-            initialValues={{ email: "admin@zoking.local", password: "ChangeMe123!" }}
             onSubmit={(values) => void handleLogin(values)}
           >
-            <Form.Item
-              field="email"
-              label="邮箱"
-              rules={[
-                { required: true, message: "请输入邮箱" },
-                { type: "email", message: "请输入有效的邮箱地址" }
-              ]}
-            >
+            <Form.Item field="account" label="账号" rules={[{ required: true, message: "请输入账号" }]}>
               <Input
-                prefix={<IconEmail aria-hidden="true" />}
-                placeholder="admin@example.com"
+                prefix={<IconUser aria-hidden="true" />}
+                placeholder="zoking"
                 autoComplete="username"
-                inputMode="email"
                 size="large"
               />
             </Form.Item>
 
-            <Form.Item
-              field="password"
-              label="密码"
-              rules={[{ required: true, message: "请输入密码" }]}
-            >
+            <Form.Item field="password" label="密码" rules={[{ required: true, message: "请输入密码" }]}>
               <Input.Password
                 prefix={<IconLock aria-hidden="true" />}
                 placeholder="请输入密码"

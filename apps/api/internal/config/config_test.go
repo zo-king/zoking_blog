@@ -109,6 +109,7 @@ func validProductionRuntimeConfig() Config {
 		AppPort:                      "18080",
 		DatabaseURL:                  "postgres://blog:secret@postgres:5432/blog?sslmode=require",
 		JWTSecret:                    "0123456789abcdef0123456789abcdef",
+		PrivacyHashSecret:            "abcdef0123456789abcdef0123456789",
 		AccessTokenTTL:               30 * time.Minute,
 		RefreshTokenTTL:              24 * time.Hour,
 		PublishWorkerPollInterval:    time.Second,

@@ -22,27 +22,34 @@ export function useListQuery(defaultPageSize = 20) {
   const status = searchParams.get("status") || "";
   const sort = searchParams.get("sort") || "";
 
-  const update = useCallback((patch: ListQueryPatch, replace = false) => {
-    const next = new URLSearchParams(searchParams);
-    const changesFilter = "q" in patch || "status" in patch || "sort" in patch || "pageSize" in patch;
-    const nextPage = patch.page ?? (changesFilter ? 1 : page);
+  const update = useCallback(
+    (patch: ListQueryPatch, replace = false) => {
+      const next = new URLSearchParams(searchParams);
+      const changesFilter = "q" in patch || "status" in patch || "sort" in patch || "pageSize" in patch;
+      const nextPage = patch.page ?? (changesFilter ? 1 : page);
 
-    if (nextPage <= 1) next.delete("page");
-    else next.set("page", String(nextPage));
+      if (nextPage <= 1) next.delete("page");
+      else next.set("page", String(nextPage));
 
-    if (patch.pageSize !== undefined) {
-      if (patch.pageSize === defaultPageSize) next.delete("page_size");
-      else next.set("page_size", String(patch.pageSize));
-    }
+      if (patch.pageSize !== undefined) {
+        if (patch.pageSize === defaultPageSize) next.delete("page_size");
+        else next.set("page_size", String(patch.pageSize));
+      }
 
-    for (const [key, value] of [["q", patch.q], ["status", patch.status], ["sort", patch.sort]] as const) {
-      if (value === undefined) continue;
-      if (value) next.set(key, value);
-      else next.delete(key);
-    }
+      for (const [key, value] of [
+        ["q", patch.q],
+        ["status", patch.status],
+        ["sort", patch.sort],
+      ] as const) {
+        if (value === undefined) continue;
+        if (value) next.set(key, value);
+        else next.delete(key);
+      }
 
-    setSearchParams(next, { replace });
-  }, [defaultPageSize, page, searchParams, setSearchParams]);
+      setSearchParams(next, { replace });
+    },
+    [defaultPageSize, page, searchParams, setSearchParams],
+  );
 
   return { page, pageSize, q, status, sort, update };
 }

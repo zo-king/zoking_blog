@@ -11,6 +11,8 @@ coverage.out
 *.coverprofile
 apps/api/whitebox-cover
 apps/api/$coveragePath
+.tmp-*/
+.claude/
 node_modules
 .tools
 apps/admin/dist

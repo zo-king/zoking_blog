@@ -26,7 +26,7 @@ disableLanguages       = ["en", "zh-hant-tw", "ja"]
     path = "github.com/CaiJimmy/hugo-theme-stack/v4"
 
 [pagination]
-    pagerSize = 6
+    pagerSize = 3
 
 [permalinks]
     post = "/p/:slug/"

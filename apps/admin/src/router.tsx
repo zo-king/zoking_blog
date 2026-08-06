@@ -13,7 +13,7 @@ const sections: Array<{ path: string; section: AdminSection }> = [
   { path: "/publishing", section: "publishing" },
   { path: "/users", section: "users" },
   { path: "/settings", section: "settings" },
-  { path: "/audit", section: "audit" }
+  { path: "/audit", section: "audit" },
 ];
 
 export function AdminRouter() {

@@ -8,7 +8,7 @@ import {
   Tag,
   Tooltip,
   Typography,
-  type TableColumnProps
+  type TableColumnProps,
 } from "@arco-design/web-react";
 import { IconCheck, IconClose, IconDelete, IconMessageBanned } from "@arco-design/web-react/icon";
 import { useEffect, useState } from "react";
@@ -68,7 +68,7 @@ export function CommentsPage({ comments, pagination, canModerate, busy, onModera
             {record.post?.slug ? `/${record.post.slug}` : record.post_id}
           </Text>
         </div>
-      )
+      ),
     },
     {
       title: "评论者",
@@ -86,7 +86,7 @@ export function CommentsPage({ comments, pagination, canModerate, busy, onModera
             {record.author_website || "未提供站点"}
           </Text>
         </div>
-      )
+      ),
     },
     {
       title: "评论内容",
@@ -106,19 +106,19 @@ export function CommentsPage({ comments, pagination, canModerate, busy, onModera
             </Text>
           ) : null}
         </div>
-      )
+      ),
     },
     {
       title: "状态",
       dataIndex: "status",
       width: 100,
-      render: (value) => <Tag color={commentStatusColor(value)}>{displayLabel(value)}</Tag>
+      render: (value) => <Tag color={commentStatusColor(value)}>{displayLabel(value)}</Tag>,
     },
     {
       title: "提交时间",
       dataIndex: "created_at",
       width: 176,
-      render: (value) => formatDate(value)
+      render: (value) => formatDate(value),
     },
     {
       title: "操作",
@@ -186,22 +186,15 @@ export function CommentsPage({ comments, pagination, canModerate, busy, onModera
             </Tooltip>
           </Popconfirm>
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <>
-      <PageHeader
-        title="评论审核"
-        description="集中处理待审核评论、异常内容与历史审核结果。"
-        eyebrow="审核队列"
-      />
+      <PageHeader title="评论审核" description="集中处理待审核评论、异常内容与历史审核结果。" eyebrow="审核队列" />
 
-      <ContentPanel
-        title="审核队列"
-        description={`共 ${pagination.total} 条评论，可直接在操作列调整审核状态。`}
-      >
+      <ContentPanel title="审核队列" description={`共 ${pagination.total} 条评论，可直接在操作列调整审核状态。`}>
         <Tabs
           activeTab={statusFilter}
           type="line"
@@ -236,7 +229,7 @@ export function CommentsPage({ comments, pagination, canModerate, busy, onModera
             sizeCanChange: true,
             sizeOptions: [20, 50],
             showTotal: true,
-            onChange: (page, pageSize) => listQuery.update({ page, pageSize })
+            onChange: (page, pageSize) => listQuery.update({ page, pageSize }),
           }}
           data={comments}
           columns={canModerate ? columns : columns.filter((column) => column.title !== "操作")}

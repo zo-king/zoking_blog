@@ -72,15 +72,16 @@ func TestValidateSeedConfig(t *testing.T) {
 	}{
 		{name: "development defaults", cfg: config.Config{AppEnv: "development", SeedAdminEmail: "admin@zoking.local", SeedAdminPassword: "ChangeMe123!"}},
 		{name: "test defaults", cfg: config.Config{AppEnv: "test", SeedAdminEmail: "admin@zoking.local", SeedAdminPassword: "ChangeMe123!"}},
-		{name: "production values", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "a-strong-production-password"}},
-		{name: "production default email", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "admin@zoking.local", SeedAdminPassword: "a-strong-production-password"}, wantErr: true},
-		{name: "production placeholder password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "change-me-admin-password"}, wantErr: true},
-		{name: "production short password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "short"}, wantErr: true},
-		{name: "staging fails closed", cfg: config.Config{AppEnv: "staging", SeedAdminEmail: "admin@zoking.local", SeedAdminPassword: "ChangeMe123!"}, wantErr: true},
-		{name: "prod fails closed", cfg: config.Config{AppEnv: "prod", SeedAdminEmail: "admin@zoking.local", SeedAdminPassword: "ChangeMe123!"}, wantErr: true},
-		{name: "production whitespace password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "                "}, wantErr: true},
-		{name: "production surrounding whitespace password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: " strong-production-password "}, wantErr: true},
-		{name: "production bcrypt oversize password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, wantErr: true},
+		{name: "production values", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: "a-strong-production-password"}},
+		{name: "production default email", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "admin@zoking.local", SeedAdminUsername: "zoking", SeedAdminPassword: "a-strong-production-password"}, wantErr: true},
+		{name: "production placeholder password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: "change-me-admin-password"}, wantErr: true},
+		{name: "production short password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: "short"}, wantErr: true},
+		{name: "production username missing", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminPassword: "a-strong-production-password"}, wantErr: true},
+		{name: "staging fails closed", cfg: config.Config{AppEnv: "staging", SeedAdminEmail: "admin@zoking.local", SeedAdminUsername: "zoking", SeedAdminPassword: "ChangeMe123!"}, wantErr: true},
+		{name: "prod fails closed", cfg: config.Config{AppEnv: "prod", SeedAdminEmail: "admin@zoking.local", SeedAdminUsername: "zoking", SeedAdminPassword: "ChangeMe123!"}, wantErr: true},
+		{name: "production whitespace password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: "                "}, wantErr: true},
+		{name: "production surrounding whitespace password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: " strong-production-password "}, wantErr: true},
+		{name: "production bcrypt oversize password", cfg: config.Config{AppEnv: "production", SeedAdminEmail: "owner@zoking.tech", SeedAdminUsername: "zoking", SeedAdminPassword: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
