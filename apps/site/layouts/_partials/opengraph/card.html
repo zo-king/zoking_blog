@@ -5,9 +5,14 @@
 */ -}}
 {{- $card := "" -}}
 {{- if and .IsPage (eq .Section "post") -}}
-    {{- $base := resources.Get "img/og-base.png" -}}
-    {{- $font := resources.Get "fonts/NotoSansSC.ttf" -}}
-    {{- if and $base $font -}}
+    {{- $name := path.Base (strings.TrimSuffix "/" .RelPermalink) -}}
+    {{- $staticPath := printf "public/img/og/%s.png" $name -}}
+    {{- if fileExists $staticPath -}}
+        {{- $card = dict "Permalink" (printf "/img/og/%s.png" $name) -}}
+    {{- else if site.Params.opengraph.generateCards -}}
+        {{- $base := resources.Get "img/og-base.png" -}}
+        {{- $font := resources.Get "fonts/NotoSansSC.ttf" -}}
+        {{- if and $base $font -}}
         {{- /* images.Text 只在空格处折行,中文标题需要按字符数手动折行:
                每行最多 15 个全宽字符(68px × 15 ≈ 1020px,画布留白 80×2),最多 3 行。 */ -}}
         {{- $lineLen := 15 -}}
@@ -47,8 +52,8 @@
             "y" 536
         -}}
         {{- $img = $img.Filter (images.Text $meta $metaOpts) -}}
-        {{- $name := path.Base (strings.TrimSuffix "/" .RelPermalink) -}}
-        {{- $card = resources.Copy (printf "img/og/%s.png" $name) $img -}}
+            {{- $card = resources.Copy (printf "img/og/%s.png" $name) $img -}}
+        {{- end -}}
     {{- end -}}
 {{- end -}}
 {{- return $card -}}
