@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM golang:1.23-bookworm AS builder
 
 WORKDIR /src
 
@@ -42,9 +42,20 @@ COPY --from=builder /out/api /app/api
 COPY --from=builder /out/worker /app/worker
 COPY --from=builder /out/migrate /app/migrate
 COPY --from=builder /out/seed /app/seed
+COPY --from=builder /usr/local/go /usr/local/go
+
+# The site module replaces the upstream theme with the repository root.
+# Production publishing therefore needs both the Go module runner and theme files.
+COPY go.mod theme.toml /workspace/
+COPY archetypes /workspace/archetypes
+COPY assets /workspace/assets
+COPY config /workspace/config
+COPY data /workspace/data
+COPY i18n /workspace/i18n
+COPY layouts /workspace/layouts
 
 ENV APP_ENV=production
-ENV PATH="/usr/local/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:/usr/local/bin:${PATH}"
 EXPOSE 18080
 
 USER 10001:10001
