@@ -119,6 +119,9 @@ services:
       PRIVACY_HASH_SECRET: ${PRIVACY_HASH_SECRET:?PRIVACY_HASH_SECRET is required}
       SITE_BASE_URL: ${SITE_BASE_URL:-https://zoking.tech/}
       PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://zoking.tech}
+      ADMIN_ALLOWED_ORIGINS: ${ADMIN_ALLOWED_ORIGINS:-https://admin.zoking.tech}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,::1}
       # Derived from PUBLIC_API_BASE_URL; do not introduce a second API URL.
       HUGO_COMMENTS_API_BASE: ${PUBLIC_API_BASE_URL:-https://api.zoking.tech}
       HUGO_STATS_HOST: ${STATS_HOST:-stats.zoking.tech}
