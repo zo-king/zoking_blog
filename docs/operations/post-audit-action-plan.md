@@ -12,13 +12,15 @@
 
 ## P0：24 小时内
 
-### 1. 保护异机备份静态数据（代码已完成，待密钥托管与迁移）
+### 1. 保护异机备份静态数据（新备份已加密，待私钥托管与旧备份清理）
 
 现状：备份通过 WireGuard + SSH 加密传输，但 Azure `/var/backups/zoking-blog` 上的归档本身未加密；归档包含数据库、`.env.prod` 和 `wg0.conf`。
 
 实施：备份脚本已改为强制使用 `age` 接收方公钥；staging 明文只在单次任务内存在，正式目录和 Azure 副本只保留 `.age` 文件及加密文件 manifest。推荐用密码管理器和离线恢复介质托管唯一 identity 私钥，物理机只配置 `BACKUP_AGE_RECIPIENT`，不配置私钥。
 
-待执行：将恢复私钥导入独立托管位置，向物理机 `/etc/zoking-blog/ops.env` 写入对应公钥，完成一次加密备份和旧明文副本清理。
+已完成：公钥已配置，`20260807T150122Z` 本地和 Azure 副本均为 `.age` 并通过 manifest；记录见 [encrypted-backup-migration-2026-08-07.md](encrypted-backup-migration-2026-08-07.md)。
+
+待执行：将恢复私钥导入独立托管位置，确认第二名管理员可取得后，删除旧明文副本。
 
 验收：在临时目录中使用独立恢复环境解密一份加密备份，能读取 PostgreSQL dump 和媒体归档；物理机和 Azure 均不保存明文长期副本；恢复密钥由第二名管理员独立取得。
 
