@@ -21,7 +21,7 @@
 - `useAdminData` 已按当前路由加载模块，刷新只刷新当前工作区；任一模块失败不再清空整个后台状态。
 - 九类 Admin 列表已使用统一服务端分页：`page/page_size/q/status/sort` 写入 URL，响应包含 `total/total_pages`；文章和页面编辑直达按 ID 加载，不依赖当前列表页。
 - 分页排序具有唯一 ID 兜底，越界页不会执行巨大 OFFSET；发布和评论列表不会通过关联预加载暴露完整正文。
-- Admin `npm run build` 已通过；`npm audit` 为 0 漏洞。
+- Admin `npm run build` 已通过；2026-08-07 官方 npm audit 报告 React Router high，见 `docs/security/production-audit-2026-08-07.md`。
 - 当前不是“只完成后台壳”的阶段。内容、发布、预览、评论、媒体、审计和权限管理的全栈闭环均已落地。
 - C 端已完成 Theme Stack 体验审计：中文评论、文章导航/分享/相关文章、中文 taxonomy 搜索、RSS/robots、JSON-LD、键盘暗色模式、skip link、系统字体和头像优化均已落地；P16 另新增阅读进度/30 天本地续读、搜索异常重试和标题权重、完整移动菜单键盘交互、深色 AA 对比度、中文 section 与唯一 landmark。
 - C 端审计报告：`docs/frontend/site-ux-audit.md`；证据：`site-p9-home-desktop-1280x720.png` 与 `site-p9-article-mobile-390x844.png`。

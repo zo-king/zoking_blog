@@ -23,7 +23,7 @@
 | 区域 | 证据 | 结论 |
 |---|---|---|
 | 公网 | `zoking.tech=200`、`api=/readyz=200`、`admin=200`、`preview/=404`、`stats=303`、HTTP 跳转 `308` | 通过 |
-| TLS/Headers | Caddy、HSTS、CSP（Admin/Stats）、`nosniff`、`DENY`、Referrer-Policy | 通过；API/Preview 的 HSTS 需确认 Caddy 全局策略 |
+| TLS/Headers | Caddy、CSP（Admin/Stats）、`nosniff`、`DENY`、Referrer-Policy | HTTPS 通过；Reader/API/Preview/Stats 未稳定返回 HSTS |
 | 物理机容器 | `api`、`worker`、`admin`、`site`、`postgres`、`goatcounter` running；Postgres/Site/GoatCounter healthy | 通过 |
 | 物理机绑定 | 应用仅监听 `10.20.0.2`；无 PostgreSQL 发布端口 | 通过 |
 | 物理机 UFW | 1313/18080/8081/8100 仅 `wg0` 来源 `10.20.0.1`；SSH 为 `192.168.0.0/24` | 应用通过，SSH 需收窄 |
@@ -81,7 +81,14 @@
 **优先级：P2 中**  
 **证据：** timers 和 journal 检查通过，但 `ALERT_WEBHOOK_URL` 未配置，也没有受控失败接收记录；备份验证通过但没有隔离恢复记录。  
 **影响：** 线上故障可能只有本机 journal，没有人收到通知；备份可读不代表能恢复业务。  
-**动作：** 见行动计划 P1-7 和 P0-3。
+**动作：** 见行动计划 P1-8 和 P0-3。
+
+### AUD-008：HSTS 没有覆盖全部公网域名
+
+**优先级：P1 中**
+**证据：** 公网 HEAD 检查中 Admin 返回 `Strict-Transport-Security`，Reader、API、Preview 和 Stats 未返回该头；所有 HTTP 请求目前仍能 308 跳转到 HTTPS。
+**影响：** 首次访问或缓存清除后的浏览器仍可能先发出明文 HTTP 请求，增加降级和流量劫持窗口。
+**动作：** 在 Caddy 统一添加 HSTS，并确认所有子域名均已 HTTPS 后再启用 `includeSubDomains`。
 
 ## 5. 限制与未完成检查
 

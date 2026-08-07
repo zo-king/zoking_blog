@@ -28,7 +28,7 @@ C 端必须保留 Hugo Theme Stack 的整体观感：
 
 - `apps/admin` 当前采用 React 18.3.1 + Vite + Arco Design React 2.66.15。
 - 路由固定使用 react-router-dom 7.18.1。
-- 前端依赖安全审计基线为 npm audit 0 漏洞。
+- 前端依赖安全审计以官方 registry 为准；2026-08-07 React Router high advisory 尚待处理，见 `docs/operations/post-audit-action-plan.md`。
 
 设计要求：
 

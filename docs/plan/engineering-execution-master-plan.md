@@ -58,7 +58,7 @@ flowchart LR
 | 决策编号 | 决策项 | 默认建议 | 未决影响 |
 |---|---|---|---|
 | DEC-P0-001 | 是否接受 Hybrid CMS | 接受 | 不接受则 API/C端/发布链路要重设计 |
-| DEC-P0-002 | 后台技术栈 | React 18.3.1 + Vite + Arco Design React 2.66.15，react-router-dom 7.18.1 | 已落地，npm audit 为 0 漏洞 |
+| DEC-P0-002 | 后台技术栈 | React 18.3.1 + Vite + Arco Design React 2.66.15，react-router-dom 7.18.2 | 已落地；2026-08-07 官方 npm audit 报告 React Router high，见生产审计行动计划 |
 | DEC-P0-003 | 媒体生产存储 | 开发本地，生产预留 S3/R2/MinIO | 影响上传接口和发布资源路径 |
 | DEC-P0-004 | 部署目标 | 单 VPS Docker Compose 起步 | 影响 compose、Nginx、备份、CI/CD |
 | DEC-P0-005 | 评论范围 | MVP 支持匿名评论 + 审核 | 影响 Public API、反垃圾、隐私策略 |

@@ -10,7 +10,7 @@
 - 负责人：当前对话窗口作为中心调度
 - 最近更新：2026-07-11 09:35 +08:00
 - 当前阻塞：完整目标尚未完成；用户/角色管理、最后一个超级管理员保护、author 对象级隔离、预览过期清理和生产对象存储/CDN adapter 仍待补齐
-- 当前边界：已采用 Hybrid CMS、基于 React 18.3.1 + Vite + Arco Design React 2.66.15 的 Admin、PostgreSQL、本地媒体与 Docker Compose 起步；Admin 路由固定为 react-router-dom 7.18.1，npm audit 为 0 漏洞；核心写作、页面管理、站点设置、发布、隔离预览、评论、媒体引用保护、清理、E2E 冒烟和部署前 preflight 已落地
+- 当前边界：已采用 Hybrid CMS、基于 React 18.3.1 + Vite + Arco Design React 2.66.15 的 Admin、PostgreSQL、本地媒体与 Docker Compose 起步；Admin 当前使用 react-router-dom 7.18.2，2026-08-07 官方 npm audit 报告 React Router high，处理计划见 `docs/operations/post-audit-action-plan.md`；核心写作、页面管理、站点设置、发布、隔离预览、评论、媒体引用保护、清理、E2E 冒烟和部署前 preflight 已落地
 
 ## 需求来源
 

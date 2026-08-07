@@ -34,7 +34,15 @@
 
 ## P1：7 天内
 
-### 4. 处理 React Router 安全公告
+### 4. 补齐全站 HSTS
+
+审计证据：公网响应中 Admin 带 `Strict-Transport-Security`，Reader、API、Preview 和 Stats 当前未稳定返回 HSTS。所有域名均已强制 HTTPS，但缺少浏览器侧的长期 HTTPS 记忆。
+
+动作：在 Caddy 的公共站点块统一添加 `Strict-Transport-Security: max-age=31536000; includeSubDomains`；先确认所有现有和计划中的子域名均只提供 HTTPS，再 reload 并检查五个域名。
+
+验收：五个 HTTPS 域名均返回 HSTS；HTTP 仍为 308；Caddy validate、证书续期和公网黑盒全部通过。
+
+### 5. 处理 React Router 安全公告
 
 审计证据：官方 npm registry 的 `npm audit --omit=dev --audit-level=high` 报告 `react-router` / `react-router-dom@7.18.2` 两项 high，GHSA-qwww-vcr4-c8h2，范围为 `>=7.12.0 <8.3.0`。当前代码只使用 BrowserRouter、Routes、Route 和导航 hooks，未发现 RSC action/server route；因此可利用面尚未证实，但不能把“未使用 RSC”当作永久豁免。
 
@@ -42,7 +50,7 @@
 
 验收：CI 中 `npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high` 不再出现 high，或有明确批准的例外、监控和到期日期。
 
-### 5. 增加依赖与镜像供应链门禁
+### 6. 增加依赖与镜像供应链门禁
 
 现状：GitHub Actions 使用浮动 major tags；Dockerfile 通过 `ghfast.top`、镜像站和远端 release URL 下载构建依赖；仓库没有 Dependabot、govulncheck 或镜像 digest 校验。
 
@@ -50,7 +58,7 @@
 
 验收：PR 门禁在依赖漏洞、失效 checksum、未批准的浮动 action 或高危镜像时失败；每月有一次依赖升级记录。
 
-### 6. 收窄物理机 SSH 来源
+### 7. 收窄物理机 SSH 来源
 
 现状：物理机 UFW 当前允许 `192.168.0.0/24 -> 22/tcp`。这不是公网暴露，但超过单一管理终端的最小权限边界。
 
@@ -58,7 +66,7 @@
 
 验收：局域网非管理地址和未授权 WireGuard 地址无法连接 22；管理密钥新会话、`sshd -t`、UFW 状态和回滚步骤均记录。
 
-### 7. 配置外部告警并做受控失败测试
+### 8. 配置外部告警并做受控失败测试
 
 动作：在 `/etc/zoking-blog/ops.env` 写入受信 Webhook，权限保持 `0600`；人为停止一个非关键探针依赖，确认物理机和 Azure 均发送告警，再恢复服务并确认告警恢复。
 

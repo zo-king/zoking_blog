@@ -92,7 +92,7 @@ P8 已将文章、页面、媒体、评论、发布预览、发布任务、发�
 - 二级入口：发布详情 Drawer、分类创建 Modal、媒体维护 Modal、账号创建 Modal 均通过。
 - 网络：按路由加载矩阵无异常 HTTP 响应。
 - 构建：Admin build、Go tests、Hugo build 和仓库 preflight 通过。
-- 依赖：官方 npm registry audit 为 0 漏洞。
+- 依赖：2026-08-07 官方 npm registry audit 发现 React Router high；处理状态和验收标准见 `docs/operations/post-audit-action-plan.md`。
 - P8：`/posts?page=2&page_size=1` 返回 1 行、真实总数 3 且活动页为 2；搜索和状态 query 刷新后恢复，编辑后浏览器返回保留原 query。
 - P8：九个 Admin 列表端点均返回分页元数据；非法排序返回 422，超大越界页返回空数组和真实总数。
 
