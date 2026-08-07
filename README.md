@@ -1,6 +1,10 @@
 # Zoking Blog
 
-Zoking Blog is a full-stack blog project that keeps the reader-facing Hugo Theme Stack experience while adding a separated Go API, PostgreSQL database, and B-side admin console.
+Zoking Blog 是一个“静态阅读体验 + 动态内容控制面”的全栈个人博客系统。读者端由 Hugo Theme Stack 构建为静态站点；React Admin 负责内容运营；Go Gin API、PostgreSQL 和独立 Worker 负责编辑数据、权限、预览、发布与回滚；GoatCounter 提供自托管访问统计。
+
+生产环境采用两层部署：Azure VPS 只负责 Caddy HTTPS 与 WireGuard 公网入口，应用和数据实际运行在内网物理服务器的 Docker Compose 中。
+
+完整接手请先阅读 [项目介绍与交接手册](docs/project-handover-handbook.md)，部署、备份和监控分别见 [部署 Runbook](docs/operations/deployment-runbook.md) 与 [生产备份、恢复与监控](docs/operations/backup-and-monitoring.md)。
 
 Current shape:
 
@@ -14,6 +18,14 @@ db/
 infra/
   docker/
 docs/
+```
+
+核心数据流：
+
+```text
+Admin -> Gin API -> PostgreSQL -> Publish Worker -> Hugo release -> Reader Nginx
+                                  |
+                                  `-> Preview / Pagefind / rollback metadata
 ```
 
 ## Local Baseline
@@ -94,12 +106,14 @@ See [deployment runbook](docs/operations/deployment-runbook.md) before running p
 
 ## Important Docs
 
+- [项目介绍与交接手册](docs/project-handover-handbook.md)
 - [Engineering execution master plan](docs/plan/engineering-execution-master-plan.md)
 - [Task board](docs/process/task-board.md)
 - [Worklog](docs/process/worklog.md)
 - [Architecture overview](docs/architecture/00-system-overview.md)
 - [API contract](docs/backend/00-api-contract.md)
 - [Stack integration](docs/frontend/site-stack-integration.md)
+- [Production backup and monitoring](docs/operations/backup-and-monitoring.md)
 
 ## Theme Attribution
 

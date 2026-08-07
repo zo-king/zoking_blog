@@ -1,0 +1,11 @@
+[Unit]
+Description=Zoking Blog Azure edge health check
+Wants=network-online.target caddy.service wg-quick@wg0.service
+After=network-online.target caddy.service wg-quick@wg0.service
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile=-/etc/zoking-blog/ops.env
+ExecStart=/opt/zoking-ops/check-production.sh --role edge
+TimeoutStartSec=2m

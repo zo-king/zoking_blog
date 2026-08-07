@@ -21,6 +21,10 @@ $targets = @(
     "storage/logs"
 )
 
+# Go caches and QA sandboxes created at the repository root are disposable.
+$targets += Get-ChildItem -LiteralPath $RepoRoot -Directory -Force -Filter ".tmp-*" |
+    ForEach-Object { $_.Name }
+
 if ($IncludeMedia) {
     $targets += "storage/media"
 }
@@ -37,22 +41,31 @@ function Get-DirectorySizeMB {
 
 $totalMB = 0.0
 foreach ($relative in $targets) {
-    $path = Join-Path $RepoRoot $relative
+    $path = [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $relative))
+    $relativePath = [System.IO.Path]::GetRelativePath($RepoRoot, $path)
+    if ($relativePath -eq "." -or $relativePath.StartsWith("..$([System.IO.Path]::DirectorySeparatorChar)")) {
+        throw "refusing to clean path outside repository: $path"
+    }
     if (-not (Test-Path $path)) { continue }
 
-    $tracked = git -C $RepoRoot ls-files -- $relative
+    $tracked = git -C $RepoRoot ls-files -- $relativePath
     if ($tracked) {
-        Write-Warning "skipping '$relative': contains git-tracked files"
+        Write-Warning "skipping '$relativePath': contains git-tracked files"
         continue
     }
 
     $sizeMB = Get-DirectorySizeMB $path
     $totalMB += $sizeMB
     if ($DryRun) {
-        Write-Host ("would remove {0,8:N1} MB  {1}" -f $sizeMB, $relative)
+        Write-Host ("would remove {0,8:N1} MB  {1}" -f $sizeMB, $relativePath)
     } else {
-        Remove-Item $path -Recurse -Force -Confirm:$false
-        Write-Host ("removed {0,8:N1} MB  {1}" -f $sizeMB, $relative)
+        try {
+            Remove-Item $path -Recurse -Force -Confirm:$false -ErrorAction Stop
+            Write-Host ("removed {0,8:N1} MB  {1}" -f $sizeMB, $relativePath)
+        } catch {
+            $totalMB -= $sizeMB
+            Write-Warning "skipping '$relativePath': $($_.Exception.Message)"
+        }
     }
 }
 
