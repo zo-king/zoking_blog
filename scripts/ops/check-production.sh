@@ -134,7 +134,7 @@ check_app() {
 
   local latest epoch age_hours
   latest="$(readlink -f "${BACKUP_ROOT}/daily/latest" 2>/dev/null || true)"
-  if [[ -d "$latest" && -f "$latest/SHA256SUMS" ]]; then
+  if [[ -d "$latest" && -f "$latest/SHA256SUMS" && -f "$latest/CONTENT-SHA256SUMS.age" ]]; then
     epoch="$(stat -c %Y "$latest")"
     age_hours=$((( $(date +%s) - epoch ) / 3600))
     if (( age_hours <= BACKUP_MAX_AGE_HOURS )); then

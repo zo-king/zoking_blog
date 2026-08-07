@@ -29,16 +29,16 @@
 | 物理机 UFW | 1313/18080/8081/8100 仅 `wg0` 来源 `10.20.0.1`；SSH 为 `192.168.0.0/24` | 应用通过，SSH 需收窄 |
 | Azure | Caddy、WireGuard、SSH active/enabled；无 failed units；Caddy validate 通过 | 通过 |
 | Azure NSG/UFW | 公网 22 仅 `218.64.59.174/32`；备份 22 仅 `10.20.0.2`；80/443/51820 正常 | 通过 |
-| 备份 | 本地和 Azure 副本 manifest 均校验通过；`.env.prod` 未跟踪 | 传输通过，静态保护和恢复演练未闭环 |
+| 备份 | 现有本地和 Azure 副本 manifest 均校验通过；加密脚本已部署到仓库但尚未配置接收方公钥；`.env.prod` 未跟踪 | 传输通过，静态加密待迁移 |
 | 仓库 secret | 未发现私钥、GitHub token、AWS key；命中项均为开发/CI 占位或测试参数 | 通过，但扫描不是密钥轮换证明 |
 | npm | 官方 registry 报告 `react-router` 与 `react-router-dom@7.18.2` 两项 high | 已建立至 2026-08-14 的 CI 强制到期例外 |
 
 ## 4. 风险发现
 
-### AUD-001：异机备份未静态加密，且服务级恢复尚未完成
+### AUD-001：异机备份尚未完成静态加密迁移，且服务级恢复尚未完成
 
 **优先级：P1 高**  
-**证据：** 备份归档包含 `config/env.prod`、数据库 dump、WireGuard 配置；当前仅 rsync over SSH，Azure 目录中仍是可读归档。数据级恢复演练已通过，但尚未使用恢复库启动 API 验证服务级 RTO。
+**证据：** 现有历史归档仍包含可读的 `config/env.prod`、数据库 dump、WireGuard 配置；仓库脚本已改为 age 加密，但物理机尚未配置接收方公钥。数据级恢复演练已通过，但尚未使用恢复库启动 API 验证服务级 RTO。
 **影响：** Azure 磁盘、备份账号或 root 权限泄露会暴露数据库和生产配置；服务级演练缺失则无法证明业务恢复 RTO。
 **动作：** 见行动计划 P0-1、P0-3。
 

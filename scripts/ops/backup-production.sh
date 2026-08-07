@@ -9,6 +9,7 @@ COMPOSE_FILE="${COMPOSE_FILE:-${REPO_DIR}/infra/docker/compose.prod.yml}"
 BACKUP_ROOT="${BACKUP_ROOT:-/var/backups/zoking-blog}"
 BACKUP_REMOTE="${BACKUP_REMOTE:-}"
 BACKUP_SSH_KEY="${BACKUP_SSH_KEY:-}"
+BACKUP_AGE_RECIPIENT="${BACKUP_AGE_RECIPIENT:-}"
 DAILY_KEEP_DAYS="${DAILY_KEEP_DAYS:-7}"
 WEEKLY_KEEP_DAYS="${WEEKLY_KEEP_DAYS:-35}"
 MONTHLY_KEEP_DAYS="${MONTHLY_KEEP_DAYS:-100}"
@@ -69,6 +70,8 @@ require_command docker
 require_command flock
 require_command sha256sum
 require_command tar
+require_command age
+[[ "$BACKUP_AGE_RECIPIENT" =~ ^age1[0-9a-z]+$ ]] || fail "BACKUP_AGE_RECIPIENT must be an age recipient"
 if [[ -n "$BACKUP_REMOTE" ]]; then
   require_command rsync
   if [[ -n "$BACKUP_SSH_KEY" ]]; then
@@ -111,7 +114,18 @@ fi
 
 (
   cd "$STAGING"
-  find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum >SHA256SUMS
+  find . -type f -print0 | sort -z | xargs -0 sha256sum >CONTENT-SHA256SUMS
+  sha256sum -c CONTENT-SHA256SUMS >/dev/null
+)
+
+while IFS= read -r -d '' file; do
+  age --encrypt --recipient "$BACKUP_AGE_RECIPIENT" --output "${file}.age" "$file"
+  shred -u -- "$file" 2>/dev/null || rm -f -- "$file"
+done < <(find "$STAGING" -type f -print0 | sort -z)
+
+(
+  cd "$STAGING"
+  find . -type f -name '*.age' -print0 | sort -z | xargs -0 sha256sum >SHA256SUMS
   sha256sum -c SHA256SUMS >/dev/null
 )
 

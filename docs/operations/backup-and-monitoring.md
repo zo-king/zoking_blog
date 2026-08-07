@@ -18,11 +18,12 @@
 2. 通过生产 Compose 内的 `pg_dump -Fc` 生成逻辑数据库备份。
 3. 解析 Compose project label，定位并归档 `media_data`、`site_releases`、`publisher_site`、`goatcounter_data`。
 4. 复制 `.env.prod`、Compose 配置、WireGuard 配置（可读时）、Git commit 和容器清单。
-5. 为所有文件生成 `SHA256SUMS` 并立即校验。
-6. 先写 `.incomplete-*`，全部成功后才原子改名为正式日备份。
-7. 周日用硬链接建立周备份，每月 1 日建立月备份。
-8. 按日/周/月保留期清理旧目录。
-9. 配置 `BACKUP_REMOTE` 时用 rsync over SSH 复制新备份。
+5. 使用 `BACKUP_AGE_RECIPIENT` 将所有内容加密为 `.age` 文件；没有接收方公钥时直接失败。
+6. 先校验明文内容 manifest，再删除 staging 明文，最后生成加密文件的 `SHA256SUMS`。
+7. 先写 `.incomplete-*`，全部成功后才原子改名为正式日备份。
+8. 周日用硬链接建立周备份，每月 1 日建立月备份。
+9. 按日/周/月保留期清理旧目录。
+10. 配置 `BACKUP_REMOTE` 时用 rsync over SSH 复制新备份；异机只收到加密文件。
 
 脚本必须以 root 运行，因为 Docker volume mountpoint 和生产配置不是普通用户可读数据。
 
@@ -49,6 +50,7 @@ BACKUP_ROOT=/var/backups/zoking-blog
 DAILY_KEEP_DAYS=7
 WEEKLY_KEEP_DAYS=35
 MONTHLY_KEEP_DAYS=100
+BACKUP_AGE_RECIPIENT=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 DISK_WARN_PERCENT=80
 BACKUP_MAX_AGE_HOURS=36
 WG_MAX_AGE_SECONDS=300
@@ -76,7 +78,7 @@ sudo journalctl -u zoking-healthcheck.service -n 100 --no-pager
 
 ## 4. 异机副本
 
-生产已在 Azure VPS 创建专用 `zoking-backup` 用户和 `/var/backups/zoking-blog`，只允许物理机专用 SSH key 写入该目录。不要复用管理员私钥，也不要允许该账号 sudo。
+生产已在 Azure VPS 创建专用 `zoking-backup` 用户和 `/var/backups/zoking-blog`，只允许物理机专用 SSH key 写入该目录。不要复用管理员私钥，也不要允许该账号 sudo。启用加密后，Azure 只保存 `.age` 文件和加密文件 manifest。
 
 物理机 `/etc/zoking-blog/ops.env`：
 
@@ -99,10 +101,17 @@ Azure 的 `authorized_keys` 应使用 `restrict,command="/usr/bin/rrsync -wo -no
 ```bash
 sudo scripts/ops/verify-backup.sh /var/backups/zoking-blog/daily/latest
 sudo du -sh /var/backups/zoking-blog/daily/latest
-sudo cat /var/backups/zoking-blog/daily/latest/git-commit.txt
+sudo sha256sum -c /var/backups/zoking-blog/daily/latest/SHA256SUMS
 ```
 
-`verify-backup.sh` 会检查必需文件、SHA-256 和四个 tar 归档是否可读取，但不会修改生产数据。
+`verify-backup.sh` 默认只检查 `.age` 文件、加密 manifest 和文件完整性；它不会修改生产数据，也不需要在服务器保存私钥。恢复演练时，在隔离环境临时提供密码管理器导出的 `BACKUP_AGE_IDENTITY`：
+
+```bash
+BACKUP_AGE_IDENTITY=/run/user/1000/zoking-blog-recovery-key.txt \
+  sudo -E scripts/ops/verify-backup.sh /var/backups/zoking-blog/daily/latest
+```
+
+验证完成后立即删除临时 identity 文件；物理机和 Azure 不保存长期私钥。
 
 ## 6. 数据库恢复演练
 
@@ -110,6 +119,7 @@ sudo cat /var/backups/zoking-blog/daily/latest/git-commit.txt
 
 ```bash
 BACKUP=/var/backups/zoking-blog/daily/latest
+export BACKUP_AGE_IDENTITY=/secure/recovery/zoking-blog-age-key.txt
 docker run --rm -d --name zoking-restore-test \
   -e POSTGRES_PASSWORD=restore-test-only \
   -e POSTGRES_DB=zoking_blog_restore \
@@ -117,10 +127,14 @@ docker run --rm -d --name zoking-restore-test \
 
 until docker exec zoking-restore-test pg_isready -U postgres; do sleep 1; done
 docker exec -i zoking-restore-test pg_restore \
-  -U postgres -d zoking_blog_restore --clean --if-exists < "$BACKUP/postgres.dump"
+  -U postgres -d zoking_blog_restore --clean --if-exists < <(
+    age --decrypt --identity "$BACKUP_AGE_IDENTITY" "$BACKUP/postgres.dump.age"
+  )
 docker exec zoking-restore-test psql -U postgres -d zoking_blog_restore \
   -c 'select count(*) as users from users; select count(*) as posts from posts;'
 docker rm -f zoking-restore-test
+unset BACKUP_AGE_IDENTITY
+rm -f /secure/recovery/zoking-blog-age-key.txt
 ```
 
 演练记录至少包含备份时间、恢复时间、数据行抽查、错误、RPO 和 RTO。
