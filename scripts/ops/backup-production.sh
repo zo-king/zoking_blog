@@ -114,7 +114,7 @@ fi
 
 (
   cd "$STAGING"
-  find . -type f -print0 | sort -z | xargs -0 sha256sum >CONTENT-SHA256SUMS
+  find . -type f ! -name CONTENT-SHA256SUMS -print0 | sort -z | xargs -0 sha256sum >CONTENT-SHA256SUMS
   sha256sum -c CONTENT-SHA256SUMS >/dev/null
 )
 
