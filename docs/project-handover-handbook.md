@@ -654,6 +654,7 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 
 - 两台服务器必须先验证至少一个密钥可登录，再关闭密码登录。
 - 推荐设置 `PasswordAuthentication no`、`KbdInteractiveAuthentication no`、`PermitRootLogin no`。
+- 仓库基线位于 `infra/ssh/00-zoking-hardening.conf`。Ubuntu 的 cloud-init drop-in 可能显式启用密码登录，而 sshd 对大多数关键字采用首个匹配值，因此该文件必须早于 `50-cloudimg-settings.conf` 加载。
 - 修改前运行 `sshd -t`，使用新 SSH 会话验证后再退出旧会话。
 - Azure NSG 的 22/TCP 应限制到固定管理公网 IP `/32`，或改用 Bastion/VPN。
 - UFW 与 NSG 都要收窄；只改其中一层不算完成。

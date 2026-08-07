@@ -26,6 +26,8 @@
 
 脚本必须以 root 运行，因为 Docker volume mountpoint 和生产配置不是普通用户可读数据。
 
+服务器 SSH 基线另见 `infra/ssh/00-zoking-hardening.conf`。安装前必须先验证目标账号的公钥登录；安装后依次执行 `sshd -t`、reload 和第二个新会话验证，不能直接关闭唯一管理会话。
+
 ## 3. 物理机安装
 
 ```bash
