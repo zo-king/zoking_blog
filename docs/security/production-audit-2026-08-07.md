@@ -72,9 +72,9 @@
 
 ### AUD-006：健康检查会把自身 failed 状态当作新的故障
 
-**优先级：P2 中，已修复待部署验证**  
+**优先级：P2 中，已修复并验证**  
 **证据：** 原 `check_failed_units` 统计所有 failed units；systemd oneshot 失败状态会保留，导致后续探针可能因为上一次自身失败继续失败。此次现场曾出现两个 LXD failed 单元并触发该行为。  
-**修复：** 已在 `scripts/ops/check-production.sh` 中排除两个健康探针自身，保留应用、备份和主机单元失败；需随下一次生产同步验证。
+**修复：** 已在 `scripts/ops/check-production.sh` 中排除两个健康探针自身，保留应用、备份和主机单元失败；物理机最新执行 `Result=success / ExecMainStatus=0`，Azure Edge 最新执行也成功。
 
 ### AUD-007：外部告警和恢复演练尚未产生可审计证据
 
