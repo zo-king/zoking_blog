@@ -779,6 +779,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 两台服务器 SSH 密码/键盘交互登录关闭，且新密钥会话已验证。
 - [x] Azure NSG 与 UFW 的公网 SSH 来源仅允许 `218.64.59.174/32`；WireGuard 备份 SSH 仅允许 `10.20.0.2`。
 - [x] 物理机应用端口仅允许 WireGuard 来源。
+- [x] 全部公网域名统一返回 HSTS；React Router 例外由 CI 强制到期至 2026-08-14。
 - [x] 管理员密码已轮换；数据库、JWT、隐私哈希和统计密码未写入 Git 或本文。
 - [x] Git 工作区无生产 secret；`infra/docker/.env.prod` 仅存在服务器且为 `root:docker 0640`。
 
@@ -787,6 +788,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 每日备份 timer active。
 - [x] 轮换密码后的最近备份可通过 manifest 校验。
 - [x] 最近备份已复制到 Azure `zoking-backup@10.20.0.1` 异机目录并再次校验。
+- [x] 备份 SSH key 已限制为 `rrsync` 写入备份根目录，并通过命令和删除选项负向测试。
 - [x] 数据库和媒体数据级恢复演练完成；服务级恢复演练列入季度计划。
 - [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
 - [ ] 外部 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
@@ -811,7 +813,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 仍需后续安排：
 
 - 配置并实际触发一次外部 Webhook 告警，确认接收人和升级路径。
-- 在隔离 PostgreSQL 和临时卷中完成一次恢复演练，记录 RPO、RTO 和抽查结果。
+- 使用恢复库启动 API 的服务级恢复演练，记录完整 RPO、RTO 和隔离发布结果。
 - 将 Azure NSG 的管理来源 `218.64.59.174/32` 纳入 IP 变更流程；该公网 IP 变化时必须同时更新 NSG 与 UFW。
 - 交付 DNS、Azure 订阅、GitHub、密码管理器和告警渠道的独立管理权限。
 - 物理机直连 GitHub 曾出现 TLS 超时；部署时优先使用可验证的 SSH/Git bundle 传输，并在网络恢复后再评估 `git fetch`。

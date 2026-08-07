@@ -44,13 +44,13 @@
 
 验收结果：五个 HTTPS 域名均只返回一条 HSTS；HTTP 仍为 308；Caddy validate、reload 和公网黑盒全部通过。
 
-### 5. 处理 React Router 安全公告
+### 5. 处理 React Router 安全公告（临时风险接受至 2026-08-14）
 
 审计证据：官方 npm registry 的 `npm audit --omit=dev --audit-level=high` 报告 `react-router` / `react-router-dom@7.18.2` 两项 high，GHSA-qwww-vcr4-c8h2，范围为 `>=7.12.0 <8.3.0`。当前代码只使用 BrowserRouter、Routes、Route 和导航 hooks，未发现 RSC action/server route；因此可利用面尚未证实，但不能把“未使用 RSC”当作永久豁免。
 
-动作：先在分支验证官方建议版本或替代路由方案，执行 `npm ci`、`npm run lint`、`npm run build`、路由黑盒和后台登录回归；若暂时无法升级，建立带负责人和到期日的临时风险接受记录。
+实施：官方建议的 `7.11.0` 回退会重新引入多项已修复公告，故保持 `7.18.2`。当前生产只部署静态浏览器 bundle，不存在 RSC/Node 服务端 action 入口。临时风险接受、补偿控制和退出条件见 [react-router-risk-acceptance-2026-08-07.md](../security/react-router-risk-acceptance-2026-08-07.md)。
 
-验收：CI 中 `npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high` 不再出现 high，或有明确批准的例外、监控和到期日期。
+验收结果：CI 使用官方 registry，仅允许精确版本上的该公告；新增 high/critical、依赖版本或公告集合变化、例外到期都会失败。最迟 2026-08-14 升级到官方修复版本或重新书面审批。
 
 ### 6. 增加依赖与镜像供应链门禁
 
