@@ -23,7 +23,7 @@
 | 区域 | 证据 | 结论 |
 |---|---|---|
 | 公网 | `zoking.tech=200`、`api=/readyz=200`、`admin=200`、`preview/=404`、`stats=303`、HTTP 跳转 `308` | 通过 |
-| TLS/Headers | Caddy、CSP（Admin/Stats）、`nosniff`、`DENY`、Referrer-Policy | HTTPS 通过；Reader/API/Preview/Stats 未稳定返回 HSTS |
+| TLS/Headers | Caddy、统一 HSTS、CSP（Admin/Stats）、`nosniff`、`DENY`、Referrer-Policy | 通过；五域名均只返回一条统一 HSTS |
 | 物理机容器 | `api`、`worker`、`admin`、`site`、`postgres`、`goatcounter` running；Postgres/Site/GoatCounter healthy | 通过 |
 | 物理机绑定 | 应用仅监听 `10.20.0.2`；无 PostgreSQL 发布端口 | 通过 |
 | 物理机 UFW | 1313/18080/8081/8100 仅 `wg0` 来源 `10.20.0.1`；SSH 为 `192.168.0.0/24` | 应用通过，SSH 需收窄 |
@@ -42,12 +42,12 @@
 **影响：** Azure 磁盘、备份账号或 root 权限泄露会暴露数据库和生产配置；未做恢复演练则无法证明 RPO/RTO。  
 **动作：** 见行动计划 P0-1、P0-3。
 
-### AUD-002：备份 SSH key 没有 forced command/restrict
+### AUD-002：备份 SSH key 没有 forced command/restrict（已修复）
 
 **优先级：P1 高**  
 **证据：** Azure `zoking-backup` 无 sudo，但 `/var/lib/zoking-backup/.ssh/authorized_keys` 未包含 `restrict` 或 `command=` 限制。  
 **影响：** 备份私钥泄露后可执行任意备份账号命令、探测 Azure 主机并读取该账号可读的全部归档。  
-**动作：** 使用只允许 rsync 目标目录的 wrapper，并用负向 SSH 测试证明命令、PTY、转发均被拒绝。
+**修复：** 已配置 `rrsync -wo -no-del` + `restrict`；完整备份和远端 manifest 通过，任意命令及删除选项负向测试通过。
 
 ### AUD-003：React Router 依赖存在官方 high advisory
 
@@ -83,19 +83,19 @@
 **影响：** 线上故障可能只有本机 journal，没有人收到通知；备份可读不代表能恢复业务。  
 **动作：** 见行动计划 P1-8 和 P0-3。
 
-### AUD-008：HSTS 没有覆盖全部公网域名
+### AUD-008：HSTS 没有覆盖全部公网域名（已修复）
 
 **优先级：P1 中**
 **证据：** 公网 HEAD 检查中 Admin 返回 `Strict-Transport-Security`，Reader、API、Preview 和 Stats 未返回该头；所有 HTTP 请求目前仍能 308 跳转到 HTTPS。
 **影响：** 首次访问或缓存清除后的浏览器仍可能先发出明文 HTTP 请求，增加降级和流量劫持窗口。
-**动作：** 在 Caddy 统一添加 HSTS，并确认所有子域名均已 HTTPS 后再启用 `includeSubDomains`。
+**修复：** Caddy 已统一添加 deferred HSTS；五域名均只有一条 `max-age=31536000; includeSubDomains`，HTTP 保持 308。
 
 ## 5. 限制与未完成检查
 
 - 当前环境没有 `govulncheck`、Trivy 或 Syft，因此 Go 依赖和最终镜像漏洞没有独立扫描证明。
 - GitHub Actions 权限、分支保护和管理员交付状态未通过 GitHub 管理 API 完整核验。
 - 没有配置 Webhook，无法审计真实通知链路。
-- 没有执行生产数据库/媒体恢复演练，不能声明 RTO 已达标。
+- 已完成数据级数据库/媒体恢复演练；尚未完成使用恢复库启动 API 的服务级演练。
 - 生产 GitHub 直连曾发生 TLS 超时；本次同步使用 Git bundle，因此 `git fetch` 的网络恢复仍需单独确认。
 
 ## 6. 审计复核标准

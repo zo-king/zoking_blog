@@ -787,7 +787,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 每日备份 timer active。
 - [x] 轮换密码后的最近备份可通过 manifest 校验。
 - [x] 最近备份已复制到 Azure `zoking-backup@10.20.0.1` 异机目录并再次校验。
-- [ ] 数据库和媒体恢复演练完成。
+- [x] 数据库和媒体数据级恢复演练完成；服务级恢复演练列入季度计划。
 - [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
 - [ ] 外部 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
 

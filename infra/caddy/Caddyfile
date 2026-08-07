@@ -1,0 +1,45 @@
+{
+	email owner@zoking.tech
+}
+
+(zoking_security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		defer
+	}
+}
+
+zoking.tech {
+	import zoking_security_headers
+	reverse_proxy 10.20.0.2:1313 {
+		header_up Host {host}
+	}
+}
+
+api.zoking.tech {
+	import zoking_security_headers
+	reverse_proxy 10.20.0.2:18080 {
+		header_up Host {host}
+	}
+}
+
+admin.zoking.tech {
+	import zoking_security_headers
+	reverse_proxy 10.20.0.2:8081 {
+		header_up Host {host}
+	}
+}
+
+preview.zoking.tech {
+	import zoking_security_headers
+	reverse_proxy 10.20.0.2:18080 {
+		header_up Host {host}
+	}
+}
+
+stats.zoking.tech {
+	import zoking_security_headers
+	reverse_proxy 10.20.0.2:8100 {
+		header_up Host {host}
+	}
+}

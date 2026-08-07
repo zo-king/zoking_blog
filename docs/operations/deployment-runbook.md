@@ -103,7 +103,7 @@ pwsh -NoProfile -File scripts/qa/production-preflight.ps1
    ```
 
    只有确认防火墙已限制为 WireGuard 私网后才允许该参数；PostgreSQL 仍保持不发布端口。
-3. 在 VPS 上终止 TLS 并反向代理到 `10.20.0.2`。Caddy 示例：
+3. 在 VPS 上终止 TLS 并反向代理到 `10.20.0.2`。生产配置以 `infra/caddy/Caddyfile` 为准；它统一设置 HSTS，并将各域名映射到下列上游：
 
    ```text
    zoking.tech {

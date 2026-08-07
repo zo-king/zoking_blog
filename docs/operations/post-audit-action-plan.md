@@ -12,7 +12,7 @@
 
 ## P0：24 小时内
 
-### 1. 保护异机备份静态数据
+### 1. 保护异机备份静态数据（待密钥托管决策）
 
 现状：备份通过 WireGuard + SSH 加密传输，但 Azure `/var/backups/zoking-blog` 上的归档本身未加密；归档包含数据库、`.env.prod` 和 `wg0.conf`。
 
@@ -20,29 +20,29 @@
 
 验收：在临时目录中使用独立恢复环境解密一份备份，能读取 PostgreSQL dump 和媒体归档；物理机和 Azure 均不保存明文长期副本；恢复密钥由第二名管理员独立取得。
 
-### 2. 限制备份 SSH key 的能力
+### 2. 限制备份 SSH key 的能力（已完成：2026-08-07）
 
 现状：`zoking-backup` 无 sudo，但 `authorized_keys` 没有 `restrict` 或 forced command；密钥泄露后可在 Azure 账号权限内执行任意命令。
 
-动作：增加只允许 rsync 写入 `/var/backups/zoking-blog` 的 forced-command wrapper，同时启用 `restrict`、禁用 PTY、转发和 agent forwarding。wrapper 必须拒绝非预期 `SSH_ORIGINAL_COMMAND`，并记录拒绝事件但不得记录密钥或归档内容。
+实施：Azure key 已配置 `restrict,command="/usr/bin/rrsync -wo -no-del /var/backups/zoking-blog"`；物理机 `BACKUP_REMOTE` 使用受限根 `zoking-backup@10.20.0.1:/`。
 
-验收：正常备份仍能传输；使用同一 key 执行 `id`、端口转发、PTY 请求均被拒绝；目标目录之外不可写。
+验收结果：完整备份 `20260807T134911Z` 传输并通过远端 manifest；任意 `id` 命令和 `--delete` 均被拒绝；测试目录已清理。端口转发和 PTY 由 `restrict` 禁用。
 
-### 3. 完成一次隔离恢复演练
+### 3. 完成一次隔离恢复演练（数据级已完成：2026-08-07）
 
-动作：按 `docs/operations/backup-and-monitoring.md` 第 6 节，在临时 PostgreSQL 和临时卷恢复最近备份，不接触生产卷；抽查用户、文章、媒体、发布产物和统计数据。
+实施：使用备份 `20260807T134911Z` 在临时 PostgreSQL 容器和临时 volumes 中恢复，未连接生产卷；记录见 [restore-drill-2026-08-07.md](restore-drill-2026-08-07.md)。
 
-验收：记录备份时间、恢复开始/结束时间、RPO、RTO、抽查行数、失败项和清理结果；演练产物不得包含明文密码并在结束后删除。
+验收结果：数据库和四类文件归档均可恢复；总演练约 28 秒；所有临时容器和 volumes 已清理。下一次季度演练应增加“使用恢复库启动 API”的服务级验证。
 
 ## P1：7 天内
 
-### 4. 补齐全站 HSTS
+### 4. 补齐全站 HSTS（已完成：2026-08-07）
 
 审计证据：公网响应中 Admin 带 `Strict-Transport-Security`，Reader、API、Preview 和 Stats 当前未稳定返回 HSTS。所有域名均已强制 HTTPS，但缺少浏览器侧的长期 HTTPS 记忆。
 
-动作：在 Caddy 的公共站点块统一添加 `Strict-Transport-Security: max-age=31536000; includeSubDomains`；先确认所有现有和计划中的子域名均只提供 HTTPS，再 reload 并检查五个域名。
+实施：生产 Caddy 配置已纳入 `infra/caddy/Caddyfile`，使用 deferred header 覆盖上游策略，避免重复响应头。
 
-验收：五个 HTTPS 域名均返回 HSTS；HTTP 仍为 308；Caddy validate、证书续期和公网黑盒全部通过。
+验收结果：五个 HTTPS 域名均只返回一条 HSTS；HTTP 仍为 308；Caddy validate、reload 和公网黑盒全部通过。
 
 ### 5. 处理 React Router 安全公告
 
