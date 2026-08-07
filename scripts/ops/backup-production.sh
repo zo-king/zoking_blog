@@ -132,7 +132,9 @@ find "${BACKUP_ROOT}/monthly" -mindepth 1 -maxdepth 1 -type d -mtime "+${MONTHLY
 
 if [[ -n "$BACKUP_REMOTE" ]]; then
   log "copying encrypted-in-transit backup to remote target"
-  rsync_args=(-a --protect-args)
+  # Remote paths are fixed directory names plus a UTC timestamp. Avoid
+  # --protect-args (-s), which restricted rrsync servers intentionally reject.
+  rsync_args=(-a)
   if [[ -n "$BACKUP_SSH_KEY" ]]; then
     rsync_args+=(-e "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i ${BACKUP_SSH_KEY}")
   fi
