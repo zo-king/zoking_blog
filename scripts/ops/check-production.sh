@@ -76,7 +76,10 @@ check_service() {
 
 check_failed_units() {
   local failed
-  failed="$(systemctl --failed --no-legend --plain 2>/dev/null | awk 'NF {count++} END {print count+0}')"
+  # A failed health-check unit remains in systemd's failed set until reset-failed.
+  # Exclude the two probe units so a transient outage does not make every later
+  # probe fail forever; real application, backup, and host failures remain visible.
+  failed="$(systemctl --failed --no-legend --plain 2>/dev/null | awk '$1 != "zoking-healthcheck.service" && $1 != "zoking-edge-healthcheck.service" && NF {count++} END {print count+0}')"
   if [[ "$failed" == "0" ]]; then
     pass "no failed systemd units"
   else

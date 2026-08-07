@@ -456,7 +456,7 @@ Docker 和 `wg-quick@wg0` 已配置开机启动。
 | SSH 私钥位置（本机） | `C:\Users\zhaoxi\.azure\zoking_key.pem` |
 | Caddy 配置 | `/etc/caddy/Caddyfile` |
 
-`caddy`、`wg-quick@wg0`、`ssh` 在 2026-08-07 均为 enabled + active。Azure NSG 和 UFW 当前放行 22/TCP、80/TCP、443/TCP、51820/UDP；SSH 来源仍应进一步收窄。
+`caddy`、`wg-quick@wg0`、`ssh` 在 2026-08-07 均为 enabled + active。Azure NSG 和 UFW 当前放行 80/TCP、443/TCP、51820/UDP；公网 SSH 22/TCP 仅允许 `218.64.59.174/32`，WireGuard 备份 SSH 仅允许 `10.20.0.2`。
 
 ### 13.3 本机网络绕过
 
@@ -802,7 +802,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - `preview.zoking.tech` 根路径返回 404。
 - `stats.zoking.tech` 根路径返回 303。
 - HTTP 跳转 HTTPS 返回 308。
-- 生产仓库已切换到 `main@a2fdcf4`，`origin` 已配置；生产 `.env.prod` 未跟踪且权限为 `root:docker 0640`。
+- 生产仓库跟踪 `origin/main`；审计时应以 `git rev-parse HEAD` 与本地 `origin/main` 比对，不在本文硬编码提交号。生产 `.env.prod` 未跟踪且权限为 `root:docker 0640`。
 - 物理机六个 Compose 服务均为 running，PostgreSQL、Site、GoatCounter health 为 healthy，Worker 已确认常驻。
 - 物理机 `zoking-backup.timer`、`zoking-healthcheck.timer` 与 Azure `zoking-edge-healthcheck.timer` 均已启用；应用和 Edge 手工检查均通过。
 - 首份备份及密码轮换后的备份均已在物理机生成，并复制到 Azure `zoking-backup@10.20.0.1` 后通过 SHA-256 manifest 校验。

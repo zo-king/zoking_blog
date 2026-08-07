@@ -2,6 +2,8 @@
 
 实际生产拓扑、命令和验收以 [部署 Runbook](deployment-runbook.md) 为准；自动备份、恢复演练和健康告警见 [生产备份、恢复与监控](backup-and-monitoring.md)。首次接手应先阅读 [项目介绍与交接手册](../project-handover-handbook.md)。
 
+最近一次生产审计及其后续动作见 [生产审计与后续行动计划](post-audit-action-plan.md)。
+
 ## 1. 系统组成
 
 - C 端：Hugo + Hugo Theme Stack，静态博客站点。
