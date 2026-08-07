@@ -52,7 +52,7 @@ MONTHLY_KEEP_DAYS=100
 DISK_WARN_PERCENT=80
 BACKUP_MAX_AGE_HOURS=36
 WG_MAX_AGE_SECONDS=300
-# BACKUP_REMOTE=backup@10.20.0.1:/var/backups/zoking-blog
+# BACKUP_REMOTE=zoking-backup@10.20.0.1:/var/backups/zoking-blog
 # BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
 # ALERT_WEBHOOK_URL=https://example.invalid/secret-webhook
 ```
@@ -76,19 +76,19 @@ sudo journalctl -u zoking-healthcheck.service -n 100 --no-pager
 
 ## 4. 异机副本
 
-推荐在 Azure VPS 创建专用 `backup` 用户和 `/var/backups/zoking-blog`，只允许物理机专用 SSH key 写入该目录。不要复用管理员私钥，也不要允许该账号 sudo。
+生产已在 Azure VPS 创建专用 `zoking-backup` 用户和 `/var/backups/zoking-blog`，只允许物理机专用 SSH key 写入该目录。不要复用管理员私钥，也不要允许该账号 sudo。
 
 物理机 `/etc/zoking-blog/ops.env`：
 
 ```env
-BACKUP_REMOTE=backup@10.20.0.1:/var/backups/zoking-blog
+BACKUP_REMOTE=zoking-backup@10.20.0.1:/var/backups/zoking-blog
 BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
 ```
 
 要求：
 
 - 只经 WireGuard 地址传输。
-- Azure 目标目录仅 `backup` 与 root 可读。
+- Azure 目标目录仅 `zoking-backup` 与 root 可读。
 - `.env.prod` 与数据库包含敏感数据；推荐使用 age/对象存储服务端加密再形成长期异机归档。
 - 远端必须有独立保留清理策略，不能让 rsync 使用未经检查的 `--delete`。
 

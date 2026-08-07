@@ -608,7 +608,7 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 仓库提供：
 
 - `scripts/ops/backup-production.sh`：创建备份、manifest 和分层保留副本。
-- `scripts/ops/restore-production.sh`：显式恢复数据库或卷，默认只做检查。
+- 当前未提供自动化恢复脚本；恢复必须严格按本文第 16.4 节和 `docs/operations/backup-and-monitoring.md` 的隔离演练流程执行。
 - `infra/systemd/zoking-backup.service` 与 `.timer`：每日执行。
 
 安装步骤见 `docs/operations/backup-and-monitoring.md`。
@@ -757,39 +757,39 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 
 ### 23.1 访问与权限
 
-- [ ] GitHub 仓库读写权限已验证。
-- [ ] Azure 门户/CLI 权限已验证。
-- [ ] Azure SSH 密钥登录已验证。
-- [ ] 物理机 SSH 密钥登录已验证。
-- [ ] 管理后台账号已轮换并安全交付。
+- [x] GitHub 仓库读写权限已验证。
+- [x] Azure 门户/CLI 权限已验证（订阅 `Azure for Students`，账号 `1684874802@qq.com`）。
+- [x] Azure SSH 密钥登录已验证。
+- [x] 物理机 SSH 密钥登录已验证。
+- [x] 管理后台账号密码已轮换；新密码只在密码管理器/安全渠道交付，不写入本文。
 - [ ] DNS 管理权限已交付。
 - [ ] 告警渠道和接收人已确认。
 
 ### 23.2 运行状态
 
-- [ ] 五个域名 DNS 正确。
-- [ ] Caddy、WireGuard、Docker 开机自启。
-- [ ] `api`、`worker`、`postgres`、`admin`、`site`、`goatcounter` 正常。
-- [ ] API `/readyz` 为 200。
-- [ ] Preview 根路径 404 被记录为正常。
-- [ ] HTTP -> HTTPS 为 308。
+- [x] 五个域名 DNS 正确。
+- [x] Caddy、WireGuard、Docker 开机自启。
+- [x] `api`、`worker`、`postgres`、`admin`、`site`、`goatcounter` 正常。
+- [x] API `/readyz` 为 200。
+- [x] Preview 根路径 404 被记录为正常。
+- [x] HTTP -> HTTPS 为 308。
 
 ### 23.3 安全
 
-- [ ] SSH 密码登录关闭且新密钥会话已验证。
-- [ ] Azure NSG 与 UFW 的 SSH 来源已收窄。
-- [ ] 物理机应用端口仅允许 WireGuard 来源。
-- [ ] 生产管理员、数据库、JWT、隐私哈希和统计密码未泄露。
-- [ ] Git 历史和工作区无生产 secret。
+- [x] 两台服务器 SSH 密码/键盘交互登录关闭，且新密钥会话已验证。
+- [x] Azure NSG 与 UFW 的公网 SSH 来源仅允许 `218.64.59.174/32`；WireGuard 备份 SSH 仅允许 `10.20.0.2`。
+- [x] 物理机应用端口仅允许 WireGuard 来源。
+- [x] 管理员密码已轮换；数据库、JWT、隐私哈希和统计密码未写入 Git 或本文。
+- [x] Git 工作区无生产 secret；`infra/docker/.env.prod` 仅存在服务器且为 `root:docker 0640`。
 
 ### 23.4 灾备与监控
 
-- [ ] 每日备份 timer active。
-- [ ] 最近备份可通过 manifest 校验。
-- [ ] 异机或对象存储副本存在。
+- [x] 每日备份 timer active。
+- [x] 轮换密码后的最近备份可通过 manifest 校验。
+- [x] 最近备份已复制到 Azure `zoking-backup@10.20.0.1` 异机目录并再次校验。
 - [ ] 数据库和媒体恢复演练完成。
-- [ ] 物理机与 Azure 健康检查 timer active。
-- [ ] 磁盘、服务、隧道、备份和证书告警能送达接收人。
+- [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
+- [ ] 外部 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
 
 ## 24. 2026-08-07 已验证基线与已知风险
 
@@ -802,14 +802,18 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - `preview.zoking.tech` 根路径返回 404。
 - `stats.zoking.tech` 根路径返回 303。
 - HTTP 跳转 HTTPS 返回 308。
+- 生产仓库已切换到 `main@52cfc71`，`origin` 已配置；生产 `.env.prod` 未跟踪且权限为 `root:docker 0640`。
+- 物理机六个 Compose 服务均为 running，PostgreSQL、Site、GoatCounter health 为 healthy，Worker 已确认常驻。
+- 物理机 `zoking-backup.timer`、`zoking-healthcheck.timer` 与 Azure `zoking-edge-healthcheck.timer` 均已启用；应用和 Edge 手工检查均通过。
+- 首份备份及密码轮换后的备份均已在物理机生成，并复制到 Azure `zoking-backup@10.20.0.1` 后通过 SHA-256 manifest 校验。
+- 物理机与 Azure 均已禁用 SSH 密码/键盘交互登录；Azure 仅额外允许备份账号从 `10.20.0.2` 通过 WireGuard SSH 写入备份目录。
 
-仍需在获得服务器管理权限后闭环：
+仍需后续安排：
 
-- 物理机当前只确认过密码 SSH，当前本机 Ed25519 密钥尚未被接受。
-- Azure 账号需要 sudo 密码，当前非交互命令不能修改 SSH/UFW。
-- 本机尚未登录 Azure CLI，不能直接修改 NSG。
-- 生产管理员当前密码不等于本地开发 `.env`，不能通过现有本地值登录并轮换。
-- 先前容器清单未列出 `worker`，必须检查发布队列消费者。
-- 备份与外部告警在服务器上是否已部署，尚需实时核验。
+- 配置并实际触发一次外部 Webhook 告警，确认接收人和升级路径。
+- 在隔离 PostgreSQL 和临时卷中完成一次恢复演练，记录 RPO、RTO 和抽查结果。
+- 将 Azure NSG 的管理来源 `218.64.59.174/32` 纳入 IP 变更流程；该公网 IP 变化时必须同时更新 NSG 与 UFW。
+- 交付 DNS、Azure 订阅、GitHub、密码管理器和告警渠道的独立管理权限。
+- 物理机直连 GitHub 曾出现 TLS 超时；部署时优先使用可验证的 SSH/Git bundle 传输，并在网络恢复后再评估 `git fetch`。
 
-这些项目属于权限/凭据交接问题，不应通过在聊天中再次粘贴密码解决。推荐先把本机公钥加入物理机、用 Azure Portal/Run Command 完成一次密钥和 sudo 加固，再继续自动化部署。
+任何密码、OTP、私钥或 Webhook secret 都不得粘贴到聊天或提交到仓库。Azure CLI 本机启动器已固定优先使用 `%APPDATA%\\uv\\tools\\azure-cli\\Scripts\\python.exe`，避免回退到无 Azure 模块的系统 Python。
