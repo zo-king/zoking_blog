@@ -802,7 +802,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - `preview.zoking.tech` 根路径返回 404。
 - `stats.zoking.tech` 根路径返回 303。
 - HTTP 跳转 HTTPS 返回 308。
-- 生产仓库已切换到 `main@52cfc71`，`origin` 已配置；生产 `.env.prod` 未跟踪且权限为 `root:docker 0640`。
+- 生产仓库已切换到 `main@a2fdcf4`，`origin` 已配置；生产 `.env.prod` 未跟踪且权限为 `root:docker 0640`。
 - 物理机六个 Compose 服务均为 running，PostgreSQL、Site、GoatCounter health 为 healthy，Worker 已确认常驻。
 - 物理机 `zoking-backup.timer`、`zoking-healthcheck.timer` 与 Azure `zoking-edge-healthcheck.timer` 均已启用；应用和 Edge 手工检查均通过。
 - 首份备份及密码轮换后的备份均已在物理机生成，并复制到 Azure `zoking-backup@10.20.0.1` 后通过 SHA-256 manifest 校验。
