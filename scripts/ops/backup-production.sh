@@ -8,6 +8,7 @@ ENV_FILE="${ENV_FILE:-${REPO_DIR}/infra/docker/.env.prod}"
 COMPOSE_FILE="${COMPOSE_FILE:-${REPO_DIR}/infra/docker/compose.prod.yml}"
 BACKUP_ROOT="${BACKUP_ROOT:-/var/backups/zoking-blog}"
 BACKUP_REMOTE="${BACKUP_REMOTE:-}"
+BACKUP_SSH_KEY="${BACKUP_SSH_KEY:-}"
 DAILY_KEEP_DAYS="${DAILY_KEEP_DAYS:-7}"
 WEEKLY_KEEP_DAYS="${WEEKLY_KEEP_DAYS:-35}"
 MONTHLY_KEEP_DAYS="${MONTHLY_KEEP_DAYS:-100}"
@@ -70,6 +71,10 @@ require_command sha256sum
 require_command tar
 if [[ -n "$BACKUP_REMOTE" ]]; then
   require_command rsync
+  if [[ -n "$BACKUP_SSH_KEY" ]]; then
+    require_command ssh
+    [[ -r "$BACKUP_SSH_KEY" ]] || fail "backup SSH key is not readable: $BACKUP_SSH_KEY"
+  fi
 fi
 
 [[ "$(id -u)" -eq 0 ]] || fail "run as root so Docker volume data and protected config can be read"
@@ -95,8 +100,8 @@ archive_volume goatcounter_data goatcounter-data.tar.gz
 
 install -m 0600 "$ENV_FILE" "${STAGING}/config/env.prod"
 install -m 0600 "$COMPOSE_FILE" "${STAGING}/config/compose.prod.yml"
-git -C "$REPO_DIR" rev-parse HEAD >"${STAGING}/git-commit.txt"
-git -C "$REPO_DIR" status --short --branch >"${STAGING}/git-status.txt"
+git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" rev-parse HEAD >"${STAGING}/git-commit.txt"
+git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" status --short --branch >"${STAGING}/git-status.txt"
 "${COMPOSE[@]}" ps >"${STAGING}/compose-ps.txt"
 "${COMPOSE[@]}" images >"${STAGING}/compose-images.txt"
 
@@ -127,7 +132,11 @@ find "${BACKUP_ROOT}/monthly" -mindepth 1 -maxdepth 1 -type d -mtime "+${MONTHLY
 
 if [[ -n "$BACKUP_REMOTE" ]]; then
   log "copying encrypted-in-transit backup to remote target"
-  rsync -a --protect-args "$FINAL/" "${BACKUP_REMOTE%/}/daily/${STAMP}/"
+  rsync_args=(-a --protect-args)
+  if [[ -n "$BACKUP_SSH_KEY" ]]; then
+    rsync_args+=(-e "ssh -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -i ${BACKUP_SSH_KEY}")
+  fi
+  rsync "${rsync_args[@]}" "$FINAL/" "${BACKUP_REMOTE%/}/daily/${STAMP}/"
 fi
 
 log "completed ${FINAL}"

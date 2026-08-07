@@ -53,6 +53,7 @@ DISK_WARN_PERCENT=80
 BACKUP_MAX_AGE_HOURS=36
 WG_MAX_AGE_SECONDS=300
 # BACKUP_REMOTE=backup@10.20.0.1:/var/backups/zoking-blog
+# BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
 # ALERT_WEBHOOK_URL=https://example.invalid/secret-webhook
 ```
 
@@ -81,6 +82,7 @@ sudo journalctl -u zoking-healthcheck.service -n 100 --no-pager
 
 ```env
 BACKUP_REMOTE=backup@10.20.0.1:/var/backups/zoking-blog
+BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
 ```
 
 要求：
