@@ -100,8 +100,8 @@ archive_volume goatcounter_data goatcounter-data.tar.gz
 
 install -m 0600 "$ENV_FILE" "${STAGING}/config/env.prod"
 install -m 0600 "$COMPOSE_FILE" "${STAGING}/config/compose.prod.yml"
-git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" rev-parse HEAD >"${STAGING}/git-commit.txt"
-git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" status --short --branch >"${STAGING}/git-status.txt"
+GIT_OPTIONAL_LOCKS=0 git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" rev-parse HEAD >"${STAGING}/git-commit.txt"
+GIT_OPTIONAL_LOCKS=0 git -c safe.directory="$REPO_DIR" -C "$REPO_DIR" status --short --branch >"${STAGING}/git-status.txt"
 "${COMPOSE[@]}" ps >"${STAGING}/compose-ps.txt"
 "${COMPOSE[@]}" images >"${STAGING}/compose-images.txt"
 
