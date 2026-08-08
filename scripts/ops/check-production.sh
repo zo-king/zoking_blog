@@ -169,13 +169,42 @@ check_edge() {
   done
 }
 
+json_escape() {
+  local input="$1" output="" char index
+  local LC_ALL=C
+
+  for ((index = 0; index < ${#input}; index++)); do
+    char="${input:index:1}"
+    case "$char" in
+      \\) output+='\\' ;;
+      '"') output+='\"' ;;
+      $'\n') output+='\n' ;;
+      $'\r') output+='\r' ;;
+      $'\t') output+='\t' ;;
+      $'\b') output+='\b' ;;
+      $'\f') output+='\f' ;;
+      *) output+="$char" ;;
+    esac
+  done
+
+  printf '%s' "$output"
+}
+
 send_alert() {
-  local host message json
+  local host message json response
   host="$(hostname -f 2>/dev/null || hostname)"
   message="Zoking ${ROLE} health check failed on ${host}: $(IFS='; '; printf '%s' "${errors[*]}")"
   if [[ -n "$ALERT_WEBHOOK_URL" ]]; then
-    json="$(printf '%s' "$message" | sed 's/\\/\\\\/g; s/"/\\"/g')"
-    curl -fsS --max-time 15 -H 'Content-Type: application/json' -d "{\"text\":\"${json}\"}" "$ALERT_WEBHOOK_URL" >/dev/null || true
+    # Feishu custom bots expect a nested text payload. Keep escaping in Bash
+    # so this check does not depend on jq or another runtime package.
+    json="$(json_escape "$message")"
+    if ! response="$(curl -fsS --max-time 15 \
+      -H 'Content-Type: application/json' \
+      -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"${json}\"}}" \
+      "$ALERT_WEBHOOK_URL")" \
+      || ! printf '%s' "$response" | grep -Eq '"(code|StatusCode)"[[:space:]]*:[[:space:]]*0'; then
+      printf '[zoking-health] ALERT delivery failed\n' >&2
+    fi
   fi
 }
 

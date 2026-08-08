@@ -56,7 +56,7 @@ BACKUP_MAX_AGE_HOURS=36
 WG_MAX_AGE_SECONDS=300
 # BACKUP_REMOTE=zoking-backup@10.20.0.1:/
 # BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
-# ALERT_WEBHOOK_URL=https://example.invalid/secret-webhook
+# ALERT_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/REDACTED
 ```
 
 启用并立即测试：
@@ -188,13 +188,23 @@ Edge 模式检查 Caddy、WireGuard、四个内网服务、五个公网域名、
 
 ## 10. 外部告警
 
-将受信 Webhook 写入 `/etc/zoking-blog/ops.env` 的 `ALERT_WEBHOOK_URL`。URL 是 secret，不可提交。脚本发送最小 JSON：
+当前使用飞书群机器人接收告警。创建机器人后，将 Webhook URL 仅写入服务器 `/etc/zoking-blog/ops.env` 的 `ALERT_WEBHOOK_URL`。URL 是 secret，不可粘贴到聊天、写入 Git、命令行历史、journal、截图或审计报告。
 
-```json
-{"text":"Zoking edge health check failed on host: ..."}
+推荐用编辑器在服务器上写入，避免 URL 出现在 shell 历史：
+
+```bash
+sudoedit /etc/zoking-blog/ops.env
+sudo chown root:root /etc/zoking-blog/ops.env
+sudo chmod 0600 /etc/zoking-blog/ops.env
 ```
 
-不同平台的 Webhook schema 可能不同；上线前必须触发一次受控失败，确认接收人确实收到告警。没有配置 Webhook 时，只能通过 journal 和失败单元发现问题。
+脚本发送飞书文本消息：
+
+```json
+{"msg_type":"text","content":{"text":"Zoking edge health check failed on host: ..."}}
+```
+
+飞书返回非零业务码或 HTTP 错误时，脚本会在 journal 记录投递失败，但不会记录 URL 或响应正文。配置完成后必须触发一次受控失败，确认接收群确实收到告警；恢复服务后再确认下一轮健康检查通过。没有配置 Webhook 时，只能通过 journal 和失败单元发现问题。
 
 ## 11. TLS 说明
 

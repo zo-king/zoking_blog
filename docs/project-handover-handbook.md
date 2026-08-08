@@ -646,7 +646,7 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 
 ### 17.3 告警渠道
 
-健康检查脚本支持可选 `ALERT_WEBHOOK_URL`。未配置外部 Webhook 时，失败会进入 systemd journal 并使服务单元失败，但不会主动通知手机或邮箱。生产交接必须明确告警接收人和渠道，不能把“有检查脚本”误认为“有人会收到告警”。
+健康检查脚本通过可选的 `ALERT_WEBHOOK_URL` 向飞书群机器人发送文本告警。未配置外部 Webhook 时，失败会进入 systemd journal 并使服务单元失败，但不会主动通知手机或邮箱。生产交接必须明确告警接收人和渠道，不能把“有检查脚本”误认为“有人会收到告警”。
 
 ## 18. 安全基线
 
@@ -763,7 +763,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 物理机 SSH 密钥登录已验证。
 - [x] 管理后台账号密码已轮换；新密码只在密码管理器/安全渠道交付，不写入本文。
 - [ ] DNS 管理权限已交付。
-- [ ] 告警渠道和接收人已确认。
+- [ ] 飞书告警群和接收人已确认，Webhook 已在服务器配置。
 
 ### 23.2 运行状态
 
@@ -792,7 +792,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 已配置 `BACKUP_AGE_RECIPIENT`、完成加密备份并清理历史明文副本；恢复私钥已独立托管，本机暂存文件已删除。
 - [x] 数据库和媒体数据级恢复演练完成；服务级恢复演练列入季度计划。
 - [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
-- [ ] 外部 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
+- [ ] 飞书 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
 
 ## 24. 2026-08-07 已验证基线与已知风险
 
@@ -813,7 +813,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 
 仍需后续安排：
 
-- 配置并实际触发一次外部 Webhook 告警，确认接收人和升级路径。
+- 配置并实际触发一次飞书 Webhook 告警，确认接收人和升级路径。
 - 使用恢复库启动 API 的服务级恢复演练，记录完整 RPO、RTO 和隔离发布结果。
 - 将 Azure NSG 的管理来源 `218.64.59.174/32` 纳入 IP 变更流程；该公网 IP 变化时必须同时更新 NSG 与 UFW。
 - 交付 DNS、Azure 订阅、GitHub、密码管理器和告警渠道的独立管理权限。
