@@ -21,8 +21,9 @@ FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639
 
 ARG PAGEFIND_VERSION=1.5.2
 ARG PAGEFIND_SHA256=aeb135927856e7a49816cf2c9c2e53167f87afa1f61f7288b7d66c234a950d38
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates tzdata curl tar \
+RUN sed -i "s|http://deb.debian.org|https://deb.debian.org|g" /etc/apt/sources.list.d/debian.sources \
+    && apt-get -o Acquire::Retries=3 update \
+    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends ca-certificates tzdata curl tar \
     && curl -fsSL -o /tmp/pagefind.tar.gz "https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
     && echo "${PAGEFIND_SHA256}  /tmp/pagefind.tar.gz" | sha256sum -c - \
     && tar -xzf /tmp/pagefind.tar.gz -C /usr/local/bin \
