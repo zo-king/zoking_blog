@@ -64,13 +64,13 @@
 
 当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过；CI run `31246299311` 已通过 API、Admin、GoatCounter 最终镜像 Trivy 门禁，健康探针修复后的 CI run `31248514854` 亦完整成功。生产已部署提交 `ee8989c`，API/worker 使用镜像 `e37df740...`，Admin 使用 `b805e4a2...`，GoatCounter 使用 `73ceee16...`；内部 site/api/admin/stats 返回 `200/200/200/303`，GoatCounter health 为 healthy，公网五域名和 HTTP→HTTPS `308` 验证通过。
 
-### 7. 收窄物理机 SSH 来源（已实施：2026-08-08，待只读复核）
+### 7. 收窄物理机 SSH 来源（已完成：2026-08-08）
 
 现状：物理机 UFW 当前允许 `192.168.0.0/24 -> 22/tcp`。这不是公网暴露，但超过单一管理终端的最小权限边界。
 
 实施：确认管理终端 WLAN 地址为 `192.168.0.223/24`。先保留旧规则并新增 `192.168.0.223/32 -> 22/tcp`，通过 UFW 状态确认新规则存在和第二个独立密钥会话后，再删除 `192.168.0.0/24 -> 22/tcp`。删除命令成功，且删除后的全新 SSH 会话可正常登录。
 
-剩余复核：需要在物理机交互执行一次 `sudo sshd -t`，并重新保存 `sudo ufw status numbered` 输出，确认只剩管理 `/32` 且没有新增 WireGuard SSH 来源。本次两次只读弹窗均因未输入 sudo 密码超时，未把该项误记为完全闭环。
+最终验收：管理员已在物理机执行 `sudo sshd -t && sudo ufw status numbered`。`sshd -t` 通过；UFW 仅保留 `22/tcp ALLOW IN 192.168.0.223`，应用端口继续仅允许 `wg0/10.20.0.1`，旧 `192.168.0.0/24` 规则不存在。
 
 ### 8. 配置外部告警并做受控失败测试
 
