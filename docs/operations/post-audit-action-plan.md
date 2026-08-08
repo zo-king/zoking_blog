@@ -56,13 +56,13 @@
 
 验收结果：`npm audit --omit=dev --audit-level=high` 返回 0 个 high/critical，Admin build、lint 和格式检查通过；不再存在 2026-08-14 到期事项。
 
-### 6. 增加依赖与镜像供应链门禁（已实施，待 CI 运行确认）
+### 6. 增加依赖与镜像供应链门禁（已完成：2026-08-08）
 
 初始现状：GitHub Actions 使用浮动 major tags；Dockerfile 通过 `ghfast.top`、镜像站和远端 release URL 下载构建依赖；仓库没有 Dependabot、govulncheck 或镜像 digest 校验。
 
 实施：Actions 已固定 commit SHA；新增 Dependabot、Go 1.26.5 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy 门禁；基础镜像固定 digest；Pagefind 官方 release 增加 SHA256；Hugo `v0.164.0` 和 GoatCounter `v2.7.0` 固定模块源码并由 Go checksum database 校验；移除 `ghfast.top`、清华 Debian 镜像和 `goproxy.cn`。
 
-当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过。首次 Trivy 门禁成功检出 API 和上游 Hugo 预编译二进制中的 high 漏洞；应用依赖已升级，Hugo 已改为使用修复依赖从源码构建，等待第二次 CI 复扫；通过后关闭本项。
+当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过；CI run `31246299311` 已通过 API、Admin、GoatCounter 最终镜像 Trivy 门禁，健康探针修复后的 CI run `31248514854` 亦完整成功。生产已部署提交 `ee8989c`，API/worker 使用镜像 `e37df740...`，Admin 使用 `b805e4a2...`，GoatCounter 使用 `73ceee16...`；内部 site/api/admin/stats 返回 `200/200/200/303`，GoatCounter health 为 healthy，公网五域名和 HTTP→HTTPS `308` 验证通过。
 
 ### 7. 收窄物理机 SSH 来源
 
