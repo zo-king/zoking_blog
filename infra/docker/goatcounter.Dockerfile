@@ -1,15 +1,21 @@
+FROM golang:1.26.5-bookworm@sha256:6c5605ab3a9a9fb3c4eafe5b3d63cdbf3881caf113262b67862547b54a9db599 AS builder
+
+WORKDIR /src
+ARG GOPROXY=https://proxy.golang.org,direct
+COPY infra/docker/goatcounter-build/go.mod infra/docker/goatcounter-build/go.sum ./
+RUN GOPROXY=${GOPROXY} go mod download \
+    && CGO_ENABLED=1 GOPROXY=${GOPROXY} go build -trimpath \
+        -ldflags='-s -w -extldflags=-static' \
+        -tags='osusergo,netgo,sqlite_omit_load_extension' \
+        -o /out/goatcounter zgo.at/goatcounter/v2/cmd/goatcounter
+
 FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
 
-ARG GOATCOUNTER_VERSION=2.7.0
-ARG GOATCOUNTER_SHA256=98d221cb9c8ef2bf76d8daa9cca647839f8d8b0bb5bc7400ff9337c5da834511
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates tzdata curl gzip \
-    && curl -fsSL -o /tmp/goatcounter.gz "https://github.com/arp242/goatcounter/releases/download/v${GOATCOUNTER_VERSION}/goatcounter-v${GOATCOUNTER_VERSION}-linux-amd64.gz" \
-    && echo "${GOATCOUNTER_SHA256}  /tmp/goatcounter.gz" | sha256sum -c - \
-    && gzip -d -c /tmp/goatcounter.gz > /usr/local/bin/goatcounter \
-    && chmod +x /usr/local/bin/goatcounter \
-    && rm -f /tmp/goatcounter.gz \
+    && apt-get install -y --no-install-recommends ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /out/goatcounter /usr/local/bin/goatcounter
 
 RUN groupadd --gid 10002 goatcounter \
     && useradd --uid 10002 --gid 10002 --system --no-create-home --home-dir /nonexistent goatcounter \
