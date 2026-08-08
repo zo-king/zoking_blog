@@ -1,6 +1,6 @@
 # 项目上下文交接
 
-本文件是新窗口接手时的当前事实源，不是历史工作日志。更新时间：2026-07-15。
+本文件是新窗口接手时的当前事实源，不是历史工作日志。更新时间：2026-08-08。
 
 ## 当前结论
 
@@ -11,7 +11,7 @@
 - P24 已统一 post/page/series/achievement/release 媒体引用锁，发布 Worker 周期恢复 stale job，并按数据库唯一 active release 对账 `current`；失败写入不会覆盖已确认的取消、重试或发布终态。
 - 生产预览固定为独立 `https://preview.zoking.tech/preview-files`，配置校验禁止与站点、API、Admin 同源；生产 seed 必须使用 Compose `seed` service。
 - 最新验收：全量 Go/PostgreSQL、vet、Admin build、npm 0 漏洞、Hugo 54 pages、Compose、migration Down/Up、26/26 HTTP 黑盒和完整隔离 E2E 均通过。记录见 `docs/qa/security-reliability-p24.md`。
-- Admin 已全量迁移到 `@arco-design/web-react 2.66.15`，运行于 React `18.3.1`，路由使用 `react-router-dom 7.18.1`。
+- Admin 已全量迁移到 `@arco-design/web-react 2.66.15`，运行于 React `18.3.1`，路由使用 `react-router-dom 7.18.2`。
 - `antd`、`@ant-design/icons` 和 React 19 compatibility patch 已移除，不要重新引入，也不要按旧 Ant Design 文档继续改造。
 - 十个后台领域路由已完成中文化和 B 端工作台结构；文章与页面另有独立编辑子路由：`/posts/new`、`/posts/:postID/edit`、`/pages/new`、`/pages/:pageID/edit`。
 - `/posts` 和 `/pages` 只显示列表，完整编辑器不再与列表同页；发布、账号权限、分类标签使用 Tabs，创建和详情使用 Modal/Drawer，低频清理进入维护入口。
@@ -21,7 +21,7 @@
 - `useAdminData` 已按当前路由加载模块，刷新只刷新当前工作区；任一模块失败不再清空整个后台状态。
 - 九类 Admin 列表已使用统一服务端分页：`page/page_size/q/status/sort` 写入 URL，响应包含 `total/total_pages`；文章和页面编辑直达按 ID 加载，不依赖当前列表页。
 - 分页排序具有唯一 ID 兜底，越界页不会执行巨大 OFFSET；发布和评论列表不会通过关联预加载暴露完整正文。
-- Admin `npm run build` 已通过；2026-08-07 官方 npm audit 报告 React Router high，见 `docs/security/production-audit-2026-08-07.md`。
+- Admin `npm run build` 已通过；React Router 公告修正后 7.18.2 为首个修复版本，官方 npm audit 为 0 high/critical，临时例外已关闭。
 - 当前不是“只完成后台壳”的阶段。内容、发布、预览、评论、媒体、审计和权限管理的全栈闭环均已落地。
 - C 端已完成 Theme Stack 体验审计：中文评论、文章导航/分享/相关文章、中文 taxonomy 搜索、RSS/robots、JSON-LD、键盘暗色模式、skip link、系统字体和头像优化均已落地；P16 另新增阅读进度/30 天本地续读、搜索异常重试和标题权重、完整移动菜单键盘交互、深色 AA 对比度、中文 section 与唯一 landmark。
 - C 端审计报告：`docs/frontend/site-ux-audit.md`；证据：`site-p9-home-desktop-1280x720.png` 与 `site-p9-article-mobile-390x844.png`。

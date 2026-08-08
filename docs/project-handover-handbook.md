@@ -779,7 +779,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 两台服务器 SSH 密码/键盘交互登录关闭，且新密钥会话已验证。
 - [x] Azure NSG 与 UFW 的公网 SSH 来源仅允许 `218.64.59.174/32`；WireGuard 备份 SSH 仅允许 `10.20.0.2`。
 - [x] 物理机应用端口仅允许 WireGuard 来源。
-- [x] 全部公网域名统一返回 HSTS；React Router 例外由 CI 强制到期至 2026-08-14。
+- [x] 全部公网域名统一返回 HSTS；React Router 7.18.2 已由修正后的官方公告确认为修复版本，临时例外已删除。
 - [x] 管理员密码已轮换；数据库、JWT、隐私哈希和统计密码未写入 Git 或本文。
 - [x] Git 工作区无生产 secret；`infra/docker/.env.prod` 仅存在服务器且为 `root:docker 0640`。
 

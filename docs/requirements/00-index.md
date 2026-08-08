@@ -10,7 +10,7 @@
 - 负责人：当前对话窗口作为中心调度
 - 最近更新：2026-07-11 09:35 +08:00
 - 当前阻塞：完整目标尚未完成；用户/角色管理、最后一个超级管理员保护、author 对象级隔离、预览过期清理和生产对象存储/CDN adapter 仍待补齐
-- 当前边界：已采用 Hybrid CMS、基于 React 18.3.1 + Vite + Arco Design React 2.66.15 的 Admin、PostgreSQL、本地媒体与 Docker Compose 起步；Admin 当前使用 react-router-dom 7.18.2，2026-08-07 官方 npm audit 报告 React Router high，处理计划见 `docs/operations/post-audit-action-plan.md`；核心写作、页面管理、站点设置、发布、隔离预览、评论、媒体引用保护、清理、E2E 冒烟和部署前 preflight 已落地
+- 当前边界：已采用 Hybrid CMS、基于 React 18.3.1 + Vite + Arco Design React 2.66.15 的 Admin、PostgreSQL、本地媒体与 Docker Compose 起步；Admin 当前使用已修复 GHSA-qwww-vcr4-c8h2 的 react-router-dom 7.18.2；核心写作、页面管理、站点设置、发布、隔离预览、评论、媒体引用保护、清理、E2E 冒烟和部署前 preflight 已落地
 
 ## 需求来源
 
@@ -75,7 +75,7 @@
 | ID | 问题 | 影响 | 状态 |
 |---|---|---|---|
 | Q-001 | 是否接受 Hybrid CMS：PostgreSQL 为编辑源，Hugo content 为发布快照？ | 影响全局架构 | 已采用 |
-| Q-002 | B 端后台采用何种前端技术栈与组件体系？ | 影响 `apps/admin` 初始化 | 已采用 React 18.3.1 + Vite + Arco Design React 2.66.15，react-router-dom 7.18.1 |
+| Q-002 | B 端后台采用何种前端技术栈与组件体系？ | 影响 `apps/admin` 初始化 | 已采用 React 18.3.1 + Vite + Arco Design React 2.66.15，react-router-dom 7.18.2 |
 | Q-003 | 生产媒体存储使用本地、S3/R2/MinIO 还是其他？ | 影响媒体模块和部署 | 开发本地已采用，生产对象存储/CDN 待增强 |
 | Q-004 | 生产部署目标是单机 Docker、VPS、云平台还是分层部署？ | 影响 CI/CD 和运维 | Docker Compose 起步已采用 |
 | Q-005 | 是否第一阶段就做完整评论审核，还是只建模型和接口骨架？ | 影响 MVP 范围 | 匿名评论 + 后台审核已实现 |

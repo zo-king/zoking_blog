@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
-    "audit:security": "node ../../scripts/qa/npm-security-audit.mjs",
+    "audit:security": "npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

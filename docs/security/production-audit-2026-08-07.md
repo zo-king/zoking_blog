@@ -16,7 +16,7 @@
 
 当前可用性和基础安全基线良好：公网入口、TLS、WireGuard、Caddy、Docker Compose、应用健康、SSH 密钥登录和备份 manifest 均通过。仓库扫描没有发现私钥、GitHub token、AWS key 或被跟踪的 `.env.prod`。
 
-“灾备与供应链安全闭环”尚未完成。异机备份静态加密已闭环；当前最高优先级是服务级恢复、外部告警和供应链固定。React Router high advisory 已建立限期风险接受和 CI 到期门禁。详细动作见 [post-audit-action-plan.md](../operations/post-audit-action-plan.md)。
+“灾备与供应链安全闭环”尚未完成。异机备份静态加密和 React Router 公告已闭环；当前最高优先级是服务级恢复、外部告警和供应链固定。详细动作见 [post-audit-action-plan.md](../operations/post-audit-action-plan.md)。
 
 ## 3. 已验证证据
 
@@ -31,7 +31,7 @@
 | Azure NSG/UFW | 公网 22 仅 `218.64.59.174/32`；备份 22 仅 `10.20.0.2`；80/443/51820 正常 | 通过 |
 | 备份 | 两端只保留 `20260807T150122Z`、`20260808T033549Z` 两份 `.age` 备份，manifest 均通过；历史明文副本已清理；`.env.prod` 未跟踪 | 静态加密通过 |
 | 仓库 secret | 未发现私钥、GitHub token、AWS key；命中项均为开发/CI 占位或测试参数 | 通过，但扫描不是密钥轮换证明 |
-| npm | 官方 registry 报告 `react-router` 与 `react-router-dom@7.18.2` 两项 high | 已建立至 2026-08-14 的 CI 强制到期例外 |
+| npm | 公告修正后 `react-router` 与 `react-router-dom@7.18.2` 为 7.x 首个修复版本；官方 registry 当前 0 high/critical | 通过；例外已删除 |
 
 ## 4. 风险发现
 
@@ -48,19 +48,19 @@
 **影响：** 备份私钥泄露后可执行任意备份账号命令、探测 Azure 主机并读取该账号可读的全部归档。  
 **修复：** 已配置 `rrsync -wo -no-del` + `restrict`；完整备份和远端 manifest 通过，任意命令及删除选项负向测试通过。
 
-### AUD-003：React Router 依赖存在官方 high advisory（限期风险接受）
+### AUD-003：React Router 依赖存在官方 high advisory（已关闭）
 
-**优先级：P1 高（当前利用面待确认）**  
-**证据：** `npm audit --registry=https://registry.npmjs.org --omit=dev --audit-level=high` 报 `GHSA-qwww-vcr4-c8h2`，影响 `react-router-dom@7.18.2`。代码审阅未发现 RSC action/server route，只使用浏览器路由和 hooks。  
-**影响：** 依赖升级或未来启用相关模式后，可能出现 CSRF action 执行风险；当前静态客户端部署没有公告要求的服务端 action 路径。
-**处置：** `7.11.0` 回退验证会引入更多既有公告，故保持 `7.18.2`；CI 仅允许该精确公告并在 2026-08-14 强制到期。完整记录见 [react-router-risk-acceptance-2026-08-07.md](react-router-risk-acceptance-2026-08-07.md)。
+**优先级：P1 高（已关闭）**
+**初始证据：** `npm audit` 曾把 `GHSA-qwww-vcr4-c8h2` 报告到 `react-router-dom@7.18.2`。
+**关闭证据：** GitHub Advisory 后续把 7.x 范围修正为 `>=7.12.0 <7.18.2`，并把 `7.18.2` 标为首个修复版本；官方 npm registry 复扫为 0 high/critical。
+**处置：** 保持 `7.18.2`，删除临时白名单，CI 改为无豁免审计。完整记录见 [react-router-risk-acceptance-2026-08-07.md](react-router-risk-acceptance-2026-08-07.md)。
 
-### AUD-004：CI Action 与 Docker 下载源未固定到不可变版本
+### AUD-004：CI Action 与 Docker 下载源未固定到不可变版本（已实施，待 CI 运行确认）
 
 **优先级：P2 中**  
-**证据：** GitHub Actions 使用 `actions/checkout@v7`、`setup-node@v7` 等浮动 major tag；Dockerfile 使用 `ghfast.top`、镜像站和远端 release URL，未校验下载 SHA256。  
-**影响：** 上游 tag、镜像代理或下载链路被替换时，构建可引入未审查代码；也会造成不可重复构建。  
-**动作：** 固定 action SHA、记录基础镜像 digest、为 Hugo/Pagefind/GoatCounter 下载增加 checksum，并减少第三方代理依赖。
+**初始证据：** GitHub Actions 使用浮动 major tag；Dockerfile 使用 `ghfast.top` 和第三方镜像源，远端 release 未校验 SHA256。
+**修复：** Actions 已固定 commit SHA；Go、Debian、Node、Nginx、PostgreSQL 基础镜像已固定 digest；Hugo、Pagefind 和 GoatCounter 使用官方 GitHub URL 并校验 SHA256；`ghfast.top`、清华 Debian 镜像和 `goproxy.cn` 已移除。
+**门禁：** 新增 Dependabot、Go 1.25.12 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy high/critical 扫描。仓库测试和配置检查通过，本机 Docker 网络未能完成新基础层拉取，最终镜像结果由 GitHub Actions 确认。
 
 ### AUD-005：物理机 SSH 防火墙范围大于必要管理范围
 
@@ -91,7 +91,7 @@
 
 ## 5. 限制与未完成检查
 
-- 当前环境没有 `govulncheck`、Trivy 或 Syft，因此 Go 依赖和最终镜像漏洞没有独立扫描证明。
+- Go 1.25.12 `govulncheck` 已完成且无可达漏洞；Trivy 门禁已配置，最终镜像扫描结果仍待 GitHub Actions 首次运行确认。
 - GitHub Actions 权限、分支保护和管理员交付状态未通过 GitHub 管理 API 完整核验。
 - 没有配置 Webhook，无法审计真实通知链路。
 - 已完成数据级数据库/媒体恢复演练；尚未完成使用恢复库启动 API 的服务级演练。

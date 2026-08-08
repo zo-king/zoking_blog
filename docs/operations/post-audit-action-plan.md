@@ -48,21 +48,21 @@
 
 验收结果：五个 HTTPS 域名均只返回一条 HSTS；HTTP 仍为 308；Caddy validate、reload 和公网黑盒全部通过。
 
-### 5. 处理 React Router 安全公告（临时风险接受至 2026-08-14）
+### 5. 处理 React Router 安全公告（已完成：2026-08-08）
 
-审计证据：官方 npm registry 的 `npm audit --omit=dev --audit-level=high` 报告 `react-router` / `react-router-dom@7.18.2` 两项 high，GHSA-qwww-vcr4-c8h2，范围为 `>=7.12.0 <8.3.0`。当前代码只使用 BrowserRouter、Routes、Route 和导航 hooks，未发现 RSC action/server route；因此可利用面尚未证实，但不能把“未使用 RSC”当作永久豁免。
+初始证据：官方 npm registry 曾报告 `react-router` / `react-router-dom@7.18.2` 命中 GHSA-qwww-vcr4-c8h2，项目因此建立限期例外。GitHub Advisory 于 2026-08-07 18:16:54 UTC 将 7.x 受影响范围修正为 `>=7.12.0 <7.18.2`，并把 `7.18.2` 列为首个修复版本。
 
-实施：官方建议的 `7.11.0` 回退会重新引入多项已修复公告，故保持 `7.18.2`。当前生产只部署静态浏览器 bundle，不存在 RSC/Node 服务端 action 入口。临时风险接受、补偿控制和退出条件见 [react-router-risk-acceptance-2026-08-07.md](../security/react-router-risk-acceptance-2026-08-07.md)。
+实施：保持已修复的 `7.18.2`，删除公告白名单和到期逻辑，CI 直接执行无豁免的官方 registry 生产依赖审计。闭环记录见 [react-router-risk-acceptance-2026-08-07.md](../security/react-router-risk-acceptance-2026-08-07.md)。
 
-验收结果：CI 使用官方 registry，仅允许精确版本上的该公告；新增 high/critical、依赖版本或公告集合变化、例外到期都会失败。最迟 2026-08-14 升级到官方修复版本或重新书面审批。
+验收结果：`npm audit --omit=dev --audit-level=high` 返回 0 个 high/critical，Admin build、lint 和格式检查通过；不再存在 2026-08-14 到期事项。
 
-### 6. 增加依赖与镜像供应链门禁
+### 6. 增加依赖与镜像供应链门禁（已实施，待 CI 运行确认）
 
-现状：GitHub Actions 使用浮动 major tags；Dockerfile 通过 `ghfast.top`、镜像站和远端 release URL 下载构建依赖；仓库没有 Dependabot、govulncheck 或镜像 digest 校验。
+初始现状：GitHub Actions 使用浮动 major tags；Dockerfile 通过 `ghfast.top`、镜像站和远端 release URL 下载构建依赖；仓库没有 Dependabot、govulncheck 或镜像 digest 校验。
 
-动作：将 Actions 固定到 commit SHA；增加 Go `govulncheck`、npm audit 和容器镜像扫描；为 Hugo、Pagefind、GoatCounter 和 Debian/Node 基础镜像记录版本与 SHA256，优先移除不必要的第三方下载代理。
+实施：Actions 已固定 commit SHA；新增 Dependabot、Go 1.25.12 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy 门禁；基础镜像固定 digest；Hugo、Pagefind 和 GoatCounter 官方 release 增加 SHA256；移除 `ghfast.top`、清华 Debian 镜像和 `goproxy.cn`。
 
-验收：PR 门禁在依赖漏洞、失效 checksum、未批准的浮动 action 或高危镜像时失败；每月有一次依赖升级记录。
+当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过。因本机 Docker 网络无法稳定拉取新固定层，最终镜像构建和 Trivy 结果待 GitHub Actions 首次运行确认；CI 成功后关闭本项。
 
 ### 7. 收窄物理机 SSH 来源
 

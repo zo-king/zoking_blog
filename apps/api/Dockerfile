@@ -1,8 +1,8 @@
-FROM golang:1.23-bookworm AS builder
+FROM golang:1.25.12-bookworm@sha256:908f8ff2ec296df2f349563072c7925775cd28b50361a52ed834a8a37399b9bf AS builder
 
 WORKDIR /src
 
-ARG GOPROXY=https://goproxy.cn,direct
+ARG GOPROXY=https://proxy.golang.org,direct
 
 COPY apps/api/go.mod apps/api/go.sum ./
 RUN GOPROXY=${GOPROXY} go mod download
@@ -13,22 +13,24 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /out/api ./cmd/api \
     && CGO_ENABLED=0 GOOS=linux go build -o /out/migrate ./cmd/migrate \
     && CGO_ENABLED=0 GOOS=linux go build -o /out/seed ./cmd/seed
 
-FROM debian:bookworm-slim
+FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
 
 ARG HUGO_VERSION=0.160.1
+ARG HUGO_SHA256=133adf4932c1b626b6fe6aa28d56791555abe3ceff167e03be534e8324c9ed39
 ARG PAGEFIND_VERSION=1.5.2
-ARG DEBIAN_MIRROR=mirrors.tuna.tsinghua.edu.cn
-ARG GITHUB_RELEASE_PROXY=https://ghfast.top/
-RUN sed -i "s|deb.debian.org|${DEBIAN_MIRROR}|g" /etc/apt/sources.list.d/debian.sources \
-    && apt-get update \
+ARG PAGEFIND_SHA256=aeb135927856e7a49816cf2c9c2e53167f87afa1f61f7288b7d66c234a950d38
+RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata curl tar \
-    && curl -fsSL "${GITHUB_RELEASE_PROXY}https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" \
-    | tar -xz -C /usr/local/bin hugo \
+    && curl -fsSL -o /tmp/hugo.tar.gz "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz" \
+    && echo "${HUGO_SHA256}  /tmp/hugo.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/hugo.tar.gz -C /usr/local/bin hugo \
     && chmod +x /usr/local/bin/hugo \
-    && curl -fsSL "${GITHUB_RELEASE_PROXY}https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
-    | tar -xz -C /usr/local/bin \
+    && curl -fsSL -o /tmp/pagefind.tar.gz "https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+    && echo "${PAGEFIND_SHA256}  /tmp/pagefind.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/pagefind.tar.gz -C /usr/local/bin \
     && mv /usr/local/bin/pagefind_extended /usr/local/bin/pagefind \
     && chmod +x /usr/local/bin/pagefind \
+    && rm -f /tmp/hugo.tar.gz /tmp/pagefind.tar.gz \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 10001 zoking \
