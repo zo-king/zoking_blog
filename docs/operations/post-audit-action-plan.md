@@ -60,9 +60,9 @@
 
 初始现状：GitHub Actions 使用浮动 major tags；Dockerfile 通过 `ghfast.top`、镜像站和远端 release URL 下载构建依赖；仓库没有 Dependabot、govulncheck 或镜像 digest 校验。
 
-实施：Actions 已固定 commit SHA；新增 Dependabot、Go 1.25.12 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy 门禁；基础镜像固定 digest；Hugo、Pagefind 和 GoatCounter 官方 release 增加 SHA256；移除 `ghfast.top`、清华 Debian 镜像和 `goproxy.cn`。
+实施：Actions 已固定 commit SHA；新增 Dependabot、Go 1.26.5 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy 门禁；基础镜像固定 digest；Pagefind 和 GoatCounter 官方 release 增加 SHA256；Hugo 固定 `v0.164.0` 模块源码并由 Go checksum database 校验；移除 `ghfast.top`、清华 Debian 镜像和 `goproxy.cn`。
 
-当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过。因本机 Docker 网络无法稳定拉取新固定层，最终镜像构建和 Trivy 结果待 GitHub Actions 首次运行确认；CI 成功后关闭本项。
+当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过。首次 Trivy 门禁成功检出 API 和上游 Hugo 预编译二进制中的 high 漏洞；应用依赖已升级，Hugo 已改为使用修复依赖从源码构建，等待第二次 CI 复扫；通过后关闭本项。
 
 ### 7. 收窄物理机 SSH 来源
 

@@ -148,7 +148,7 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@6b1ee2dcc06c9b6629a5317fa0146473914d05e1 # v3
         with:
-          hugo-version: "0.160.1"
+          hugo-version: "0.164.0"
           extended: true
 
       - name: Export Hugo binary path
@@ -190,6 +190,8 @@ jobs:
         run: docker build --tag zoking-api:ci --file apps/api/Dockerfile .
 
       - name: Scan API image
+        id: scan_api
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: zoking-api:ci
@@ -202,6 +204,8 @@ jobs:
         run: docker build --tag zoking-admin:ci --file apps/admin/Dockerfile .
 
       - name: Scan Admin image
+        id: scan_admin
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: zoking-admin:ci
@@ -214,6 +218,8 @@ jobs:
         run: docker build --tag zoking-goatcounter:ci --file infra/docker/goatcounter.Dockerfile .
 
       - name: Scan GoatCounter image
+        id: scan_goatcounter
+        continue-on-error: true
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: zoking-goatcounter:ci
@@ -221,3 +227,15 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
           severity: HIGH,CRITICAL
+
+      - name: Enforce image scan results
+        if: always()
+        env:
+          API_SCAN: ${{ steps.scan_api.outcome }}
+          ADMIN_SCAN: ${{ steps.scan_admin.outcome }}
+          GOATCOUNTER_SCAN: ${{ steps.scan_goatcounter.outcome }}
+        run: |
+          printf 'API=%s Admin=%s GoatCounter=%s\n' "$API_SCAN" "$ADMIN_SCAN" "$GOATCOUNTER_SCAN"
+          test "$API_SCAN" = success
+          test "$ADMIN_SCAN" = success
+          test "$GOATCOUNTER_SCAN" = success

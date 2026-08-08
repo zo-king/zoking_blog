@@ -335,7 +335,7 @@ requested -> snapshotting -> building -> verifying -> promoting -> published
 - Go 1.23 或更高兼容版本。
 - Node.js 22。
 - npm（使用 `package-lock.json` 和 `npm ci`）。
-- Hugo Extended 0.160.1；Windows 仓库可使用 `.tools/hugo` 中的本地工具。
+- Hugo Extended 0.164.0；生产镜像从固定 Go 模块源码构建，Windows 仓库可使用 `.tools/hugo` 中的本地工具。
 - Docker Desktop 与 Docker Compose v2。
 - PowerShell 7。
 - Git。

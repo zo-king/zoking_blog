@@ -59,8 +59,8 @@
 
 **优先级：P2 中**  
 **初始证据：** GitHub Actions 使用浮动 major tag；Dockerfile 使用 `ghfast.top` 和第三方镜像源，远端 release 未校验 SHA256。
-**修复：** Actions 已固定 commit SHA；Go、Debian、Node、Nginx、PostgreSQL 基础镜像已固定 digest；Hugo、Pagefind 和 GoatCounter 使用官方 GitHub URL 并校验 SHA256；`ghfast.top`、清华 Debian 镜像和 `goproxy.cn` 已移除。
-**门禁：** 新增 Dependabot、Go 1.25.12 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy high/critical 扫描。仓库测试和配置检查通过，本机 Docker 网络未能完成新基础层拉取，最终镜像结果由 GitHub Actions 确认。
+**修复：** Actions 已固定 commit SHA；Go、Debian、Node、Nginx、PostgreSQL 基础镜像已固定 digest；Pagefind 和 GoatCounter 使用官方 GitHub URL 并校验 SHA256；Hugo 从固定模块版本构建并由 Go checksum database 校验；`ghfast.top`、清华 Debian 镜像和 `goproxy.cn` 已移除。
+**门禁：** 新增 Dependabot、Go 1.26.5 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy high/critical 扫描。首次 CI 成功拦截 API 依赖和上游 Hugo 预编译二进制中的 high 漏洞，现已升级依赖并改为从固定 Hugo 源版本构建，等待复扫。
 
 ### AUD-005：物理机 SSH 防火墙范围大于必要管理范围
 
@@ -91,7 +91,7 @@
 
 ## 5. 限制与未完成检查
 
-- Go 1.25.12 `govulncheck` 已完成且无可达漏洞；Trivy 门禁已配置，最终镜像扫描结果仍待 GitHub Actions 首次运行确认。
+- Go 1.26.5 `govulncheck` 已完成且无可达漏洞；Trivy 门禁首次运行已检出并推动依赖整改，修复后的最终镜像仍待复扫确认。
 - GitHub Actions 权限、分支保护和管理员交付状态未通过 GitHub 管理 API 完整核验。
 - 没有配置 Webhook，无法审计真实通知链路。
 - 已完成数据级数据库/媒体恢复演练；尚未完成使用恢复库启动 API 的服务级演练。

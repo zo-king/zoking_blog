@@ -175,7 +175,7 @@ hasCJKLanguage = true
 
 必须工具：
 
-- Hugo Extended：最低 `0.157.0`，建议使用 `0.160.1` 或后续稳定版本。
+- Hugo Extended：最低 `0.157.0`，生产与 CI 当前固定 `0.164.0`。
 - Dart Sass：Stack 使用 SCSS，Hugo Extended 会调用 Sass 处理。
 - Go：Hugo Modules 依赖 Go 模块解析。
 - Git：版本管理。
