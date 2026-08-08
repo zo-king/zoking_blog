@@ -203,7 +203,7 @@ services:
     volumes:
       - goatcounter_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8080/status || exit 1"]
+      test: ["CMD", "/usr/local/bin/goatcounter-healthcheck"]
       interval: 10s
       timeout: 5s
       retries: 6
