@@ -11,12 +11,9 @@ RUN GOPROXY=${GOPROXY} go mod download \
 
 FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
 
-RUN sed -i "s|http://deb.debian.org|https://deb.debian.org|g" /etc/apt/sources.list.d/debian.sources \
-    && apt-get -o Acquire::Retries=3 update \
-    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends ca-certificates tzdata \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY --from=builder /out/goatcounter /usr/local/bin/goatcounter
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
 RUN groupadd --gid 10002 goatcounter \
     && useradd --uid 10002 --gid 10002 --system --no-create-home --home-dir /nonexistent goatcounter \

@@ -59,7 +59,7 @@
 
 **优先级：P2 中**  
 **初始证据：** GitHub Actions 使用浮动 major tag；Dockerfile 使用 `ghfast.top` 和第三方镜像源，远端 release 未校验 SHA256。
-**修复：** Actions 已固定 commit SHA；Go、Debian、Node、Nginx、PostgreSQL 基础镜像已固定 digest；Pagefind 官方 release 校验 SHA256；Hugo 和 GoatCounter 从固定模块版本构建并由 Go checksum database 校验；`ghfast.top`、清华 Debian 镜像和 `goproxy.cn` 已移除。
+**修复：** Actions 已固定 commit SHA；Go、Debian、Node、Nginx、PostgreSQL 基础镜像已固定 digest；Pagefind 官方 release 校验 SHA256；Hugo 和 GoatCounter 从固定模块版本构建并由 Go checksum database 校验；运行镜像不再执行 apt 下载；`ghfast.top`、清华 Debian 镜像和 `goproxy.cn` 已移除。
 **门禁：** 新增 Dependabot、Go 1.26.5 `govulncheck` 和 API/Admin/GoatCounter 最终镜像 Trivy high/critical 扫描。首次 CI 成功拦截 API 依赖和上游 Hugo 预编译二进制中的 high 漏洞，现已升级依赖并改为从固定 Hugo 源版本构建，等待复扫。
 
 ### AUD-005：物理机 SSH 防火墙范围大于必要管理范围

@@ -17,20 +17,14 @@ COPY infra/docker/hugo-build/go.mod infra/docker/hugo-build/go.sum /tmp/hugo-bui
 RUN cd /tmp/hugo-build \
     && GOPROXY=${GOPROXY} go build -trimpath -tags extended -o /out/hugo github.com/gohugoio/hugo
 
-FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
-
 ARG PAGEFIND_VERSION=1.5.2
 ARG PAGEFIND_SHA256=aeb135927856e7a49816cf2c9c2e53167f87afa1f61f7288b7d66c234a950d38
-RUN sed -i "s|http://deb.debian.org|https://deb.debian.org|g" /etc/apt/sources.list.d/debian.sources \
-    && apt-get -o Acquire::Retries=3 update \
-    && apt-get -o Acquire::Retries=3 install -y --no-install-recommends ca-certificates tzdata curl tar \
-    && curl -fsSL -o /tmp/pagefind.tar.gz "https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+RUN curl -fsSL -o /tmp/pagefind.tar.gz "https://github.com/Pagefind/pagefind/releases/download/v${PAGEFIND_VERSION}/pagefind_extended-v${PAGEFIND_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
     && echo "${PAGEFIND_SHA256}  /tmp/pagefind.tar.gz" | sha256sum -c - \
-    && tar -xzf /tmp/pagefind.tar.gz -C /usr/local/bin \
-    && mv /usr/local/bin/pagefind_extended /usr/local/bin/pagefind \
-    && chmod +x /usr/local/bin/pagefind \
-    && rm -f /tmp/pagefind.tar.gz \
-    && rm -rf /var/lib/apt/lists/*
+    && tar -xzf /tmp/pagefind.tar.gz -C /out \
+    && mv /out/pagefind_extended /out/pagefind
+
+FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
 
 RUN groupadd --gid 10001 zoking \
     && useradd --uid 10001 --gid 10001 --system --no-create-home --home-dir /nonexistent zoking \
@@ -44,7 +38,10 @@ COPY --from=builder /out/worker /app/worker
 COPY --from=builder /out/migrate /app/migrate
 COPY --from=builder /out/seed /app/seed
 COPY --from=builder /out/hugo /usr/local/bin/hugo
+COPY --from=builder /out/pagefind /usr/local/bin/pagefind
 COPY --from=builder /usr/local/go /usr/local/go
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 
 # The site module replaces the upstream theme with the repository root.
 # Production publishing therefore needs both the Go module runner and theme files.
