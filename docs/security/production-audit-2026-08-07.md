@@ -16,7 +16,7 @@
 
 当前可用性和基础安全基线良好：公网入口、TLS、WireGuard、Caddy、Docker Compose、应用健康、SSH 密钥登录和备份 manifest 均通过。仓库扫描没有发现私钥、GitHub token、AWS key 或被跟踪的 `.env.prod`。
 
-“灾备与供应链安全闭环”尚未完成。最高优先级是异机备份静态加密、服务级恢复、外部告警和供应链固定；React Router high advisory 已建立限期风险接受和 CI 到期门禁。详细动作见 [post-audit-action-plan.md](../operations/post-audit-action-plan.md)。
+“灾备与供应链安全闭环”尚未完成。异机备份静态加密已闭环；当前最高优先级是服务级恢复、外部告警和供应链固定。React Router high advisory 已建立限期风险接受和 CI 到期门禁。详细动作见 [post-audit-action-plan.md](../operations/post-audit-action-plan.md)。
 
 ## 3. 已验证证据
 
@@ -29,18 +29,17 @@
 | 物理机 UFW | 1313/18080/8081/8100 仅 `wg0` 来源 `10.20.0.1`；SSH 为 `192.168.0.0/24` | 应用通过，SSH 需收窄 |
 | Azure | Caddy、WireGuard、SSH active/enabled；无 failed units；Caddy validate 通过 | 通过 |
 | Azure NSG/UFW | 公网 22 仅 `218.64.59.174/32`；备份 22 仅 `10.20.0.2`；80/443/51820 正常 | 通过 |
-| 备份 | `20260807T150122Z` 本地和 Azure 副本均为 `.age`，manifest 均校验通过；旧历史明文副本待清理；`.env.prod` 未跟踪 | 新备份静态加密通过，迁移未闭环 |
+| 备份 | 两端只保留 `20260807T150122Z`、`20260808T033549Z` 两份 `.age` 备份，manifest 均通过；历史明文副本已清理；`.env.prod` 未跟踪 | 静态加密通过 |
 | 仓库 secret | 未发现私钥、GitHub token、AWS key；命中项均为开发/CI 占位或测试参数 | 通过，但扫描不是密钥轮换证明 |
 | npm | 官方 registry 报告 `react-router` 与 `react-router-dom@7.18.2` 两项 high | 已建立至 2026-08-14 的 CI 强制到期例外 |
 
 ## 4. 风险发现
 
-### AUD-001：异机备份尚未完成静态加密迁移，且服务级恢复尚未完成
+### AUD-001：异机备份未静态加密（已修复）；服务级恢复尚未完成
 
 **优先级：P1 高**  
-**证据：** 新备份 `20260807T150122Z` 已用 age 加密并在本地/Azure 通过 manifest 与完整解密校验；更早历史归档仍包含可读的 `config/env.prod`、数据库 dump、WireGuard 配置。数据级恢复演练已通过，但尚未使用独立托管私钥启动恢复库 API 验证服务级 RTO。
-**影响：** Azure 磁盘、备份账号或 root 权限泄露会暴露数据库和生产配置；服务级演练缺失则无法证明业务恢复 RTO。
-**动作：** 见行动计划 P0-1、P0-3。
+**修复：** 备份脚本强制使用 age 公钥加密，恢复私钥独立托管；本地/Azure manifest 与完整解密校验通过。两端历史明文目录已清理，最终扫描只剩 `.age` 文件。
+**剩余：** 数据级恢复演练已通过，但尚未使用独立托管私钥启动恢复库 API 验证服务级 RTO；见行动计划 P0-3。
 
 ### AUD-002：备份 SSH key 没有 forced command/restrict（已修复）
 

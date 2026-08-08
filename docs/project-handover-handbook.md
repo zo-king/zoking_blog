@@ -789,7 +789,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 轮换密码后的最近备份可通过 manifest 校验。
 - [x] 最近备份已复制到 Azure `zoking-backup@10.20.0.1` 异机目录并再次校验。
 - [x] 备份 SSH key 已限制为 `rrsync` 写入备份根目录，并通过命令和删除选项负向测试。
-- [ ] 已配置 `BACKUP_AGE_RECIPIENT`、完成一次加密备份并清理历史明文副本；恢复私钥已由第二名管理员独立取得。
+- [x] 已配置 `BACKUP_AGE_RECIPIENT`、完成加密备份并清理历史明文副本；恢复私钥已独立托管，本机暂存文件已删除。
 - [x] 数据库和媒体数据级恢复演练完成；服务级恢复演练列入季度计划。
 - [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
 - [ ] 外部 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
