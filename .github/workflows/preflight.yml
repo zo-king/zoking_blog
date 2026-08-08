@@ -146,7 +146,7 @@ jobs:
           cache-dependency-path: apps/admin/package-lock.json
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@6b1ee2dcc06c9b6629a5317fa0146473914d05e1 # v3
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3
         with:
           hugo-version: "0.164.0"
           extended: true
