@@ -64,6 +64,8 @@
 
 当前验收：Go 全量测试、vet、govulncheck、Admin build/lint/format/npm audit、actionlint、YAML 和 Compose config 均通过；CI run `31246299311` 已通过 API、Admin、GoatCounter 最终镜像 Trivy 门禁，健康探针修复后的 CI run `31248514854` 亦完整成功。生产已部署提交 `ee8989c`，API/worker 使用镜像 `e37df740...`，Admin 使用 `b805e4a2...`，GoatCounter 使用 `73ceee16...`；内部 site/api/admin/stats 返回 `200/200/200/303`，GoatCounter health 为 healthy，公网五域名和 HTTP→HTTPS `308` 验证通过。
 
+运行态复核（2026-08-09）：发现 `site` 容器仍停留在审计前的 `nginx:1.27-alpine`，与 Compose 固定的 `nginx:1.30-alpine@sha256:97d490...` 不一致。已仅拉取并重建 `site`；实际镜像现为该目标 digest、容器 healthy，WireGuard 内网和公网首页均返回 `200`，其余五个 Compose 服务未重建。
+
 ### 7. 收窄物理机 SSH 来源（已完成：2026-08-08）
 
 现状：物理机 UFW 当前允许 `192.168.0.0/24 -> 22/tcp`。这不是公网暴露，但超过单一管理终端的最小权限边界。
