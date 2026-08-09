@@ -41,6 +41,10 @@ check_status() {
 check_disk() {
   local path="$1"
   local used
+  if [[ ! -e "$path" ]]; then
+    record_error "disk path is missing: ${path}"
+    return
+  fi
   used="$(df -P "$path" | awk 'NR==2 {gsub(/%/, "", $5); print $5}')"
   if [[ "$used" =~ ^[0-9]+$ ]] && (( used < DISK_WARN_PERCENT )); then
     pass "disk ${path} ${used}% used"
@@ -71,6 +75,45 @@ check_service() {
     pass "systemd ${service} active"
   else
     record_error "systemd ${service} is not active"
+  fi
+}
+
+check_remote_backup() {
+  local daily_root latest candidate plaintext epoch age_hours
+  daily_root="${BACKUP_ROOT}/daily"
+  if [[ ! -d "$daily_root" ]]; then
+    record_error "remote backup directory is missing: ${daily_root}"
+    return
+  fi
+
+  latest=""
+  while IFS= read -r candidate; do
+    if [[ "$candidate" =~ ^[0-9]{8}T[0-9]{6}Z$ ]]; then
+      latest="$candidate"
+    fi
+  done < <(find "$daily_root" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' 2>/dev/null | sort)
+  if [[ -z "$latest" ]]; then
+    record_error "remote backup directory has no timestamped daily backup"
+    return
+  fi
+  latest="${daily_root}/${latest}"
+
+  plaintext="$(find "$latest" -type f ! -name SHA256SUMS ! -name '*.age' -print -quit)"
+  if [[ ! -f "$latest/SHA256SUMS" ]] || [[ -n "$plaintext" ]]; then
+    record_error "remote latest backup manifest or encryption layout is invalid"
+    return
+  fi
+  if ! (cd "$latest" && sha256sum -c SHA256SUMS >/dev/null 2>&1); then
+    record_error "remote latest backup manifest verification failed"
+    return
+  fi
+
+  epoch="$(stat -c %Y "$latest")"
+  age_hours=$((( $(date +%s) - epoch ) / 3600))
+  if ((age_hours <= BACKUP_MAX_AGE_HOURS)); then
+    pass "remote latest backup ${age_hours}h old and manifest verified"
+  else
+    record_error "remote latest backup is ${age_hours}h old"
   fi
 }
 
@@ -160,6 +203,8 @@ check_edge() {
   check_status 'https://preview.zoking.tech/' '^404$'
   check_status 'https://stats.zoking.tech/' '^(200|303)$'
   check_disk '/'
+  check_disk "$BACKUP_ROOT"
+  check_remote_backup
   check_wireguard
   check_failed_units
 

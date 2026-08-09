@@ -1,0 +1,11 @@
+[Unit]
+Description=Run Zoking Blog Azure remote backup maintenance daily
+
+[Timer]
+OnCalendar=*-*-* 04:15:00
+RandomizedDelaySec=15m
+Persistent=true
+Unit=zoking-remote-backup-maintenance.service
+
+[Install]
+WantedBy=timers.target

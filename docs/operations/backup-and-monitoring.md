@@ -54,6 +54,11 @@ BACKUP_AGE_RECIPIENT=age1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 DISK_WARN_PERCENT=80
 BACKUP_MAX_AGE_HOURS=36
 WG_MAX_AGE_SECONDS=300
+# Azure remote-backup host only:
+REMOTE_DAILY_KEEP_DAYS=7
+REMOTE_WEEKLY_KEEP_DAYS=35
+REMOTE_MONTHLY_KEEP_DAYS=100
+REMOTE_DISK_WARN_PERCENT=80
 # BACKUP_REMOTE=zoking-backup@10.20.0.1:/
 # BACKUP_SSH_KEY=/etc/zoking-blog/backup_ed25519
 # ALERT_WEBHOOK_URL=https://open.feishu.cn/open-apis/bot/v2/hook/REDACTED
@@ -95,6 +100,19 @@ Azure 的 `authorized_keys` 应使用 `restrict,command="/usr/bin/rrsync -wo -no
 - Azure 目标目录仅 `zoking-backup` 与 root 可读。
 - `.env.prod` 与数据库包含敏感数据；推荐使用 age/对象存储服务端加密再形成长期异机归档。
 - 远端必须有独立保留清理策略，不能让 rsync 使用未经检查的 `--delete`。
+
+Azure 上以 root 安装独立维护任务。它先校验最新加密 manifest，按 UTC 日/周/月建立硬链接保留层级，再按目录名中的 UTC 备份时间清理过期目录；不会使用 `rsync --delete`，也不会删除最新目录。默认保留期与物理机一致：7 天日备份、35 天周备份、100 天月备份。
+
+```bash
+sudo install -m 0755 maintain-remote-backups.sh /opt/zoking-ops/maintain-remote-backups.sh
+sudo install -m 0644 zoking-remote-backup-maintenance.service /etc/systemd/system/
+sudo install -m 0644 zoking-remote-backup-maintenance.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now zoking-remote-backup-maintenance.timer
+sudo /opt/zoking-ops/maintain-remote-backups.sh --check
+```
+
+`zoking-edge-healthcheck.service` 同时校验 Azure 最新备份的加密布局、`SHA256SUMS`、备份年龄和 `/var/backups/zoking-blog` 所在文件系统。维护 timer 默认在每日 `04:15 UTC` 后运行，避开物理机 `03:30 UTC` 备份窗口。
 
 ## 5. 手工验证备份
 

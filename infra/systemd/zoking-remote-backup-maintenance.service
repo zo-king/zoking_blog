@@ -1,0 +1,11 @@
+[Unit]
+Description=Zoking Blog Azure remote backup retention and integrity check
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+EnvironmentFile=-/etc/zoking-blog/ops.env
+ExecStart=/opt/zoking-ops/maintain-remote-backups.sh --prune
+TimeoutStartSec=15m
