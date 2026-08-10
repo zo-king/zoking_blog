@@ -354,11 +354,6 @@ fi
 [[ -n "$ADMIN_ACCOUNT" ]] || fail "no active restored super administrator was found"
 [[ -r /dev/tty && -w /dev/tty ]] || fail "administrator login verification requires an interactive terminal"
 
-printf 'Restored admin password for %s: ' "$ADMIN_ACCOUNT" >/dev/tty
-IFS= read -r -s ADMIN_PASSWORD </dev/tty
-printf '\n' >/dev/tty
-[[ -n "$ADMIN_PASSWORD" ]] || fail "administrator password was empty"
-
 if [[ "$SKIP_PUBLISH" != "true" ]]; then
   docker run -d \
     --name "$WORKER_CONTAINER" \
@@ -372,20 +367,46 @@ if [[ "$SKIP_PUBLISH" != "true" ]]; then
   [[ "$(docker inspect -f '{{.State.Running}}' "$WORKER_CONTAINER")" == "true" ]] || fail "isolated worker did not remain running"
 fi
 
-printf '%s' "$ADMIN_PASSWORD" | docker run --rm -i \
-  --name "$PROBE_CONTAINER" \
-  --label zoking.restore-drill=true \
-  --network "$NETWORK" \
-  --user 0:0 \
-  --env PROBE_API_URL=http://api:18080 \
-  --env PROBE_SITE_URL=http://site \
-  --env "PROBE_ADMIN_ACCOUNT=${ADMIN_ACCOUNT}" \
-  --env "PROBE_MEDIA_PATH=${MEDIA_PATH}" \
-  --env "PROBE_SKIP_PUBLISH=${SKIP_PUBLISH}" \
-  --volume "${WORK_DIR}/probe/restore-http-probe:/usr/local/bin/restore-http-probe:ro" \
-  --entrypoint /usr/local/bin/restore-http-probe \
-  "$API_IMAGE"
-ADMIN_PASSWORD=""
+PROBE_PASSED=false
+for attempt in 1 2 3; do
+  printf 'Restored blog admin password for %s (not SSH/sudo password): ' "$ADMIN_ACCOUNT" >/dev/tty
+  IFS= read -r -s ADMIN_PASSWORD </dev/tty
+  printf '\n' >/dev/tty
+  [[ -n "$ADMIN_PASSWORD" ]] || fail "administrator password was empty"
+
+  if printf '%s' "$ADMIN_PASSWORD" | docker run --rm -i \
+    --name "$PROBE_CONTAINER" \
+    --label zoking.restore-drill=true \
+    --network "$NETWORK" \
+    --user 0:0 \
+    --env PROBE_API_URL=http://api:18080 \
+    --env PROBE_SITE_URL=http://site \
+    --env "PROBE_ADMIN_ACCOUNT=${ADMIN_ACCOUNT}" \
+    --env "PROBE_MEDIA_PATH=${MEDIA_PATH}" \
+    --env "PROBE_SKIP_PUBLISH=${SKIP_PUBLISH}" \
+    --volume "${WORK_DIR}/probe/restore-http-probe:/usr/local/bin/restore-http-probe:ro" \
+    --entrypoint /usr/local/bin/restore-http-probe \
+    "$API_IMAGE"; then
+    probe_status=0
+  else
+    probe_status=$?
+  fi
+  ADMIN_PASSWORD=""
+
+  case "$probe_status" in
+    0)
+      PROBE_PASSED=true
+      break
+      ;;
+    20)
+      log "restored administrator password rejected (attempt ${attempt}/3)"
+      ;;
+    *)
+      fail "internal service probe failed with exit code ${probe_status}"
+      ;;
+  esac
+done
+[[ "$PROBE_PASSED" == "true" ]] || fail "restored administrator password was rejected three times"
 
 COUNTS="$(docker exec "$POSTGRES_CONTAINER" psql -U restore -d zoking_blog_restore -AtF/ -c \
   "select (select count(*) from users),(select count(*) from posts),(select count(*) from media_assets),(select count(*) from publish_jobs)")"

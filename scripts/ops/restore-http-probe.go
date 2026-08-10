@@ -14,7 +14,10 @@ import (
 	"time"
 )
 
-const adminOrigin = "https://admin.restore.invalid"
+const (
+	adminOrigin      = "https://admin.restore.invalid"
+	authRejectedExit = 20
+)
 
 type probe struct {
 	client  *http.Client
@@ -116,6 +119,10 @@ func main() {
 	body, response, err := p.requestExpect(ctx, http.MethodPost, p.apiURL+"/api/v1/admin/auth/login", loginPayload, "", http.StatusOK)
 	clear(loginPayload)
 	if err != nil {
+		if response != nil && response.StatusCode == http.StatusUnauthorized {
+			log.Print("[zoking-probe] restored administrator credentials were rejected")
+			os.Exit(authRejectedExit)
+		}
 		log.Fatal(err)
 	}
 	var login loginResponse

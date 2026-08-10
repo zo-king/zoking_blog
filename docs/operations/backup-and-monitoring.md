@@ -168,7 +168,7 @@ cd /opt/zoking-blog
 sudo scripts/ops/drill-service-restore.sh --preflight
 ```
 
-从密码管理器把 age identity 直接导出到 `/run/user/<uid>/` 或 root 专用的 `/run/zoking-recovery/`，权限必须为 `0600`。不要把私钥粘贴到聊天、命令行参数、journal、仓库或普通磁盘临时目录。完整演练会在终端静默读取恢复库管理员密码，依次验证内容 manifest、数据库恢复、迁移、API `/readyz`、公开数据、站点/媒体、管理员登录及一次隔离发布：
+从密码管理器把 age identity 直接导出到 `/run/user/<uid>/` 或 root 专用的 `/run/zoking-recovery/`，权限必须为 `0600`。不要把私钥粘贴到聊天、命令行参数、journal、仓库或普通磁盘临时目录。完整演练会在终端静默读取博客后台管理员密码（不是 SSH/sudo 密码，最多尝试三次），依次验证内容 manifest、数据库恢复、迁移、API `/readyz`、公开数据、站点/媒体、管理员登录及一次隔离发布：
 
 ```bash
 sudo install -d -m 0700 /run/zoking-recovery
