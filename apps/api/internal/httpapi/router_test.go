@@ -97,6 +97,43 @@ func TestNewCSRFTokenIsStrongAndUnique(t *testing.T) {
 	}
 }
 
+func TestSessionCSRFTokenPreservesValidCookieAcrossTabs(t *testing.T) {
+	issued, err := newCSRFToken()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, tab := range []string{"first", "second"} {
+		t.Run(tab, func(t *testing.T) {
+			context, _ := gin.CreateTestContext(httptest.NewRecorder())
+			context.Request = httptest.NewRequest(http.MethodPost, "/api/v1/admin/auth/refresh", nil)
+			context.Request.AddCookie(&http.Cookie{Name: adminCSRFCookieName, Value: issued})
+
+			got, err := sessionCSRFToken(context)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != issued {
+				t.Fatalf("sessionCSRFToken() = %q, want existing token", got)
+			}
+		})
+	}
+}
+
+func TestSessionCSRFTokenReplacesMalformedCookie(t *testing.T) {
+	context, _ := gin.CreateTestContext(httptest.NewRecorder())
+	context.Request = httptest.NewRequest(http.MethodPost, "/api/v1/admin/auth/refresh", nil)
+	context.Request.AddCookie(&http.Cookie{Name: adminCSRFCookieName, Value: "not-a-valid-token"})
+
+	got, err := sessionCSRFToken(context)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got == "" || got == "not-a-valid-token" {
+		t.Fatalf("sessionCSRFToken() = %q, want a fresh token", got)
+	}
+}
+
 func TestResumeAdminSessionRequiresTrustedBrowserOriginAndCookie(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	cfg := config.Config{

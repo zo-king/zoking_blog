@@ -329,7 +329,7 @@ func refreshAdminSession(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 			Fail(c, 500, "INTERNAL_ERROR", "could not create token")
 			return
 		}
-		csrf, err := newCSRFToken()
+		csrf, err := sessionCSRFToken(c)
 		if err != nil {
 			Fail(c, 500, "INTERNAL_ERROR", "could not create session")
 			return
@@ -370,16 +370,10 @@ func resumeAdminSession(cfg config.Config) gin.HandlerFunc {
 			Fail(c, http.StatusForbidden, "SESSION_RESUME_FORBIDDEN", "admin session cannot be resumed")
 			return
 		}
-		// 沿用已有的合法 CSRF cookie:恢复会话若轮换 token,会立刻废掉
-		// 其它已打开标签页里持有的旧 token,导致它们的写操作全部 403。
-		csrfToken := existingCSRFToken(c)
-		if csrfToken == "" {
-			fresh, err := newCSRFToken()
-			if err != nil {
-				Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not resume session")
-				return
-			}
-			csrfToken = fresh
+		csrfToken, err := sessionCSRFToken(c)
+		if err != nil {
+			Fail(c, http.StatusInternalServerError, "INTERNAL_ERROR", "could not resume session")
+			return
 		}
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:     adminCSRFCookieName,
@@ -456,6 +450,15 @@ func existingCSRFToken(c *gin.Context) string {
 		return ""
 	}
 	return value
+}
+
+func sessionCSRFToken(c *gin.Context) (string, error) {
+	// Refresh and resume must preserve the shared cookie so per-tab header
+	// tokens remain valid across the same browser session.
+	if existing := existingCSRFToken(c); existing != "" {
+		return existing, nil
+	}
+	return newCSRFToken()
 }
 
 func listPublicPosts(db *gorm.DB) gin.HandlerFunc {
