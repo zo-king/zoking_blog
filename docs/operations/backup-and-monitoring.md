@@ -157,6 +157,27 @@ rm -f /secure/recovery/zoking-blog-age-key.txt
 
 演练记录至少包含备份时间、恢复时间、数据行抽查、错误、RPO 和 RTO。
 
+### 服务级恢复演练
+
+季度演练使用 `drill-service-restore.sh`。脚本从当前生产 API 容器读取不可变镜像 ID，但只创建带 `zoking.restore-drill=true` 标签的临时容器、内部网络和专用 volumes；PostgreSQL 不映射端口，API 与 Site 仅绑定 `127.0.0.1`。它不会调用生产 Compose 的启动、停止或重建命令。
+
+先执行无密钥、只读预检：
+
+```bash
+cd /opt/zoking-blog
+sudo scripts/ops/drill-service-restore.sh --preflight
+```
+
+从密码管理器把 age identity 直接导出到 `/run/user/<uid>/` 或 root 专用的 `/run/zoking-recovery/`，权限必须为 `0600`。不要把私钥粘贴到聊天、命令行参数、journal、仓库或普通磁盘临时目录。完整演练会在终端静默读取恢复库管理员密码，依次验证内容 manifest、数据库恢复、迁移、API `/readyz`、公开数据、站点/媒体、管理员登录及一次隔离发布：
+
+```bash
+sudo install -d -m 0700 /run/zoking-recovery
+sudo scripts/ops/drill-service-restore.sh \
+  --identity /run/zoking-recovery/zoking-blog-age-identity.txt
+```
+
+脚本无论成功或失败都会删除 identity、解密文件、临时容器、网络和 volumes，并核对生产容器 ID 未变化。只有明确记录 `service-level restore passed`、RTO/RPO、数据计数和清理结果后，才能关闭服务级恢复演练事项。
+
 ## 7. 生产恢复
 
 生产恢复是高风险操作，必须先记录现状并保留故障数据：

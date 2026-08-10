@@ -24,6 +24,8 @@
 
 恢复验证：隔离环境已使用托管前的临时 identity 完整解密 PostgreSQL dump、媒体和发布/统计归档；identity 随后从物理机删除。服务级恢复演练仍按 P0-3 的季度后续执行。
 
+服务级进展（2026-08-10）：仓库已新增一键隔离演练脚本，强制使用内部 Docker 网络、专用临时 volumes 和回环端口，覆盖 `/readyz`、公开读取、管理员登录及隔离发布，并在退出时删除 identity 和全部临时资源。脚本已通过本地及物理机 Bash 语法检查；真实演练待从密码管理器临时导出 identity 后执行。
+
 ### 2. 限制备份 SSH key 的能力（已完成：2026-08-07）
 
 现状：`zoking-backup` 无 sudo，但 `authorized_keys` 没有 `restrict` 或 forced command；密钥泄露后可在 Azure 账号权限内执行任意命令。
@@ -37,6 +39,8 @@
 实施：使用备份 `20260807T134911Z` 在临时 PostgreSQL 容器和临时 volumes 中恢复，未连接生产卷；记录见 [restore-drill-2026-08-07.md](restore-drill-2026-08-07.md)。
 
 验收结果：数据库和四类文件归档均可恢复；总演练约 28 秒；所有临时容器和 volumes 已清理。下一次季度演练应增加“使用恢复库启动 API”的服务级验证。
+
+服务级演练入口：`sudo scripts/ops/drill-service-restore.sh --preflight` 先完成只读预检；随后按 [backup-and-monitoring.md](backup-and-monitoring.md) 临时提供 `/run` 下的 age identity，执行完整演练并记录 RTO/RPO。未取得完整成功输出前，本项仍仅按“数据级完成”计。
 
 ## P1：7 天内
 
