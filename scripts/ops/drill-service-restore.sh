@@ -12,6 +12,14 @@ SKIP_PUBLISH=false
 
 POSTGRES_IMAGE="postgres:16-alpine@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777"
 SITE_IMAGE="nginx:1.30-alpine@sha256:97d490c12ba55b4946b01546d1c3ed324e8d41ab1c9fcb2a616aa470620e5b46"
+# Preserve canonical production metadata during publish validation; the drill's
+# internal Docker network still blocks egress and exposes no host ports.
+PUBLIC_SITE_URL="https://zoking.tech/"
+PUBLIC_SITE_ORIGIN="https://zoking.tech"
+PUBLIC_API_URL="https://api.zoking.tech"
+PUBLIC_ADMIN_ORIGIN="https://admin.zoking.tech"
+PUBLIC_PREVIEW_BASE_URL="https://preview.zoking.tech/preview-files"
+PUBLIC_STATS_HOST="stats.zoking.tech"
 
 usage() {
   cat <<'EOF'
@@ -275,10 +283,10 @@ COMMON_ENV=(
   --env "DATABASE_URL=${DATABASE_URL}"
   --env "JWT_SECRET=${JWT_SECRET}"
   --env "PRIVACY_HASH_SECRET=${PRIVACY_SECRET}"
-  --env SITE_BASE_URL=https://restore.invalid/
-  --env PUBLIC_API_BASE_URL=https://api.restore.invalid
-  --env CORS_ALLOWED_ORIGINS=https://restore.invalid
-  --env ADMIN_ALLOWED_ORIGINS=https://admin.restore.invalid
+  --env "SITE_BASE_URL=${PUBLIC_SITE_URL}"
+  --env "PUBLIC_API_BASE_URL=${PUBLIC_API_URL}"
+  --env "CORS_ALLOWED_ORIGINS=${PUBLIC_SITE_ORIGIN}"
+  --env "ADMIN_ALLOWED_ORIGINS=${PUBLIC_ADMIN_ORIGIN}"
   --env TRUSTED_PROXIES=127.0.0.1,::1
   --env MEDIA_STORAGE_DRIVER=local
   --env MEDIA_LOCAL_DIR=/data/media
@@ -291,10 +299,10 @@ COMMON_ENV=(
   --env PUBLISH_RELEASE_ROOT=/data/releases
   --env PUBLISH_CURRENT_DIR=/data/current
   --env PUBLISH_PREVIEW_ROOT=/data/previews
-  --env PUBLISH_PREVIEW_PUBLIC_BASE_URL=https://preview.restore.invalid/preview-files
+  --env "PUBLISH_PREVIEW_PUBLIC_BASE_URL=${PUBLIC_PREVIEW_BASE_URL}"
   --env PUBLISH_WORKER_ENABLED=false
-  --env HUGO_COMMENTS_API_BASE=https://api.restore.invalid
-  --env HUGO_STATS_HOST=stats.restore.invalid
+  --env "HUGO_COMMENTS_API_BASE=${PUBLIC_API_URL}"
+  --env "HUGO_STATS_HOST=${PUBLIC_STATS_HOST}"
 )
 COMMON_VOLUMES=(
   --volume "${REPO_DIR}/db/migrations:/workspace/db/migrations:ro"
@@ -381,6 +389,7 @@ for attempt in 1 2 3; do
     --user 0:0 \
     --env PROBE_API_URL=http://api:18080 \
     --env PROBE_SITE_URL=http://site \
+    --env "PROBE_ADMIN_ORIGIN=${PUBLIC_ADMIN_ORIGIN}" \
     --env "PROBE_ADMIN_ACCOUNT=${ADMIN_ACCOUNT}" \
     --env "PROBE_MEDIA_PATH=${MEDIA_PATH}" \
     --env "PROBE_SKIP_PUBLISH=${SKIP_PUBLISH}" \

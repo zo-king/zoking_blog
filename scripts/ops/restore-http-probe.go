@@ -14,15 +14,13 @@ import (
 	"time"
 )
 
-const (
-	adminOrigin      = "https://admin.restore.invalid"
-	authRejectedExit = 20
-)
+const authRejectedExit = 20
 
 type probe struct {
-	client  *http.Client
-	apiURL  string
-	siteURL string
+	client      *http.Client
+	apiURL      string
+	siteURL     string
+	adminOrigin string
 }
 
 type loginResponse struct {
@@ -55,6 +53,7 @@ func main() {
 
 	apiURL := requiredEnv("PROBE_API_URL")
 	siteURL := requiredEnv("PROBE_SITE_URL")
+	adminOrigin := requiredEnv("PROBE_ADMIN_ORIGIN")
 	account := requiredEnv("PROBE_ADMIN_ACCOUNT")
 	mediaPath := strings.TrimSpace(os.Getenv("PROBE_MEDIA_PATH"))
 	skipPublish := strings.EqualFold(strings.TrimSpace(os.Getenv("PROBE_SKIP_PUBLISH")), "true")
@@ -66,7 +65,7 @@ func main() {
 	if len(password) == 0 || len(password) > 4096 {
 		log.Fatal("administrator password input is empty or too large")
 	}
-	defer clear(password)
+	defer zeroBytes(password)
 
 	p := probe{
 		client: &http.Client{
@@ -75,8 +74,9 @@ func main() {
 				return http.ErrUseLastResponse
 			},
 		},
-		apiURL:  strings.TrimRight(apiURL, "/"),
-		siteURL: strings.TrimRight(siteURL, "/"),
+		apiURL:      strings.TrimRight(apiURL, "/"),
+		siteURL:     strings.TrimRight(siteURL, "/"),
+		adminOrigin: adminOrigin,
 	}
 
 	if err := p.waitForStatus(ctx, p.apiURL+"/readyz", http.StatusOK, time.Minute); err != nil {
@@ -114,10 +114,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("encode login request: %v", err)
 	}
-	clear(password)
+	zeroBytes(password)
 
 	body, response, err := p.requestExpect(ctx, http.MethodPost, p.apiURL+"/api/v1/admin/auth/login", loginPayload, "", http.StatusOK)
-	clear(loginPayload)
+	zeroBytes(loginPayload)
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusUnauthorized {
 			log.Print("[zoking-probe] restored administrator credentials were rejected")
@@ -224,7 +224,7 @@ func (p probe) requestExpect(ctx context.Context, method, url string, body []byt
 		return nil, nil, fmt.Errorf("create %s request: %w", url, err)
 	}
 	if strings.HasPrefix(url, p.apiURL+"/api/v1/admin/") {
-		request.Header.Set("Origin", adminOrigin)
+		request.Header.Set("Origin", p.adminOrigin)
 	}
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
@@ -253,4 +253,10 @@ func requiredEnv(name string) string {
 		log.Fatalf("%s is required", name)
 	}
 	return value
+}
+
+func zeroBytes(value []byte) {
+	for index := range value {
+		value[index] = 0
+	}
 }
