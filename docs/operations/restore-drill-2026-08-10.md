@@ -30,7 +30,7 @@
 1. 隔离环境最初使用 `.invalid` 保留域名，触发生产公开 URL 安全策略。提交 `c30ad845` 改为在无公网出口的内部网络中保留正式 canonical 元数据，并让探针从同一 Admin Origin 配置取值。
 2. 备份 `20260810T055931Z` 暴露历史配置漂移：`site.base_url` 和 `comments.api_base` 仍为 localhost。后台已改为 `https://zoking.tech/` 和 `https://api.zoking.tech`，成功发布后创建本次最终备份。
 3. 管理员密码已通过受控脚本重置；重置前后均创建加密备份，旧 refresh tokens 已撤销，新密码登录在生产和恢复环境均通过。
-4. 后台多标签页出现 CSRF cookie 与标签页 session token 不一致。关闭旧标签页并使用单一新会话后恢复操作；跨标签页刷新协调仍作为后续修复项。
+4. 后台多标签页出现 CSRF cookie 与标签页 session token 不一致。后续提交 `4d285996` 已使刷新和会话恢复复用合法现有 token；CI、生产部署和双标签页人工验收均通过。
 
 ## 结论
 

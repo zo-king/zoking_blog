@@ -94,7 +94,7 @@
 - 建立管理员、数据库、JWT、隐私哈希和备份密钥的季度轮换演练。
 - 管理员密码遗失恢复入口已固化为 `scripts/ops/reset-admin-password.sh`；2026-08-10 首次生产执行成功，重置前后加密备份、旧会话撤销、生产登录和恢复环境登录均通过。后续纳入季度轮换记录。
 - 将生产公开 URL 安全校验前移到后台设置保存阶段，避免允许保存 localhost 后仅在发布时失败；生产数据已修正为正式 HTTPS 地址。
-- 修复 Admin 多标签页并发刷新导致 CSRF cookie 与标签页 token 不一致的问题；在修复前，敏感变更使用单一新会话执行。
+- Admin 多标签页 CSRF 刷新已修复（2026-08-10）：`/auth/refresh` 和会话恢复现在复用格式合法的现有 CSRF cookie，避免共享 cookie 与各标签页 header token 失配；提交 `4d285996` 通过 CI `31364533283`，生产 API/Worker 已切换到镜像 `b77a00abddb2...`。双标签页主动刷新后在另一标签页保存设置的人工验收通过。
 - 将生产 IP、服务端口、提交号和 SSH 管理来源从长文档中的散落常量改为一份生成的状态快照，减少文档漂移。
 - 恢复 GitHub 直连后验证 `git fetch --prune origin`；在此之前使用可校验 Git bundle，并记录 bundle 的来源 commit。
 
