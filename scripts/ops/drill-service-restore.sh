@@ -7,8 +7,6 @@ REPO_DIR="${REPO_DIR:-/opt/zoking-blog}"
 BACKUP_DIR="${BACKUP_DIR:-/var/backups/zoking-blog/daily/latest}"
 IDENTITY=""
 ADMIN_ACCOUNT=""
-API_PORT="${RESTORE_API_PORT:-28080}"
-SITE_PORT="${RESTORE_SITE_PORT:-21313}"
 PREFLIGHT_ONLY=false
 SKIP_PUBLISH=false
 
@@ -25,15 +23,13 @@ Options:
   --backup DIR             Encrypted backup directory (default: daily/latest)
   --identity PATH          Temporary age identity under /run; deleted on exit
   --admin-account ACCOUNT  Restored administrator account (default: active super admin)
-  --api-port PORT          Loopback API port (default: 28080)
-  --site-port PORT         Loopback site port (default: 21313)
   --skip-publish           Verify login but do not exercise the isolated worker
-  --preflight              Read-only dependency, backup, image, and port checks
+  --preflight              Read-only dependency, backup, and image checks
   -h, --help               Show this help
 
 The drill never connects to production volumes or the production database. It
-uses an internal Docker network, dedicated temporary volumes, and loopback-only
-ports. The temporary age identity is removed on every normal or error exit.
+uses an internal Docker network, dedicated temporary volumes, and no host port
+bindings. The temporary age identity is removed on every normal or error exit.
 EOF
 }
 
@@ -48,10 +44,6 @@ fail() {
 
 require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "missing command: $1"
-}
-
-valid_port() {
-  [[ "$1" =~ ^[0-9]+$ ]] && ((10#$1 >= 1024 && 10#$1 <= 65535))
 }
 
 while (($# > 0)); do
@@ -69,16 +61,6 @@ while (($# > 0)); do
     --admin-account)
       (($# >= 2)) || fail "--admin-account requires a value"
       ADMIN_ACCOUNT="$2"
-      shift 2
-      ;;
-    --api-port)
-      (($# >= 2)) || fail "--api-port requires a value"
-      API_PORT="$2"
-      shift 2
-      ;;
-    --site-port)
-      (($# >= 2)) || fail "--site-port requires a value"
-      SITE_PORT="$2"
       shift 2
       ;;
     --skip-publish)
@@ -100,11 +82,8 @@ while (($# > 0)); do
 done
 
 [[ "$(id -u)" -eq 0 ]] || fail "run as root so the protected backup can be read"
-valid_port "$API_PORT" || fail "API port must be between 1024 and 65535"
-valid_port "$SITE_PORT" || fail "site port must be between 1024 and 65535"
-[[ "$API_PORT" != "$SITE_PORT" ]] || fail "API and site ports must differ"
 
-for command_name in age curl docker jq openssl readlink sha256sum ss tar; do
+for command_name in age docker openssl readlink sha256sum tar; do
   require_command "$command_name"
 done
 
@@ -114,12 +93,14 @@ VERIFY_SCRIPT="${REPO_DIR}/scripts/ops/verify-backup.sh"
 COMPOSE_FILE="${REPO_DIR}/infra/docker/compose.prod.yml"
 ENV_FILE="${REPO_DIR}/infra/docker/.env.prod"
 SITE_CONFIG="${REPO_DIR}/infra/docker/site.nginx.conf"
+PROBE_SOURCE="${REPO_DIR}/scripts/ops/restore-http-probe.go"
 
 [[ -d "$REPO_DIR/.git" ]] || fail "repository not found: $REPO_DIR"
 [[ -x "$VERIFY_SCRIPT" ]] || fail "backup verifier is unavailable: $VERIFY_SCRIPT"
 [[ -r "$COMPOSE_FILE" ]] || fail "production Compose file is unavailable"
 [[ -r "$ENV_FILE" ]] || fail "production env file is unavailable"
 [[ -r "$SITE_CONFIG" ]] || fail "site nginx config is unavailable"
+[[ -r "$PROBE_SOURCE" ]] || fail "internal HTTP probe source is unavailable"
 case "$BACKUP_DIR" in
   /var/backups/zoking-blog/daily/*|/var/backups/zoking-blog/weekly/*|/var/backups/zoking-blog/monthly/*) ;;
   *) fail "backup must resolve below /var/backups/zoking-blog/{daily,weekly,monthly}"
@@ -137,19 +118,13 @@ PRODUCTION_PROJECT="$(docker inspect -f '{{ index .Config.Labels "com.docker.com
 mapfile -t PRODUCTION_IDS < <(docker ps -q --filter "label=com.docker.compose.project=${PRODUCTION_PROJECT}" | sort)
 (( ${#PRODUCTION_IDS[@]} > 0 )) || fail "production Compose containers are unavailable"
 
-for port in "$API_PORT" "$SITE_PORT"; do
-  if ss -H -ltn "sport = :${port}" | grep -q .; then
-    fail "loopback drill port is already in use: ${port}"
-  fi
-done
-
 "$VERIFY_SCRIPT" "$BACKUP_DIR"
 docker image inspect "$API_IMAGE" "$POSTGRES_IMAGE" "$SITE_IMAGE" >/dev/null
 
 if [[ "$PREFLIGHT_ONLY" == "true" ]]; then
   [[ -z "$IDENTITY" ]] || fail "--identity is not used with --preflight"
   log "preflight passed"
-  log "backup=$(basename "$BACKUP_DIR") api_image=${API_IMAGE} loopback_ports=${API_PORT},${SITE_PORT}"
+  log "backup=$(basename "$BACKUP_DIR") api_image=${API_IMAGE} network=internal host_ports=none"
   exit 0
 fi
 
@@ -173,6 +148,7 @@ POSTGRES_CONTAINER="${PREFIX}-postgres"
 API_CONTAINER="${PREFIX}-api"
 WORKER_CONTAINER="${PREFIX}-worker"
 SITE_CONTAINER="${PREFIX}-site"
+PROBE_CONTAINER="${PREFIX}-probe"
 POSTGRES_VOLUME="${PREFIX}-postgres"
 MEDIA_VOLUME="${PREFIX}-media"
 RELEASES_VOLUME="${PREFIX}-releases"
@@ -182,13 +158,11 @@ DELETE_IDENTITY=true
 START_EPOCH="$(date +%s)"
 DRILL_SUCCEEDED=false
 ADMIN_PASSWORD=""
-ACCESS_TOKEN=""
 
 cleanup() {
   local status=$?
   trap - EXIT INT TERM
   ADMIN_PASSWORD=""
-  ACCESS_TOKEN=""
 
   if [[ "$status" -ne 0 && -n "${API_CONTAINER:-}" ]]; then
     log "drill failed; recent isolated API/worker logs follow" >&2
@@ -196,7 +170,7 @@ cleanup() {
     docker logs --tail 80 "$WORKER_CONTAINER" 2>&1 || true
   fi
 
-  docker rm -f "$SITE_CONTAINER" "$WORKER_CONTAINER" "$API_CONTAINER" "$POSTGRES_CONTAINER" >/dev/null 2>&1 || true
+  docker rm -f "$PROBE_CONTAINER" "$SITE_CONTAINER" "$WORKER_CONTAINER" "$API_CONTAINER" "$POSTGRES_CONTAINER" >/dev/null 2>&1 || true
   docker volume rm "$PUBLISHER_VOLUME" "$RELEASES_VOLUME" "$MEDIA_VOLUME" "$POSTGRES_VOLUME" >/dev/null 2>&1 || true
   docker network rm "$NETWORK" >/dev/null 2>&1 || true
 
@@ -339,51 +313,39 @@ docker run -d \
   --name "$API_CONTAINER" \
   --label zoking.restore-drill=true \
   --network "$NETWORK" \
-  --publish "127.0.0.1:${API_PORT}:18080" \
+  --network-alias api \
   "${COMMON_ENV[@]}" \
   "${COMMON_VOLUMES[@]}" \
   "$API_IMAGE" >/dev/null
-
-for _ in $(seq 1 60); do
-  if curl --fail --silent --show-error "http://127.0.0.1:${API_PORT}/readyz" >/dev/null; then
-    break
-  fi
-  sleep 1
-done
-curl --fail --silent --show-error "http://127.0.0.1:${API_PORT}/readyz" >/dev/null || fail "restored API readiness failed"
-curl --fail --silent --show-error "http://127.0.0.1:${API_PORT}/api/v1/public/posts?page=1&page_size=1" >/dev/null || fail "restored public API read failed"
-curl --fail --silent --show-error "http://127.0.0.1:${API_PORT}/api/v1/public/site/public-settings" >/dev/null || fail "restored site settings read failed"
 
 docker run -d \
   --name "$SITE_CONTAINER" \
   --label zoking.restore-drill=true \
   --network "$NETWORK" \
-  --publish "127.0.0.1:${SITE_PORT}:80" \
+  --network-alias site \
   --volume "${RELEASES_VOLUME}:/data:ro" \
   --volume "${MEDIA_VOLUME}:/data/media:ro" \
   --volume "${SITE_CONFIG}:/etc/nginx/conf.d/default.conf:ro" \
   "$SITE_IMAGE" >/dev/null
 
-for _ in $(seq 1 30); do
-  if curl --fail --silent --show-error "http://127.0.0.1:${SITE_PORT}/" >/dev/null; then
-    break
-  fi
-  sleep 1
-done
-curl --fail --silent --show-error "http://127.0.0.1:${SITE_PORT}/" >/dev/null || fail "restored site read failed"
-
 MEDIA_COUNT="$(docker run --rm --network none --volume "${MEDIA_VOLUME}:/data:ro" "$SITE_IMAGE" sh -ec 'find /data -type f ! -path "/data/.zoking-private/*" | wc -l')"
+MEDIA_PATH=""
 if ((MEDIA_COUNT > 0)); then
   MEDIA_PATH="$(docker run --rm --network none --volume "${MEDIA_VOLUME}:/data:ro" "$SITE_IMAGE" sh -ec 'find /data -type f ! -path "/data/.zoking-private/*" | sed "s#^/data/##" | grep -E "^[A-Za-z0-9._/-]+$" | head -n 1')"
-  if [[ -n "$MEDIA_PATH" ]]; then
-    curl --fail --silent --show-error "http://127.0.0.1:${SITE_PORT}/media-files/${MEDIA_PATH}" >/dev/null || fail "restored media read failed"
-  else
+  if [[ -z "$MEDIA_PATH" ]]; then
     log "media archive has files but no path safe for an automated URL probe"
   fi
-else
-  MEDIA_STATUS="$(curl --silent --output /dev/null --write-out '%{http_code}' "http://127.0.0.1:${SITE_PORT}/media-files/__restore-probe-missing__")"
-  [[ "$MEDIA_STATUS" == "404" ]] || fail "empty restored media route returned HTTP ${MEDIA_STATUS}, expected 404"
 fi
+
+mkdir -p "${WORK_DIR}/probe"
+docker run --rm \
+  --network none \
+  --user 0:0 \
+  --volume "${PROBE_SOURCE}:/src/restore-http-probe.go:ro" \
+  --volume "${WORK_DIR}/probe:/out" \
+  "$API_IMAGE" \
+  sh -ec 'GOCACHE=/tmp/go-cache go build -trimpath -o /out/restore-http-probe /src/restore-http-probe.go'
+chmod 0555 "${WORK_DIR}/probe/restore-http-probe"
 
 if [[ -z "$ADMIN_ACCOUNT" ]]; then
   ADMIN_ACCOUNT="$(docker exec "$POSTGRES_CONTAINER" psql -U restore -d zoking_blog_restore -Atc \
@@ -397,32 +359,6 @@ IFS= read -r -s ADMIN_PASSWORD </dev/tty
 printf '\n' >/dev/tty
 [[ -n "$ADMIN_PASSWORD" ]] || fail "administrator password was empty"
 
-LOGIN_RESPONSE="${WORK_DIR}/login-response.json"
-COOKIE_JAR="${WORK_DIR}/cookies.txt"
-LOGIN_STATUS="$(
-  jq -n --arg account "$ADMIN_ACCOUNT" --arg password "$ADMIN_PASSWORD" '{account:$account,password:$password}' |
-    curl --silent --show-error \
-      --output "$LOGIN_RESPONSE" \
-      --write-out '%{http_code}' \
-      --cookie-jar "$COOKIE_JAR" \
-      --header 'Content-Type: application/json' \
-      --header 'Origin: https://admin.restore.invalid' \
-      --data-binary @- \
-      "http://127.0.0.1:${API_PORT}/api/v1/admin/auth/login"
-)"
-ADMIN_PASSWORD=""
-[[ "$LOGIN_STATUS" == "200" ]] || fail "restored administrator login returned HTTP ${LOGIN_STATUS}"
-jq -e '.data.user.id and .data.csrf_token' "$LOGIN_RESPONSE" >/dev/null || fail "restored administrator login response was invalid"
-ACCESS_TOKEN="$(awk '$6 == "zoking_admin_access" { print $7 }' "$COOKIE_JAR" | tail -n 1)"
-[[ -n "$ACCESS_TOKEN" ]] || fail "restored administrator access token was not issued"
-AUTH_CONFIG="${WORK_DIR}/curl-auth.conf"
-printf 'header = "Authorization: Bearer %s"\n' "$ACCESS_TOKEN" >"$AUTH_CONFIG"
-
-curl --fail --silent --show-error \
-  --config "$AUTH_CONFIG" \
-  --header 'Origin: https://admin.restore.invalid' \
-  "http://127.0.0.1:${API_PORT}/api/v1/admin/auth/me" >/dev/null || fail "restored authenticated API read failed"
-
 if [[ "$SKIP_PUBLISH" != "true" ]]; then
   docker run -d \
     --name "$WORKER_CONTAINER" \
@@ -434,40 +370,22 @@ if [[ "$SKIP_PUBLISH" != "true" ]]; then
 
   sleep 2
   [[ "$(docker inspect -f '{{.State.Running}}' "$WORKER_CONTAINER")" == "true" ]] || fail "isolated worker did not remain running"
-
-  PUBLISH_RESPONSE="${WORK_DIR}/publish-response.json"
-  PUBLISH_STATUS="$(curl --silent --show-error \
-    --output "$PUBLISH_RESPONSE" \
-    --write-out '%{http_code}' \
-    --config "$AUTH_CONFIG" \
-    --header 'Origin: https://admin.restore.invalid' \
-    --request POST \
-    "http://127.0.0.1:${API_PORT}/api/v1/admin/settings/publish")"
-  [[ "$PUBLISH_STATUS" == "202" ]] || fail "isolated publish request returned HTTP ${PUBLISH_STATUS}"
-  JOB_ID="$(jq -er '.data.job.id' "$PUBLISH_RESPONSE")" || fail "isolated publish response did not contain a job ID"
-
-  JOB_STATUS=""
-  for _ in $(seq 1 180); do
-    JOB_RESPONSE="$(curl --fail --silent --show-error --config "$AUTH_CONFIG" \
-      --header 'Origin: https://admin.restore.invalid' \
-      "http://127.0.0.1:${API_PORT}/api/v1/admin/publish/jobs/${JOB_ID}")"
-    NEW_STATUS="$(jq -er '.data.status' <<<"$JOB_RESPONSE")" || fail "could not read isolated publish status"
-    if [[ "$NEW_STATUS" != "$JOB_STATUS" ]]; then
-      log "isolated publish status=${NEW_STATUS}"
-      JOB_STATUS="$NEW_STATUS"
-    fi
-    case "$JOB_STATUS" in
-      published) break ;;
-      failed|canceled)
-        ERROR_CODE="$(jq -r '.data.error_code // "unknown"' <<<"$JOB_RESPONSE")"
-        fail "isolated publish ended with status=${JOB_STATUS} error_code=${ERROR_CODE}"
-        ;;
-    esac
-    sleep 1
-  done
-  [[ "$JOB_STATUS" == "published" ]] || fail "isolated publish did not finish within 180 seconds"
-  curl --fail --silent --show-error "http://127.0.0.1:${SITE_PORT}/" >/dev/null || fail "site read failed after isolated publish"
 fi
+
+printf '%s' "$ADMIN_PASSWORD" | docker run --rm -i \
+  --name "$PROBE_CONTAINER" \
+  --label zoking.restore-drill=true \
+  --network "$NETWORK" \
+  --user 0:0 \
+  --env PROBE_API_URL=http://api:18080 \
+  --env PROBE_SITE_URL=http://site \
+  --env "PROBE_ADMIN_ACCOUNT=${ADMIN_ACCOUNT}" \
+  --env "PROBE_MEDIA_PATH=${MEDIA_PATH}" \
+  --env "PROBE_SKIP_PUBLISH=${SKIP_PUBLISH}" \
+  --volume "${WORK_DIR}/probe/restore-http-probe:/usr/local/bin/restore-http-probe:ro" \
+  --entrypoint /usr/local/bin/restore-http-probe \
+  "$API_IMAGE"
+ADMIN_PASSWORD=""
 
 COUNTS="$(docker exec "$POSTGRES_CONTAINER" psql -U restore -d zoking_blog_restore -AtF/ -c \
   "select (select count(*) from users),(select count(*) from posts),(select count(*) from media_assets),(select count(*) from publish_jobs)")"

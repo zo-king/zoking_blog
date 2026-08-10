@@ -159,7 +159,7 @@ rm -f /secure/recovery/zoking-blog-age-key.txt
 
 ### 服务级恢复演练
 
-季度演练使用 `drill-service-restore.sh`。脚本从当前生产 API 容器读取不可变镜像 ID，但只创建带 `zoking.restore-drill=true` 标签的临时容器、内部网络和专用 volumes；PostgreSQL 不映射端口，API 与 Site 仅绑定 `127.0.0.1`。它不会调用生产 Compose 的启动、停止或重建命令。
+季度演练使用 `drill-service-restore.sh`。脚本从当前生产 API 容器读取不可变镜像 ID，但只创建带 `zoking.restore-drill=true` 标签的临时容器、内部网络和专用 volumes；PostgreSQL、API 与 Site 均不映射主机端口，验证请求由内部网络中的一次性探针发起。它不会调用生产 Compose 的启动、停止或重建命令。
 
 先执行无密钥、只读预检：
 
