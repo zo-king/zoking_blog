@@ -96,7 +96,7 @@
 - 将生产公开 URL 安全校验前移到后台设置保存阶段，避免允许保存 localhost 后仅在发布时失败；生产数据已修正为正式 HTTPS 地址。保存接口现在返回 `422/PUBLIC_URL_INVALID` 和字段级 `details`，提交 `04be054` 的后端测试覆盖非法 URL 零写入与合法生产地址保存。
 - 生产验收（2026-08-10）：CI `31373932279` 全部成功；API/Worker 已切换到镜像 `sha256:b37adc38b00410853df0b2df9ae9f987dc7b5eba4bf30794ae49475153458ed1`，仅重建这两个服务。内网 API/site/admin/stats 为 `200/200/200/303`，公网 site/api/admin/stats 为 `200/200/200/303`，preview 未命中为 `404`；旧镜像保留 `zoking-api:rollback-4d28599`。
 - Admin 多标签页 CSRF 刷新已修复（2026-08-10）：`/auth/refresh` 和会话恢复现在复用格式合法的现有 CSRF cookie，避免共享 cookie 与各标签页 header token 失配；提交 `4d285996` 通过 CI `31364533283`，生产 API/Worker 已切换到镜像 `b77a00abddb2...`。双标签页主动刷新后在另一标签页保存设置的人工验收通过。
-- 将生产 IP、服务端口、提交号和 SSH 管理来源从长文档中的散落常量改为一份生成的状态快照，减少文档漂移。
+- 将生产 IP、服务端口、提交号和 SSH 管理来源从长文档中的散落常量改为一份生成的状态快照，减少文档漂移。仓库已新增无密钥 TSV 快照脚本和 hourly systemd timer；待物理机安装并验证输出权限与字段后闭环。
 - 恢复 GitHub 直连后验证 `git fetch --prune origin`；在此之前使用可校验 Git bundle，并记录 bundle 的来源 commit。
 
 ## 责任与证据模板

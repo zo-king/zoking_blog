@@ -38,6 +38,8 @@ sudo install -m 0644 infra/systemd/zoking-backup.service /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-backup.timer /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-healthcheck.service /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-healthcheck.timer /etc/systemd/system/
+sudo install -m 0644 infra/systemd/zoking-production-state-snapshot.service /etc/systemd/system/
+sudo install -m 0644 infra/systemd/zoking-production-state-snapshot.timer /etc/systemd/system/
 sudo install -d -m 0755 /etc/systemd/journald.conf.d
 sudo install -m 0644 infra/systemd/journald.conf.d/30-zoking-blog.conf /etc/systemd/journald.conf.d/
 sudo systemctl restart systemd-journald
@@ -73,7 +75,7 @@ REMOTE_DISK_WARN_PERCENT=80
 sudo systemctl daemon-reload
 sudo systemctl start zoking-backup.service
 sudo /opt/zoking-blog/scripts/ops/verify-backup.sh /var/backups/zoking-blog/daily/latest
-sudo systemctl enable --now zoking-backup.timer zoking-healthcheck.timer
+sudo systemctl enable --now zoking-backup.timer zoking-healthcheck.timer zoking-production-state-snapshot.timer
 systemctl list-timers 'zoking-*' --all
 ```
 
@@ -242,7 +244,20 @@ sudo systemctl enable --now zoking-edge-healthcheck.timer
 
 Edge 模式检查 Caddy、WireGuard、四个内网服务、五个公网域名、证书剩余时间和磁盘。
 
-## 10. 外部告警
+## 10. 生产状态快照
+
+`production-state-snapshot.sh` 每小时原子刷新 `/var/lib/zoking-ops/production-state.tsv`。快照只包含物理机 IPv4、Git 提交和 tracked dirty 数量、容器镜像 digest/状态/端口、WireGuard 地址和握手年龄、UFW 状态及 SSH 允许规则、最近备份、磁盘、本机 timer、DNS IPv4 以及内外网 HTTP 状态码；不会输出或记录环境变量值、密码、Token、私钥或 Webhook。Azure timer 状态仍以 Azure 上的 `systemctl` 和 journal 为准，不会用物理机的本地状态代替。
+
+手工刷新和查看：
+
+```bash
+sudo systemctl start zoking-production-state-snapshot.service
+sudo sed -n '1,120p' /var/lib/zoking-ops/production-state.tsv
+```
+
+文件权限为 `root:root 0640`。版本和网络信息应引用该快照，不再复制到多份长期文档中。
+
+## 11. 外部告警
 
 当前使用飞书群机器人接收告警。创建机器人后，将 Webhook URL 仅写入服务器 `/etc/zoking-blog/ops.env` 的 `ALERT_WEBHOOK_URL`。URL 是 secret，不可粘贴到聊天、写入 Git、命令行历史、journal、截图或审计报告。
 
@@ -262,6 +277,6 @@ sudo chmod 0600 /etc/zoking-blog/ops.env
 
 飞书返回非零业务码或 HTTP 错误时，脚本会在 journal 记录投递失败，但不会记录 URL 或响应正文。配置完成后必须触发一次受控失败，确认接收群确实收到告警；恢复服务后再确认下一轮健康检查通过。没有配置 Webhook 时，只能通过 journal 和失败单元发现问题。
 
-## 11. TLS 说明
+## 12. TLS 说明
 
 Caddy 自动续期证书。Edge 健康检查读取实际外部证书，当剩余时间少于 14 天时失败。证书监控用于发现 DNS、80/443、ACME 或系统时间异常，不替代 Caddy 自动续期。

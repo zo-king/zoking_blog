@@ -608,6 +608,7 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 仓库提供：
 
 - `scripts/ops/backup-production.sh`：创建备份、manifest 和分层保留副本。
+- `scripts/ops/production-state-snapshot.sh` 与 `infra/systemd/zoking-production-state-snapshot.{service,timer}`：每小时生成不含 secret 的物理机生产状态快照。
 - 当前未提供自动化恢复脚本；恢复必须严格按本文第 16.4 节和 `docs/operations/backup-and-monitoring.md` 的隔离演练流程执行。
 - `infra/systemd/zoking-backup.service` 与 `.timer`：每日执行。
 
@@ -632,6 +633,7 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 - WireGuard 最近握手时间。
 - 根分区和 Docker 数据分区空间。
 - 最近一次备份年龄与 manifest 完整性。
+- `/var/lib/zoking-ops/production-state.tsv` 的新鲜度、权限、提交号、镜像 digest、端口和 SSH UFW 规则。
 - systemd 失败单元。
 
 ### 17.2 Azure 检查项
@@ -794,6 +796,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] 物理机与 Azure 健康检查 timer active，最近一次检查通过。
 - [x] Azure 异机备份维护 timer active；最新加密备份已校验，首次保留清理成功，磁盘阈值为 10% 使用率。
 - [x] 物理机与 Azure journald 已显式配置持久化存储并保留至少 30 天执行记录。
+- [ ] 物理机统一生产状态快照 timer active，快照不包含 secret 且可用于版本和端口核对。
 - [ ] 飞书 Webhook、磁盘、服务、隧道、备份和证书告警已确认能送达接收人。
 
 ## 24. 2026-08-07 已验证基线与已知风险

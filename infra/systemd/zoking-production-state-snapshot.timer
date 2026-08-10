@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Zoking Blog production state snapshot hourly
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=5m
+Persistent=true
+Unit=zoking-production-state-snapshot.service
+
+[Install]
+WantedBy=timers.target
