@@ -88,9 +88,8 @@
 
 ## P2：30 天内
 
-- 为 Azure 异机目录增加独立保留清理策略和磁盘阈值；清理前先验证最新副本，禁止 `rsync --delete` 直接覆盖。
-- 进展（2026-08-09）：仓库已新增按 UTC 时间戳保留、加密 manifest 校验和备份文件系统阈值脚本，并接入 Edge 健康检查与独立 systemd timer；本地合成测试通过，Azure 主机安装和首次真实 `--check` 待管理 SSH 通道恢复。
-- 进展（2026-08-10）：从当前 Windows 主机执行 Azure 公网 SSH 超时，WireGuard 地址 `10.20.0.1:22` 被远端关闭；未执行任何远端清理或配置变更。待从物理机管理会话完成 Azure 只读 `--check`，再执行受控 `--prune` 并核对 timer、磁盘阈值和保留层级。
+- 为 Azure 异机目录增加独立保留清理策略和磁盘阈值（已完成：2026-08-10）；清理前验证最新副本，禁止 `rsync --delete` 直接覆盖。仓库脚本按 UTC 时间戳建立日/周/月保留层级，保护最新目录并在阈值超限时失败。
+- 验收（2026-08-10）：通过物理机 WireGuard ProxyJump 安装维护脚本与 systemd unit；最新备份 `20260810T063709Z` manifest 校验通过，首次 `--prune` 返回 `0/SUCCESS`，保留层级创建成功，磁盘使用率 10%，`zoking-remote-backup-maintenance.timer` 为 `enabled/active`。此前 Windows 直连受限是预期网络边界，未绕过 SSH 限制。
 - 将健康检查、备份、证书和 WireGuard 指标接入长期监控；保留至少 30 天执行结果。
 - 建立管理员、数据库、JWT、隐私哈希和备份密钥的季度轮换演练。
 - 管理员密码遗失恢复入口已固化为 `scripts/ops/reset-admin-password.sh`；2026-08-10 首次生产执行成功，重置前后加密备份、旧会话撤销、生产登录和恢复环境登录均通过。后续纳入季度轮换记录。
