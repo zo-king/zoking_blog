@@ -178,6 +178,17 @@ sudo scripts/ops/drill-service-restore.sh \
 
 脚本无论成功或失败都会删除 identity、解密文件、临时容器、网络和 volumes，并核对生产容器 ID 未变化。只有明确记录 `service-level restore passed`、RTO/RPO、数据计数和清理结果后，才能关闭服务级恢复演练事项。
 
+### 管理员密码恢复
+
+管理员密码遗失时使用 `reset-admin-password.sh`，不要读取 `.env.prod` 中可能已经过期的种子密码，也不要直接编辑 `password_hash`。脚本要求 root 和交互式终端，会自动创建并验证重置前、重置后两份加密备份；新密码必须为 16-72 个 UTF-8 bytes，并在服务器终端静默输入两次。
+
+```bash
+cd /opt/zoking-blog
+sudo scripts/ops/reset-admin-password.sh --account zoking
+```
+
+更新事务只允许唯一匹配的活动 `super_admin`，使用 PostgreSQL `pgcrypto` 生成 bcrypt，随后撤销该用户全部 refresh tokens 并写入不含哈希或密码的审计事件。重置完成后应先确认后台登录，再用脚本输出的 post-reset 备份完成服务级恢复演练。密码只能保存在密码管理器中，不进入聊天、命令参数、环境变量、journal 或仓库。
+
 ## 7. 生产恢复
 
 生产恢复是高风险操作，必须先记录现状并保留故障数据：
