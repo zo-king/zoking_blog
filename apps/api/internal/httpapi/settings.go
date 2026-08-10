@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/zo-king/zoking_blog/apps/api/internal/config"
 	"github.com/zo-king/zoking_blog/apps/api/internal/model"
 	"github.com/zo-king/zoking_blog/apps/api/internal/publisher"
 )
@@ -83,7 +84,7 @@ func getAdminSiteSettings(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func patchAdminSiteSettings(db *gorm.DB) gin.HandlerFunc {
+func patchAdminSiteSettings(db *gorm.DB, cfg config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req siteSettingsPatchRequest
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -104,6 +105,15 @@ func patchAdminSiteSettings(db *gorm.DB) gin.HandlerFunc {
 		}
 		if err := validateSiteSettings(settings); err != nil {
 			Fail(c, http.StatusUnprocessableEntity, "VALIDATION_FAILED", err.Error())
+			return
+		}
+		if err := publisher.ValidateReleasePublicURLs(cfg.AppEnv, settings, cfg.SiteBaseURL, cfg.PublicAPIBaseURL, cfg.MediaPublicBaseURL); err != nil {
+			var validationErr *publisher.PublicURLValidationError
+			if errors.As(err, &validationErr) {
+				FailWithDetails(c, http.StatusUnprocessableEntity, "PUBLIC_URL_INVALID", err.Error(), gin.H{"field": validationErr.Field})
+			} else {
+				Fail(c, http.StatusUnprocessableEntity, "PUBLIC_URL_INVALID", err.Error())
+			}
 			return
 		}
 

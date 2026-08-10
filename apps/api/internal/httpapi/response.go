@@ -27,10 +27,15 @@ func Created(c *gin.Context, data interface{}) {
 }
 
 func Fail(c *gin.Context, status int, code, message string) {
+	FailWithDetails(c, status, code, message, nil)
+}
+
+func FailWithDetails(c *gin.Context, status int, code, message string, details interface{}) {
 	c.JSON(status, gin.H{
 		"error": ErrorBody{
 			Code:    code,
 			Message: message,
+			Details: details,
 		},
 		"request_id": requestID(c),
 	})

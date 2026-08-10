@@ -169,7 +169,7 @@ func NewRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	authed.POST("/publish/jobs/:id/retry", retryPublishJob(db, cfg))
 	authed.POST("/publish/jobs/:id/cancel", cancelPublishJob(db))
 	authed.GET("/settings", getAdminSiteSettings(db))
-	authed.PATCH("/settings", patchAdminSiteSettings(db))
+	authed.PATCH("/settings", patchAdminSiteSettings(db, cfg))
 	authed.POST("/settings/preview", previewSiteSettings(db, cfg))
 	authed.POST("/settings/publish", publishAdminSiteSettings(db))
 	if e2eCleanupEnabled(cfg) {

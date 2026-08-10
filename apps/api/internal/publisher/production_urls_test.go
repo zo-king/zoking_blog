@@ -1,6 +1,7 @@
 package publisher
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,42 @@ func TestValidateReleasePublicURLs(t *testing.T) {
 			}
 			if err == nil || !strings.Contains(err.Error(), tt.wantError) {
 				t.Fatalf("expected error containing %q, got %v", tt.wantError, err)
+			}
+		})
+	}
+}
+
+func TestValidateReleasePublicURLsIdentifiesEditableField(t *testing.T) {
+	valid := defaultSiteSettings()
+	valid.Site.BaseURL = "https://zoking.tech/"
+	valid.Comments.APIBase = "https://api.zoking.tech"
+
+	tests := []struct {
+		name     string
+		settings SiteSettingsSnapshot
+		field    string
+	}{
+		{name: "site scheme", settings: withSiteURL(valid, "http://zoking.tech/"), field: "site.base_url"},
+		{name: "site mismatch", settings: withSiteURL(valid, "https://other.example.org/"), field: "site.base_url"},
+		{name: "comments scheme", settings: withCommentsURL(valid, "http://api.zoking.tech"), field: "comments.api_base"},
+		{name: "comments mismatch", settings: withCommentsURL(valid, "https://api.example.org"), field: "comments.api_base"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := ValidateReleasePublicURLs(
+				"production",
+				test.settings,
+				"https://zoking.tech/",
+				"https://api.zoking.tech",
+				"/media-files",
+			)
+			var validationErr *PublicURLValidationError
+			if !errors.As(err, &validationErr) {
+				t.Fatalf("error = %v, want PublicURLValidationError", err)
+			}
+			if validationErr.Field != test.field {
+				t.Fatalf("field = %q, want %q", validationErr.Field, test.field)
 			}
 		})
 	}

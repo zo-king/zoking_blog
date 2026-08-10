@@ -19,6 +19,19 @@ var (
 	cssURLPattern             = regexp.MustCompile(`(?i)url\(\s*['"]?([^'")]+)`)
 )
 
+type PublicURLValidationError struct {
+	Field   string
+	message string
+}
+
+func (e *PublicURLValidationError) Error() string {
+	return e.message
+}
+
+func newPublicURLValidationError(field string, message string) error {
+	return &PublicURLValidationError{Field: field, message: message}
+}
+
 // ValidateReleasePublicURLs protects canonical and browser-facing URLs before a
 // production release is built. Preview builds intentionally do not call it.
 func ValidateReleasePublicURLs(appEnv string, settings SiteSettingsSnapshot, expectedSiteBaseURL string, expectedAPIBaseURL string, mediaPublicBaseURL string) error {
@@ -33,20 +46,20 @@ func ValidateReleasePublicURLs(appEnv string, settings SiteSettingsSnapshot, exp
 		return fmt.Errorf("PUBLIC_API_BASE_URL: %w", err)
 	}
 	if err := validateProductionHTTPSURL(settings.Site.BaseURL, true); err != nil {
-		return fmt.Errorf("site.base_url: %w", err)
+		return newPublicURLValidationError("site.base_url", fmt.Sprintf("site.base_url: %v", err))
 	}
 	if !samePublicBaseURL(settings.Site.BaseURL, expectedSiteBaseURL) {
-		return fmt.Errorf("site.base_url must match SITE_BASE_URL")
+		return newPublicURLValidationError("site.base_url", "site.base_url must match SITE_BASE_URL")
 	}
 	if settings.Comments.Enabled {
 		if strings.TrimSpace(settings.Comments.APIBase) == "" {
-			return fmt.Errorf("comments.api_base: URL is required")
+			return newPublicURLValidationError("comments.api_base", "comments.api_base: URL is required")
 		}
 		if err := validateProductionHTTPSURL(settings.Comments.APIBase, true); err != nil {
-			return fmt.Errorf("comments.api_base: %w", err)
+			return newPublicURLValidationError("comments.api_base", fmt.Sprintf("comments.api_base: %v", err))
 		}
 		if !samePublicBaseURL(settings.Comments.APIBase, expectedAPIBaseURL) {
-			return fmt.Errorf("comments.api_base must match PUBLIC_API_BASE_URL")
+			return newPublicURLValidationError("comments.api_base", "comments.api_base must match PUBLIC_API_BASE_URL")
 		}
 	}
 	if err := validateProductionMediaBaseURL(mediaPublicBaseURL); err != nil {

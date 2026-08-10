@@ -527,7 +527,7 @@ export function useEditorialCommands({
       Message.success("站点设置已保存");
       await refresh();
     } catch (err) {
-      setError(String(err));
+      showSettingsError(err);
     } finally {
       setSettingsBusy(false);
     }
@@ -549,10 +549,23 @@ export function useEditorialCommands({
       Message.success("站点发布任务已进入队列");
       await refresh();
     } catch (err) {
-      setError(String(err));
+      showSettingsError(err);
     } finally {
       setSettingsBusy(false);
     }
+  }
+
+  function showSettingsError(error: unknown) {
+    if (
+      error instanceof ApiError &&
+      error.code === "PUBLIC_URL_INVALID" &&
+      isPublicURLValidationDetails(error.details)
+    ) {
+      settingsForm.setFields({
+        [error.details.field]: { error: { message: error.message } },
+      });
+    }
+    setError(String(error));
   }
   async function previewSettings() {
     if (!requireSettingsUpdate()) return;
@@ -619,4 +632,10 @@ function isContentQualityReport(value: unknown): value is ContentQualityReport {
   if (!value || typeof value !== "object") return false;
   const report = value as Partial<ContentQualityReport>;
   return typeof report.ready === "boolean" && typeof report.score === "number" && Array.isArray(report.issues);
+}
+
+function isPublicURLValidationDetails(value: unknown): value is { field: "site.base_url" | "comments.api_base" } {
+  if (!value || typeof value !== "object") return false;
+  const field = (value as { field?: unknown }).field;
+  return field === "site.base_url" || field === "comments.api_base";
 }
