@@ -38,6 +38,9 @@ sudo install -m 0644 infra/systemd/zoking-backup.service /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-backup.timer /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-healthcheck.service /etc/systemd/system/
 sudo install -m 0644 infra/systemd/zoking-healthcheck.timer /etc/systemd/system/
+sudo install -d -m 0755 /etc/systemd/journald.conf.d
+sudo install -m 0644 infra/systemd/journald.conf.d/30-zoking-blog.conf /etc/systemd/journald.conf.d/
+sudo systemctl restart systemd-journald
 ```
 
 创建 `/etc/zoking-blog/ops.env`，权限必须为 `0600`：
@@ -230,6 +233,9 @@ sudo install -d -m 0755 /opt/zoking-ops
 sudo install -m 0755 check-production.sh /opt/zoking-ops/check-production.sh
 sudo install -m 0644 zoking-edge-healthcheck.service /etc/systemd/system/
 sudo install -m 0644 zoking-edge-healthcheck.timer /etc/systemd/system/
+sudo install -d -m 0755 /etc/systemd/journald.conf.d
+sudo install -m 0644 30-zoking-blog.conf /etc/systemd/journald.conf.d/
+sudo systemctl restart systemd-journald
 sudo systemctl daemon-reload
 sudo systemctl enable --now zoking-edge-healthcheck.timer
 ```

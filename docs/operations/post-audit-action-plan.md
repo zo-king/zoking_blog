@@ -90,7 +90,7 @@
 
 - 为 Azure 异机目录增加独立保留清理策略和磁盘阈值（已完成：2026-08-10）；清理前验证最新副本，禁止 `rsync --delete` 直接覆盖。仓库脚本按 UTC 时间戳建立日/周/月保留层级，保护最新目录并在阈值超限时失败。
 - 验收（2026-08-10）：通过物理机 WireGuard ProxyJump 安装维护脚本与 systemd unit；最新备份 `20260810T063709Z` manifest 校验通过，首次 `--prune` 返回 `0/SUCCESS`，保留层级创建成功，磁盘使用率 10%，`zoking-remote-backup-maintenance.timer` 为 `enabled/active`。此前 Windows 直连受限是预期网络边界，未绕过 SSH 限制。
-- 将健康检查、备份、证书和 WireGuard 指标接入长期监控；保留至少 30 天执行结果。
+- 将健康检查、备份、证书和 WireGuard 指标接入长期监控；保留至少 30 天执行结果。仓库已新增 `infra/systemd/journald.conf.d/30-zoking-blog.conf`，显式启用持久化 journal 和 `MaxRetentionSec=30d`；待在物理机与 Azure 安装并重启 journald 后验收 `journalctl --disk-usage`、30 天查询窗口和 timer 执行记录。
 - 建立管理员、数据库、JWT、隐私哈希和备份密钥的季度轮换演练。
 - 管理员密码遗失恢复入口已固化为 `scripts/ops/reset-admin-password.sh`；2026-08-10 首次生产执行成功，重置前后加密备份、旧会话撤销、生产登录和恢复环境登录均通过。后续纳入季度轮换记录。
 - 将生产公开 URL 安全校验前移到后台设置保存阶段，避免允许保存 localhost 后仅在发布时失败；生产数据已修正为正式 HTTPS 地址。保存接口现在返回 `422/PUBLIC_URL_INVALID` 和字段级 `details`，提交 `04be054` 的后端测试覆盖非法 URL 零写入与合法生产地址保存。
