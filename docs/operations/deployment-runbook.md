@@ -125,6 +125,34 @@ pwsh -NoProfile -File scripts/qa/production-preflight.ps1
 
    保留原始 `Host`、`X-Forwarded-For` 和 `X-Forwarded-Proto`；不要把 `postgres`、`18080`、`8081` 或 `8100` 直接暴露到公网。上线前从 VPS 检查隧道地址和四个 HTTPS 域名，再从公网执行健康检查。
 
+### 运维终端经 WireGuard 接入
+
+当前生产管理网包含三个固定地址：Azure `10.20.0.1`、物理机 `10.20.0.2`、Mac 运维终端 `10.20.0.3`。Mac 仅路由 `10.20.0.0/24`，不把默认路由或普通互联网流量送入 Azure。
+
+Azure `wg0` 为 Mac peer 配置 `AllowedIPs = 10.20.0.3/32`。UFW 只允许该 peer：
+
+- 访问 Azure `wg0` 的 SSH `22/TCP`；
+- 经 `wg0` 转发到物理机 `10.20.0.2`；
+- 对 `10.20.0.3 -> 10.20.0.2` 做单点 SNAT 为 `10.20.0.1`，不提供通用互联网 NAT。
+
+Mac 的 WireGuard 与 SSH 配置属于终端 secret，不进入本仓库。日常连接：
+
+```bash
+ssh zoking-azure
+ssh zoking-physical
+```
+
+切换网络后先验证：
+
+```bash
+route -n get 10.20.0.1
+ping -c 1 10.20.0.1
+ssh zoking-azure 'hostname'
+ssh zoking-physical 'hostname'
+```
+
+预期 `10.20.0.1` 和 `10.20.0.2` 均经 macOS `utun` 接口。若隧道故障，先检查 Azure `51820/UDP`、两端 `wg show` 和 Mac LaunchDaemon；不要为图省事将 SSH `22/TCP` 对任意公网来源开放。
+
 构建并启动：
 
 ```powershell

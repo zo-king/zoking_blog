@@ -5,6 +5,7 @@ assets/jsconfig.json
 dist
 storage
 .env
+infra/docker/.env.prod
 *.log
 *.tsbuildinfo
 coverage.out

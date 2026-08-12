@@ -1,6 +1,6 @@
 # Zoking Blog 项目介绍与交接手册
 
-> 最后核验：2026-08-07（Asia/Shanghai）
+> 最后核验：2026-08-12（Asia/Shanghai）
 > 适用仓库：`https://github.com/zo-king/zoking_blog`
 > 生产域名：`zoking.tech`
 > 文档原则：不记录密码、私钥、Token、WireGuard 私钥或完整生产环境变量值。
@@ -456,7 +456,7 @@ Docker 和 `wg-quick@wg0` 已配置开机启动。
 | SSH 私钥位置（本机） | `C:\Users\zhaoxi\.azure\zoking_key.pem` |
 | Caddy 配置 | `/etc/caddy/Caddyfile` |
 
-`caddy`、`wg-quick@wg0`、`ssh` 在 2026-08-07 均为 enabled + active。Azure NSG 和 UFW 当前放行 80/TCP、443/TCP、51820/UDP；公网 SSH 22/TCP 仅允许 `218.64.59.174/32`，WireGuard 备份 SSH 仅允许 `10.20.0.2`。
+`caddy`、`wg-quick@wg0`、`ssh` 在 2026-08-12 均为 enabled + active。Azure NSG 和 UFW 放行 80/TCP、443/TCP、51820/UDP；公网 SSH 22/TCP 只保留按 `/32` 限制的恢复来源，日常管理使用 WireGuard。WireGuard 备份 SSH 仅允许 `10.20.0.2`。
 
 ### 13.3 本机网络绕过
 
@@ -473,6 +473,37 @@ C:\Users\zhaoxi\AppData\Roaming\chaoshihui\chaoshihui\shared_preferences.json
 ```text
 C:\Users\zhaoxi\AppData\Roaming\chaoshihui\chaoshihui\shared_preferences.json.bak-codex-20260807-023907
 ```
+
+### 13.4 Mac 运维终端与远程接入
+
+2026-08-12 已将 Mac 运维终端作为独立 WireGuard peer 接入生产管理网：
+
+| 项目 | 当前值 |
+|---|---|
+| Mac WireGuard IP | `10.20.0.3/32` |
+| Azure WireGuard IP | `10.20.0.1` |
+| 物理机 WireGuard IP | `10.20.0.2` |
+| Mac 客户端配置 | `~/.config/wireguard/zoking-mac.conf`，权限 `0600` |
+| SSH 运维密钥 | `~/.ssh/zoking_ops_ed25519`，权限 `0600` |
+| SSH 公钥指纹 | `SHA256:jbOR0HcdECm6vHg5ELrTzKejUYHtaoJ6uYrBCgGePbk` |
+| 开机任务 | `/Library/LaunchDaemons/com.zoking.wireguard.plist` |
+
+Mac 只将 `10.20.0.0/24` 路由到 WireGuard，不接管普通上网流量。Azure 为 `10.20.0.3 -> 10.20.0.2` 配置了限定目标的 UFW route allow 和 SNAT；物理机看到的 SSH 来源仍为 Azure `10.20.0.1`。Azure 配置修改前的备份保留在 `/etc/wireguard/wg0.conf.bak-mac-peer-*` 与 `/etc/ufw/before.rules.bak-mac-peer-*`。
+
+本机 `~/.ssh/config` 提供三个入口：
+
+```bash
+# 经 WireGuard 管理 Azure
+ssh zoking-azure
+
+# 经 WireGuard 和 Azure 转发管理物理机
+ssh zoking-physical
+
+# 公网 SSH 应急入口；仍受 Azure NSG 和 UFW 的来源 IP 白名单约束
+ssh zoking-azure-public
+```
+
+已在不同局域网和公网出口下验证 `ssh zoking-azure`、`ssh zoking-physical`、内网四个 HTTP 上游和公网五个域名。旧 Windows 密钥、物理机 peer 和公网 SSH 规则未删除，继续作为恢复通道。私钥和完整 WireGuard 配置不得提交到仓库、粘贴到聊天或复制到 Azure。
 
 ## 14. 生产部署流程
 
@@ -540,6 +571,20 @@ curl -sS -o /dev/null -w '%{http_code} %{redirect_url}\n' http://zoking.tech/
 
 ### 15.1 Azure 登录与检查
 
+Mac 运维终端优先经 WireGuard 登录：
+
+```bash
+ssh zoking-azure
+```
+
+仅在 WireGuard 故障且当前公网 IP 已同时进入 Azure NSG 与 UFW 白名单时使用公网入口：
+
+```bash
+ssh zoking-azure-public
+```
+
+原 Windows 恢复入口保留：
+
 ```powershell
 ssh -o IdentitiesOnly=yes -i "C:\Users\zhaoxi\.azure\zoking_key.pem" zoking@104.41.165.102
 ```
@@ -553,6 +598,12 @@ sudo caddy validate --config /etc/caddy/Caddyfile
 ```
 
 ### 15.2 物理机检查
+
+Mac 运维终端从任意可访问 UDP `51820` 的网络直接使用：
+
+```bash
+ssh zoking-physical
+```
 
 ```bash
 cd /opt/zoking-blog
@@ -660,6 +711,8 @@ docker compose --env-file infra/docker/.env.prod -f infra/docker/compose.prod.ym
 - 修改前运行 `sshd -t`，使用新 SSH 会话验证后再退出旧会话。
 - Azure NSG 的 22/TCP 应限制到固定管理公网 IP `/32`，或改用 Bastion/VPN。
 - UFW 与 NSG 都要收窄；只改其中一层不算完成。
+- 日常远程管理优先使用 Mac 的 WireGuard peer `10.20.0.3`；公网 SSH 只作为受限来源的恢复入口。
+- Mac 运维私钥不得复制到 Azure 或物理机；服务器只保存对应公钥。
 
 ### 18.2 网络
 
@@ -763,6 +816,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 - [x] Azure 门户/CLI 权限已验证（订阅 `Azure for Students`，账号 `1684874802@qq.com`）。
 - [x] Azure SSH 密钥登录已验证。
 - [x] 物理机 SSH 密钥登录已验证。
+- [x] Mac 独立 WireGuard peer 已跨网络验证，可通过固定别名管理 Azure 和物理机。
 - [x] 管理后台账号密码已轮换；新密码只在密码管理器/安全渠道交付，不写入本文。
 - [ ] DNS 管理权限已交付。
 - [ ] 飞书告警群和接收人已确认，Webhook 已在服务器配置。
@@ -779,7 +833,8 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 ### 23.3 安全
 
 - [x] 两台服务器 SSH 密码/键盘交互登录关闭，且新密钥会话已验证。
-- [x] Azure NSG 与 UFW 的公网 SSH 来源仅允许 `218.64.59.174/32`；WireGuard 备份 SSH 仅允许 `10.20.0.2`。
+- [x] Mac 运维密钥只保存在本机；Azure 和物理机仅安装公钥。
+- [x] Azure NSG 与 UFW 的公网 SSH 来源均按 `/32` 限制；日常管理走 WireGuard，备份 SSH 仅允许 `10.20.0.2`。
 - [x] 物理机应用端口仅允许 WireGuard 来源。
 - [x] 全部公网域名统一返回 HSTS；React Router 7.18.2 已由修正后的官方公告确认为修复版本，临时例外已删除。
 - [x] 管理员密码已轮换；数据库、JWT、隐私哈希和统计密码未写入 Git 或本文。
@@ -820,7 +875,7 @@ pwsh -NoProfile -File .\scripts\dev\clean.ps1
 
 - 配置并实际触发一次飞书 Webhook 告警，确认接收人和升级路径。
 - 使用恢复库启动 API 的服务级恢复演练，记录完整 RPO、RTO 和隔离发布结果。
-- 将 Azure NSG 的管理来源 `218.64.59.174/32` 纳入 IP 变更流程；该公网 IP 变化时必须同时更新 NSG 与 UFW。
+- 定期复核并清理 Azure NSG/UFW 中不再使用的公网 SSH `/32` 恢复来源；日常管理不得依赖动态公网 IP。
 - 交付 DNS、Azure 订阅、GitHub、密码管理器和告警渠道的独立管理权限。
 - 物理机直连 GitHub 曾出现 TLS 超时；部署时优先使用可验证的 SSH/Git bundle 传输，并在网络恢复后再评估 `git fetch`。
 

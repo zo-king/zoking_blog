@@ -1496,3 +1496,13 @@
 - 隐私/降级：无第三方请求、无新 JavaScript、无 localStorage；无 JS、打印、reduced-motion 和深色模式均保留可读内容。
 - QA：P37 专项通过语义类型、中文内容、暗色、无 JS、1280/390/320；P16 7/7、P29、P34 回归通过；preflight Go/Admin/Hugo 63 pages 通过。
 - 证据：`site-p37-article-callouts-desktop-1280x900.png`、`site-p37-article-callouts-mobile-390x844.png`；状态 Done，`LOCK-SITE-ARTICLE-CALLOUT-P37` 已释放。
+
+## 2026-08-12 - CENTER - PRODUCTION ACCESS HANDOVER
+
+- 本地接管：Mac 工作区检出 `origin/main`，生产物理机 `/opt/zoking-blog` 与 GitHub 均位于提交 `55f9e90`；GitHub Preflight 成功。
+- SSH：创建独立 ED25519 运维密钥，公钥同时安装到 Azure 与物理机；旧 Windows 密钥和规则保留。两台服务器继续禁用密码登录，Mac 私钥只保存在本机。
+- WireGuard：新增 Mac peer `10.20.0.3/32`，Azure/物理机保持 `10.20.0.1/10.20.0.2`。Azure UFW 仅允许 Mac 访问 SSH 和转发至物理机，并使用限定目标 SNAT 解决物理机回程，不开放通用 NAT。
+- 本机入口：`ssh zoking-azure` 和 `ssh zoking-physical` 使用固定 WireGuard 地址；`ssh zoking-azure-public` 保留为受 NSG/UFW 公网白名单限制的应急入口。LaunchDaemon 在 Mac 开机时恢复隧道。
+- 跨网验收：Mac 从 `192.168.0.0/24` 切换到 `192.168.144.0/24` 后，Azure、物理机 SSH 均成功；内网 Site/API/Admin/Stats 为 `200/200/200/303`，公网 Site/API/Admin/Preview/Stats 为 `200/200/200/404/303`。
+- 生产状态：`api`、`worker`、`postgres`、`admin`、`site`、`goatcounter` 六个 Compose 服务均运行；Caddy 和两端 WireGuard active。
+- Secret 防护：发现生产 `infra/docker/.env.prod` 未被 `.gitignore` 精确覆盖，但从未被跟踪或提交；本次补充精确忽略规则，防止后续误提交。
