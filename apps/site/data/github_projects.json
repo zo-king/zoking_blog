@@ -2,7 +2,7 @@
   "schema_version": 1,
   "username": "zo-king",
   "profile_url": "https://github.com/zo-king",
-  "generated_at": "2026-07-15T07:15:51.569Z",
+  "generated_at": "2026-08-16T02:50:21.461Z",
   "repositories": [
     {
       "name": "zoking_blog",
@@ -10,8 +10,8 @@
       "language": "Go",
       "stargazers_count": 0,
       "forks_count": 0,
-      "updated_at": "2026-07-15T07:15:23Z",
-      "pushed_at": "2026-07-15T07:15:20Z",
+      "updated_at": "2026-08-12T13:31:59Z",
+      "pushed_at": "2026-08-15T19:14:12Z",
       "html_url": "https://github.com/zo-king/zoking_blog"
     },
     {
@@ -23,16 +23,6 @@
       "updated_at": "2026-07-13T14:16:31Z",
       "pushed_at": "2026-07-13T14:12:30Z",
       "html_url": "https://github.com/zo-king/zo-king"
-    },
-    {
-      "name": "zo-king.github.io",
-      "description": null,
-      "language": null,
-      "stargazers_count": 1,
-      "forks_count": 0,
-      "updated_at": "2026-07-13T14:14:44Z",
-      "pushed_at": "2026-07-13T14:11:22Z",
-      "html_url": "https://github.com/zo-king/zo-king.github.io"
     },
     {
       "name": "aic-multimodal-grounding",
