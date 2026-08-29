@@ -24,7 +24,7 @@ RUN curl -fsSL -o /tmp/pagefind.tar.gz "https://github.com/Pagefind/pagefind/rel
     && tar -xzf /tmp/pagefind.tar.gz -C /out \
     && mv /out/pagefind_extended /out/pagefind
 
-FROM debian:bookworm-slim@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
+FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171
 
 RUN groupadd --gid 10001 zoking \
     && useradd --uid 10001 --gid 10001 --system --no-create-home --home-dir /nonexistent zoking \
